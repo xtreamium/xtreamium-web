@@ -55,7 +55,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({ user 
       <div className="dropdown-content bg-base-200 text-base-content rounded-box top-px mt-16 max-h-[calc(100vh-10rem)] w-56 overflow-y-auto border border-white/5 shadow-2xl outline outline-1 outline-black/5 z-50">
         <ul className="gap-1 menu menu-sm">
           {user.servers.map((s) => (
-            <li>
+            <li key={s.id}>
               <div className="flex">
                 <button
                   title="Delete Server"

@@ -5,6 +5,7 @@ import ThemeChanger from "./theme-changer.component";
 import ProfileDropdown from "./widgets/profile-dropdown.component";
 import ServerSelectorComponent from "./widgets/server-selecter.component";
 import { User } from "@/models";
+import ProxyStatus from "./widgets/proxy-status.component";
 type HeaderProps = { user: User };
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
@@ -23,6 +24,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
       <div className="flex-none mx-2">
         <ServerSelectorComponent user={user} />
         <ThemeChanger />
+        <ProxyStatus />
         <ProfileDropdown />
       </div>
     </div>

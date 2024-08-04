@@ -1,6 +1,6 @@
-import React from "react";
-import { Icons } from "../icons";
-import { useAuth } from "@/context/auth.context";
+import React from 'react';
+import { Icons } from '../icons';
+import { useAuth } from '@/context/auth.context';
 
 const ProfileDropdown: React.FC = () => {
   const { logout } = useAuth();
@@ -26,7 +26,6 @@ const ProfileDropdown: React.FC = () => {
           <div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              xlink="http://www.w3.org/1999/xlink"
               aria-hidden="true"
               role="img"
               fontSize={16}
@@ -68,7 +67,7 @@ const ProfileDropdown: React.FC = () => {
                 strokeWidth={2}
                 d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9m4.3 13a1.94 1.94 0 0 0 3.4 0"
               />
-            </svg>{" "}
+            </svg>{' '}
             Notification
           </div>
         </li>
