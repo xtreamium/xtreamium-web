@@ -6,22 +6,29 @@ import { clsx } from 'clsx';
 
 const ProxyStatus: React.FC = () => {
   let connection;
-  const [connectionActive, setConnectionActive] = React.useState(false);
+  enum ConnectionState {
+    Checking,
+    Connected,
+    Disconnected
+  }
+  const [connectionState, setConnectionState] = React.useState<ConnectionState>(
+    ConnectionState.Checking
+  );
   const [iconClass, setIconClass] = React.useState('w-6 h-6 text-red-600');
   React.useEffect(() => {
     connection = new signalR.HubConnectionBuilder()
       .withUrl('http://localhost:5000/hubs/proxyStatus')
-      .configureLogging(signalR.LogLevel.Debug)
+      .configureLogging(signalR.LogLevel.Information)
       .build();
 
     connection
       .start()
       .then(() => {
-        setConnectionActive(true);
+        setConnectionState(ConnectionState.Connected);
       })
       .catch((err) => {
         console.error('proxy-status.component', 'CreatingConnection', err);
-        setConnectionActive(false);
+        setConnectionState(ConnectionState.Disconnected);
       });
 
     connection.on('ServerMessage', (message) => {
@@ -31,14 +38,28 @@ const ProxyStatus: React.FC = () => {
 
   React.useEffect(() => {
     setIconClass(
-      clsx('w-6', 'h-6', connectionActive ? 'text-green-600' : 'text-red-600')
+      clsx(
+        'w-6',
+        'h-6',
+        connectionState === ConnectionState.Checking
+          ? 'animate-spin text-orange-700'
+          : connectionState === ConnectionState.Connected
+          ? 'text-green-600'
+          : 'text-red-600'
+      )
     );
-  }, [connectionActive]);
+    console.log('proxy-status.component', 'Icon class is', iconClass);
+  }, [connectionState]);
+
   return (
     <div className="px-2">
       <Menu>
         <MenuButton>
-          <Icons.proxy className={iconClass} />
+          {connectionState === ConnectionState.Checking ? (
+            <Icons.loader className={clsx(iconClass, 'animate-spin text-orange-700')} />
+          ) : (
+            <Icons.proxy className={iconClass} />
+          )}
         </MenuButton>
         <MenuItems
           anchor="bottom"

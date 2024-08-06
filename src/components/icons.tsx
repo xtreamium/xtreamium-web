@@ -25,7 +25,8 @@ import {
   SwatchBook,
   HardDrive,
   Settings,
-} from "lucide-react";
+  LoaderIcon
+} from 'lucide-react';
 type IconProps = {
   className: string | undefined;
 };
@@ -177,6 +178,7 @@ export const Icons = {
   eye: Eye,
   info: Info,
   key: Key,
+  loader: LoaderIcon,
   login: LogIn,
   mail: Mail,
   play: Play,
@@ -189,5 +191,5 @@ export const Icons = {
   rocket: Rocket,
   user: UserRound,
   winget: Winget,
-  chocolatey: Chocolatey,
+  chocolatey: Chocolatey
 };
