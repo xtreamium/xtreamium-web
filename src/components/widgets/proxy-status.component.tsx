@@ -1,40 +1,64 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { Icons } from '@/components/icons';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import * as signalR from '@microsoft/signalr';
 import { clsx } from 'clsx';
+import { HubConnection } from '../../../node_modules/@microsoft/signalr/dist/esm/HubConnection';
+import { connect } from 'bun';
+enum ConnectionState {
+  Checking,
+  Connected,
+  Disconnected
+}
+const _createConnection = (
+  setConnectionState: Dispatch<SetStateAction<ConnectionState>>
+): HubConnection => {
+  const connection = new signalR.HubConnectionBuilder()
+    .withUrl('http://localhost:5000/hubs/proxyStatus')
+    .configureLogging(signalR.LogLevel.Information)
+    .build();
+
+  connection
+    .start()
+    .then(() => {
+      setConnectionState(ConnectionState.Connected);
+    })
+    .catch((err) => {
+      console.error('proxy-status.component', 'CreatingConnection', err);
+      setConnectionState(ConnectionState.Disconnected);
+      throw new Error('Failed to connect to the server');
+    });
+  connection.onclose(() => {
+    setConnectionState(ConnectionState.Disconnected);
+  });
+  connection.on('ServerMessage', (message) => {
+    console.log('proxy-status.component', 'ServerMessage', message);
+  });
+  return connection;
+};
 
 const ProxyStatus: React.FC = () => {
   let connection;
-  enum ConnectionState {
-    Checking,
-    Connected,
-    Disconnected
-  }
+
+  const [iconClass, setIconClass] = React.useState('w-6 h-6 text-red-600');
   const [connectionState, setConnectionState] = React.useState<ConnectionState>(
     ConnectionState.Checking
   );
-  const [iconClass, setIconClass] = React.useState('w-6 h-6 text-red-600');
+
   React.useEffect(() => {
-    connection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5000/hubs/proxyStatus')
-      .configureLogging(signalR.LogLevel.Information)
-      .build();
-
-    connection
-      .start()
-      .then(() => {
-        setConnectionState(ConnectionState.Connected);
-      })
-      .catch((err) => {
-        console.error('proxy-status.component', 'CreatingConnection', err);
-        setConnectionState(ConnectionState.Disconnected);
-      });
-
-    connection.on('ServerMessage', (message) => {
-      console.log('proxy-status.component', 'ServerMessage', message);
-    });
-  }, []);
+    if (connectionState === ConnectionState.Connected) {
+      return;
+    }
+    connection = _createConnection(setConnectionState);
+    if (connectionState === ConnectionState.Disconnected) {
+      connection = _createConnection(setConnectionState);
+      if (connectionState === ConnectionState.Disconnected) {
+        setTimeout(() => {
+          setConnectionState(ConnectionState.Checking);
+        }, 5000);
+      }
+    }
+  }, [connectionState]);
 
   React.useEffect(() => {
     setIconClass(
