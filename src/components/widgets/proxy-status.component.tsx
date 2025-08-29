@@ -3,8 +3,7 @@ import { Icons } from '@/components/icons';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import * as signalR from '@microsoft/signalr';
 import { clsx } from 'clsx';
-import { HubConnection } from '../../../node_modules/@microsoft/signalr/dist/esm/HubConnection';
-import { connect } from 'bun';
+
 enum ConnectionState {
   Checking,
   Connected,
@@ -12,9 +11,9 @@ enum ConnectionState {
 }
 const _createConnection = (
   setConnectionState: Dispatch<SetStateAction<ConnectionState>>
-): HubConnection => {
+): signalR.HubConnection => {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl('http://localhost:5000/hubs/proxyStatus')
+    .withUrl(`${import.meta.env.VITE_PROXY_URL}/hubs/proxyStatus`)
     .configureLogging(signalR.LogLevel.Information)
     .build();
 
@@ -47,6 +46,7 @@ const ProxyStatus: React.FC = () => {
 
   React.useEffect(() => {
     if (connectionState === ConnectionState.Connected) {
+      console.log('proxy-status.component', 'Proxy is connected');
       return;
     }
     connection = _createConnection(setConnectionState);
@@ -54,6 +54,7 @@ const ProxyStatus: React.FC = () => {
       connection = _createConnection(setConnectionState);
       if (connectionState === ConnectionState.Disconnected) {
         setTimeout(() => {
+          console.log('proxy-status.component', 'Rechecking connection');
           setConnectionState(ConnectionState.Checking);
         }, 5000);
       }

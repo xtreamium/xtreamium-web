@@ -1,14 +1,10 @@
-import {
-  Popover,
-  PopoverButton,
-  PopoverPanel,
-  Transition,
-} from "@headlessui/react";
-import React, { Fragment } from "react";
-import { Icons } from "../icons";
-import { dateToTimeString } from "@/utils/date-utils";
+import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
+import React, { Fragment } from 'react';
+import { Icons } from '../icons';
+import { dateToTimeString } from '@/utils/date-utils';
 
 type EpgItemProps = {
+  channelUrl: string;
   title: string;
   description: string;
   startTime: number;
@@ -16,12 +12,29 @@ type EpgItemProps = {
 };
 
 const EpgItem: React.FC<EpgItemProps> = ({
+  channelUrl,
   title,
   description,
   startTime,
-  endTime,
+  endTime
 }) => {
   const [isHover, setIsHover] = React.useState(false);
+  const recordShow = async (channelUrl: string, startTime: number, endTime: number) => {
+    const response = await fetch(`${import.meta.env.VITE_PROXY_URL}/record`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+      body: JSON.stringify({
+        url: channelUrl,
+        startTime: startTime,
+        endTime: endTime
+      })
+    });
+
+    console.log('epg-item', 'recordShow', response);
+  };
+
   return (
     <div className="max-w-60">
       <Popover className="relative">
@@ -62,21 +75,26 @@ const EpgItem: React.FC<EpgItemProps> = ({
                     <div className="px-3 py-2 font-bold text-primary-content ">
                       {title}
                     </div>
-                    <div>
-                      <button
-                        className="p-2 text-red-500 transition duration-300 ease-in-out delay-150 hover:text-red-400"
-                        title="Record Program"
-                      >
-                        <Icons.record className="w-6 h-6" />
-                      </button>
-                    </div>
                   </div>
                   <div className="px-3 py-3 text-sm text-primary-content text-wrap max-w-80">
                     {description}
                   </div>
-                  <div className="px-3 py-2 text-sm font-bold text-accent-content">
-                    {dateToTimeString(new Date(startTime))}&nbsp;-&nbsp;
-                    {dateToTimeString(new Date(endTime))}
+                  <div className="flex flex-row justify-between px-2">
+                    <div className="px-3 py-2 text-sm font-bold text-accent-content">
+                      {dateToTimeString(new Date(startTime))}&nbsp;-&nbsp;
+                      {dateToTimeString(new Date(endTime))}
+                    </div>
+                    <div>
+                      <button
+                        className="btn btn-error btn-sm text-slate-300"
+                        onClick={async () =>
+                          await recordShow(channelUrl, startTime, endTime)
+                        }
+                      >
+                        <Icons.record className="w-6 h-6" />
+                        Record
+                      </button>
+                    </div>
                   </div>
                 </div>
               </PopoverPanel>
