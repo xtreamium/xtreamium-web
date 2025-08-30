@@ -1,39 +1,39 @@
-import React from "react";
-import { useTheme } from "next-themes";
-import "tailwindcss/tailwind.css";
-import { Icons } from "./icons";
+import React from 'react';
+import { useTheme } from 'next-themes';
+import 'tailwindcss/tailwind.css';
+import { Icons } from './icons';
 
 const ThemeChanger = () => {
   const themes = [
-    "light",
-    "dark",
-    "cupcake",
-    "bumblebee",
-    "emerald",
-    "corporate",
-    "synthwave",
-    "retro",
-    "cyberpunk",
-    "valentine",
-    "halloween",
-    "garden",
-    "forest",
-    "aqua",
-    "lofi",
-    "pastel",
-    "fantasy",
-    "wireframe",
-    "black",
-    "luxury",
-    "dracula",
-    "cmyk",
-    "autumn",
-    "business",
-    "acid",
-    "lemonade",
-    "night",
-    "coffee",
-    "winter",
+    'light',
+    'dark',
+    'cupcake',
+    'bumblebee',
+    'emerald',
+    'corporate',
+    'synthwave',
+    'retro',
+    'cyberpunk',
+    'valentine',
+    'halloween',
+    'garden',
+    'forest',
+    'aqua',
+    'lofi',
+    'pastel',
+    'fantasy',
+    'wireframe',
+    'black',
+    'luxury',
+    'dracula',
+    'cmyk',
+    'autumn',
+    'business',
+    'acid',
+    'lemonade',
+    'night',
+    'coffee',
+    'winter'
   ];
   const [isOpened, setIsOpened] = React.useState(false);
   const themeMenu = React.useRef<HTMLDivElement>(null);
@@ -64,7 +64,11 @@ const ThemeChanger = () => {
     return null;
   }
   return (
-    <div title="Change Theme" ref={themeMenu} className="dropdown dropdown-end ">
+    <div
+      title="Change Theme"
+      ref={themeMenu}
+      className="dropdown dropdown-end "
+    >
       <div
         tabIndex={0}
         onClick={handleDropdown}

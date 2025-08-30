@@ -13,7 +13,7 @@ const ProfileDropdown: React.FC = () => {
         <div className="flex items-center gap-2">
           <div aria-label="Avatar photo" className="avatar">
             <Icons.user className="w-6 h-6" />
-            <Icons.chevronDown className="w-4 h-4" />
+            <Icons.chevronDown className="hidden w-5 h-5 fill-current opacity-60 sm:inline-block" />
           </div>
         </div>
       </label>
@@ -51,7 +51,6 @@ const ProfileDropdown: React.FC = () => {
           <div>
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              xlink="http://www.w3.org/1999/xlink"
               aria-hidden="true"
               role="img"
               fontSize={16}

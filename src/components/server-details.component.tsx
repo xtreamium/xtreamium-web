@@ -145,22 +145,6 @@ const ServerDetails = () => {
         >
           Let's go!
         </Button>
-        {/* <hr className="my-8" />
-        <div className="text-xs text-gray-700">
-          Your stream details are stored in your browser
-        </div>
-        <div className="text-xs text-gray-700">
-          They are never stored on our servers
-        </div>
-        <div className="text-xs text-indigo-500">
-          <a
-            href="https://github.com/fergalmoran/xtreamium"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Want proof?
-          </a>
-        </div> */}
       </form>
     </div>
   );

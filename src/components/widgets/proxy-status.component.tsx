@@ -3,6 +3,7 @@ import { Icons } from '@/components/icons';
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import * as signalR from '@microsoft/signalr';
 import { clsx } from 'clsx';
+import { Link } from 'react-router-dom';
 
 enum ConnectionState {
   Checking,
@@ -77,53 +78,38 @@ const ProxyStatus: React.FC = () => {
   }, [connectionState]);
 
   return (
-    <div className="px-2">
-      <Menu>
-        <MenuButton>
-          {connectionState === ConnectionState.Checking ? (
-            <Icons.loader className={clsx(iconClass, 'animate-spin text-orange-700')} />
-          ) : (
-            <Icons.proxy className={iconClass} />
-          )}
-        </MenuButton>
-        <MenuItems
-          anchor="bottom"
-          className="z-50 p-2 mt-4 shadow dropdown-content menu bg-base-100 rounded-box w-52"
-        >
-          <MenuItem>
-            <a href="#">
-              <Icons.settings className="w-2 h-2" />
-              Proxy Settings
-            </a>
-          </MenuItem>
-          <MenuItem>
-            <div>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                xmlnsXlink="http://www.w3.org/1999/xlink"
-                aria-hidden="true"
-                role="img"
-                fontSize={16}
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
-              >
-                <g
-                  fill="none"
-                  stroke="currentColor"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                >
-                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-                  <circle cx="12" cy="7" r="4" />
-                </g>
-              </svg>
-              My Profile
-            </div>
-          </MenuItem>
-        </MenuItems>
-      </Menu>
+    <div title="Proxy Status" className="dropdown dropdown-end ">
+      <div
+        tabIndex={0}
+        onClick={() => {
+          // if (document.activeElement instanceof HTMLElement) {
+          //   document.activeElement.blur();
+          // } else {
+          // }
+        }}
+        className="gap-1 normal-case btn btn-ghost"
+      >
+        {connectionState === ConnectionState.Checking ? (
+          <Icons.loader
+            className={clsx(iconClass, 'animate-spin text-orange-700')}
+          />
+        ) : (
+          <Icons.proxy className={iconClass} />
+        )}
+        <Icons.chevronDown className="hidden w-5 h-5 fill-current opacity-60 sm:inline-block" />
+      </div>
+      <ul
+        tabIndex={0}
+        className="z-50 p-2 mt-4 shadow dropdown-content menu bg-base-100 rounded-box w-52"
+        role="menu"
+      >
+        <li>
+          <Link to="/settings/proxy">
+            <Icons.server className="w-4 h-4" />
+            Proxy Settings
+          </Link>
+        </li>
+      </ul>
     </div>
   );
 };
