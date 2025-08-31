@@ -89,13 +89,13 @@ const EpgItem: React.FC<EpgItemProps> = ({
                         {title}
                       </h3>
                     </div>
-                    
+
                     {/* Content */}
                     <div className="p-4 space-y-3">
                       <p className="text-base-content text-sm leading-relaxed">
                         {description}
                       </p>
-                      
+
                       {/* Footer with time and button */}
                       <div className="flex items-center justify-between pt-2 border-t border-base-200">
                         <div className="badge badge-accent badge-outline text-xs font-medium">
