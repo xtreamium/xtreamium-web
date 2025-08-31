@@ -1,6 +1,6 @@
-import { User } from "@/models";
-import DesktopSidebar from "./desktop-sidebar.component";
-import MobileSidebar from "./mobile-sidebar.component";
+import { User } from '@/models';
+import DesktopSidebar from './desktop-sidebar.component';
+import MobileSidebar from './mobile-sidebar.component';
 
 type SidebarProps = {
   user: User;

@@ -1,6 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react';
 import { Icons } from '@/components/icons';
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import * as signalR from '@microsoft/signalr';
 import { clsx } from 'clsx';
 import { Link } from 'react-router-dom';
@@ -104,7 +103,7 @@ const ProxyStatus: React.FC = () => {
         role="menu"
       >
         <li>
-          <Link to="/settings/proxy">
+          <Link to="/proxy/settings">
             <Icons.server className="w-4 h-4" />
             Proxy Settings
           </Link>
