@@ -1,21 +1,21 @@
-import React, { Suspense } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { Stream } from "@/models";
-import { EPGComponent } from "@/components";
+import React, { Suspense } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { Stream } from '@/models';
+import { EPGComponent } from '@/components';
 
-import { toast } from "react-toastify";
-import { Button, ImageWithFallback } from "@/components/widgets";
-import { ApiService } from "@/services";
-import { Icons } from "@/components/icons";
-import { useQuery } from "@tanstack/react-query";
-import Loading from "@/components/widgets/loading.component";
-import useServerStore from "@/services/state/server.state";
+import { toast } from 'react-toastify';
+import { Button, ImageWithFallback } from '@/components/widgets';
+import { ApiService } from '@/services';
+import { Icons } from '@/components/icons';
+import { useQuery } from '@tanstack/react-query';
+import Loading from '@/components/widgets/loading.component';
+import useServerStore from '@/services/state/server.state';
 
 const CategoryPage = () => {
   const { selectedServer } = useServerStore();
   const userQuery = useQuery({
-    queryKey: ["user"],
-    queryFn: ApiService.getCurrentUser,
+    queryKey: ['user'],
+    queryFn: ApiService.getCurrentUser
   });
 
   const server = userQuery.data?.servers.find((s) => s.id === selectedServer);
@@ -28,7 +28,7 @@ const CategoryPage = () => {
   const navigate = useNavigate();
   const channelQuery = useQuery({
     queryKey: [`channels_${params.categoryId}`],
-    queryFn: () => ApiService.getChannels(server, params.categoryId!!),
+    queryFn: () => ApiService.getChannels(server, params.categoryId!!)
   });
 
   if (channelQuery.isLoading) {
@@ -38,29 +38,31 @@ const CategoryPage = () => {
   const copyStreamUrl = async (streamId: number) => {
     try {
       const url = await ApiService.getStreamUrl(server, streamId);
-      console.log("channel.page", "copyStreamUrl", url);
+      console.log('channel.page', 'copyStreamUrl', url);
       if (url) {
         navigator.clipboard.writeText(url).then(() => {
           toast.success(
             <>
-              <div className="font-bold text-gray-800">🙌 URL copied to clipboard</div>
+              <div className="font-bold text-gray-800">
+                🙌 URL copied to clipboard
+              </div>
             </>,
             {
-              position: "top-right",
-              closeOnClick: true,
+              position: 'top-right',
+              closeOnClick: true
             }
           );
         });
       }
     } catch (err) {
-      console.error("channel.page", "copyStreamUrl", err);
+      console.error('channel.page', 'copyStreamUrl', err);
       toast.error(
         <>
           <div className="font-bold text-gray-800">🤦 Failed to copy URL</div>
         </>,
         {
-          position: "top-right",
-          closeOnClick: true,
+          position: 'top-right',
+          closeOnClick: true
         }
       );
     }
@@ -73,17 +75,24 @@ const CategoryPage = () => {
     if (url) {
       const query = `play/${encodeURIComponent(url)}`;
       try {
-        const response = await fetch(`${import.meta.env.VITE_PROXY_URL}/${query}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "text/plain",
-          },
-        });
+        const response = await fetch(
+          `${import.meta.env.VITE_PROXY_URL}/${query}`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'text/plain'
+            }
+          }
+        );
         if (response.status === 501) {
           toast(
             <>
-              <div className="font-bold text-gray-800">🚫 Unable to play stream!</div>
-              <div className="text-gray-700 font-sm">Cannot find mpv installation.</div>
+              <div className="font-bold text-gray-800">
+                🚫 Unable to play stream!
+              </div>
+              <div className="text-gray-700 font-sm">
+                Cannot find mpv installation.
+              </div>
               <a
                 className="font-bold text-indigo-600"
                 href="https://github.com/fergalmoran/xtreamium/#installmpv"
@@ -94,8 +103,8 @@ const CategoryPage = () => {
               </a>
             </>,
             {
-              position: "top-right",
-              closeOnClick: true,
+              position: 'top-right',
+              closeOnClick: true
             }
           );
         }
@@ -103,7 +112,9 @@ const CategoryPage = () => {
         console.log(e);
         toast(
           <>
-            <div className="font-bold text-gray-800">🚫 Unable to play stream!</div>
+            <div className="font-bold text-gray-800">
+              🚫 Unable to play stream!
+            </div>
             <div className="text-gray-700 font-sm">
               Make sure you've installed the local server.
             </div>
@@ -117,8 +128,8 @@ const CategoryPage = () => {
             </a>
           </>,
           {
-            position: "top-right",
-            closeOnClick: true,
+            position: 'top-right',
+            closeOnClick: true
           }
         );
       }
@@ -132,7 +143,7 @@ const CategoryPage = () => {
       <table className="table">
         <tbody>
           {channelQuery.data.map((stream: Stream) => [
-            <React.Fragment key={stream.name}>
+            <React.Fragment >
               <tr>
                 <td>
                   <div className="flex items-center gap-3">
@@ -190,10 +201,13 @@ const CategoryPage = () => {
               </tr>
               <tr key={`${stream.num}-epg`}>
                 <Suspense fallback={<h1>Loading epg</h1>}>
-                  <EPGComponent server={server} channelId={stream.epg_channel_id} />
+                  <EPGComponent
+                    server={server}
+                    channelId={stream.epg_channel_id}
+                  />
                 </Suspense>
               </tr>
-            </React.Fragment>,
+            </React.Fragment>
           ])}
         </tbody>
       </table>
