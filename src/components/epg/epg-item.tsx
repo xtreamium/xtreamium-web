@@ -1,4 +1,9 @@
-import { Popover, PopoverButton, PopoverPanel, Transition } from '@headlessui/react';
+import {
+  Popover,
+  PopoverButton,
+  PopoverPanel,
+  Transition
+} from '@headlessui/react';
 import React, { Fragment } from 'react';
 import { Icons } from '../icons';
 import { dateToTimeString } from '@/utils/date-utils';
@@ -19,7 +24,11 @@ const EpgItem: React.FC<EpgItemProps> = ({
   endTime
 }) => {
   const [isHover, setIsHover] = React.useState(false);
-  const recordShow = async (channelUrl: string, startTime: number, endTime: number) => {
+  const recordShow = async (
+    channelUrl: string,
+    startTime: number,
+    endTime: number
+  ) => {
     const response = await fetch(`${import.meta.env.VITE_PROXY_URL}/record`, {
       method: 'POST',
       headers: {
@@ -36,12 +45,12 @@ const EpgItem: React.FC<EpgItemProps> = ({
   };
 
   return (
-    <div className="max-w-60">
+    <div className="w-60">
       <Popover className="relative">
         {({}) => (
           <>
             <PopoverButton
-              className="w-full h-full "
+              className="w-full h-full p-2 text-left hover:bg-base-200/50 transition-colors duration-150 rounded-none border-none bg-transparent focus:outline-none focus:ring-0"
               onMouseOver={() => {
                 setIsHover(true);
               }}
@@ -51,7 +60,9 @@ const EpgItem: React.FC<EpgItemProps> = ({
                 }, 1000);
               }}
             >
-              <span className="line-clamp-1">{title}</span>
+              <span className="text-sm font-medium truncate block text-base-content">
+                {title}
+              </span>
             </PopoverButton>
             <Transition
               show={isHover}
@@ -65,35 +76,41 @@ const EpgItem: React.FC<EpgItemProps> = ({
             >
               <PopoverPanel
                 anchor="top"
-                className="z-30 flex flex-col"
+                className="z-50"
                 onMouseLeave={() => {
                   setIsHover(false);
                 }}
               >
-                <div className="bg-white shadow-l">
-                  <div className="flex justify-between bg-primary">
-                    <div className="px-3 py-2 font-bold text-primary-content ">
-                      {title}
+                <div className="tooltip tooltip-open tooltip-top">
+                  <div className="bg-base-100 border border-base-300 rounded-lg shadow-xl p-0 w-80 max-w-sm">
+                    {/* Header */}
+                    <div className="bg-gradient-to-r from-primary to-primary-focus px-4 py-3 rounded-t-lg">
+                      <h3 className="text-primary-content font-semibold text-base leading-tight">
+                        {title}
+                      </h3>
                     </div>
-                  </div>
-                  <div className="px-3 py-3 text-sm text-primary-content text-wrap max-w-80">
-                    {description}
-                  </div>
-                  <div className="flex flex-row justify-between px-2">
-                    <div className="px-3 py-2 text-sm font-bold text-accent-content">
-                      {dateToTimeString(new Date(startTime))}&nbsp;-&nbsp;
-                      {dateToTimeString(new Date(endTime))}
-                    </div>
-                    <div>
-                      <button
-                        className="btn btn-error btn-sm text-slate-300"
-                        onClick={async () =>
-                          await recordShow(channelUrl, startTime, endTime)
-                        }
-                      >
-                        <Icons.record className="w-6 h-6" />
-                        Record
-                      </button>
+                    
+                    {/* Content */}
+                    <div className="p-4 space-y-3">
+                      <p className="text-base-content text-sm leading-relaxed">
+                        {description}
+                      </p>
+                      
+                      {/* Footer with time and button */}
+                      <div className="flex items-center justify-between pt-2 border-t border-base-200">
+                        <div className="badge badge-accent badge-outline text-xs font-medium">
+                          {dateToTimeString(new Date(startTime))} - {dateToTimeString(new Date(endTime))}
+                        </div>
+                        <button
+                          className="btn btn-error btn-xs gap-1 text-xs"
+                          onClick={async () =>
+                            await recordShow(channelUrl, startTime, endTime)
+                          }
+                        >
+                          <Icons.record className="w-3 h-3" />
+                          Record
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

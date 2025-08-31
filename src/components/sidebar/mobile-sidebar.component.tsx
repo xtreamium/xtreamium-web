@@ -38,7 +38,7 @@ const MobileSidebar: React.FC<MobileSidebarProps> = ({ user }) => {
         leaveFrom="translate-x-0"
         leaveTo="-translate-x-full"
       >
-        <aside className="fixed inset-y-0 left-0 z-50 flex-shrink-0 w-64 mt-16 overflow-y-auto bg-base-100 lg:hidden">
+        <aside className="fixed inset-y-0 left-0 z-50 flex-shrink-0 w-64 pt-16 overflow-y-auto bg-base-100 lg:hidden">
           <SidebarContent user={user} />
         </aside>
       </Transition>

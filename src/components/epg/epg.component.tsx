@@ -1,8 +1,8 @@
-import React from "react";
-import { EPGListing, Server } from "@/models";
-import { ApiService } from "@/services";
-import { dateToTimeString, roundDateDown } from "@/utils/date-utils";
-import EpgItem from "./epg-item";
+import React from 'react';
+import { EPGListing, Server } from '@/models';
+import { ApiService } from '@/services';
+import { dateToTimeString, roundDateDown } from '@/utils/date-utils';
+import EpgItem from './epg-item';
 interface IEPGComponentProps {
   server: Server;
   channelId: string;
@@ -32,7 +32,9 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
     for (let i = 0; i <= 8; i++) {
       //need to find how long the first program has been running for and
       //set the width of that to a multiple of the width of the other cells
-      const currentRenderingTime = new Date(startTime.getTime() + cellDuration * i);
+      const currentRenderingTime = new Date(
+        startTime.getTime() + cellDuration * i
+      );
       const time = dateToTimeString(
         currentRenderingTime //half hour segments
       );
@@ -61,6 +63,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
             style={{ width: `${thisDurationPercentage}%` }}
           >
             <EpgItem
+              channelUrl="TODO: Fetch Channel URL"
               title={nowPlaying.getTitle()}
               startTime={nowPlaying.getStartTime()}
               endTime={nowPlaying.getStopTime()}
