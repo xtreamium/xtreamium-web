@@ -25,7 +25,8 @@ import {
   SwatchBook,
   HardDrive,
   Settings,
-  LoaderIcon
+  LoaderIcon,
+  Menu
 } from 'lucide-react';
 type IconProps = {
   className: string | undefined;
@@ -117,7 +118,10 @@ const Chocolatey: React.FC<IconProps> = ({ className }) => (
           fill="#12100B"
           points="35.2,70.4 35.2,36.5 37.5,36.5 37.5,64.5 \\t\\t"
         />
-        <polygon fill="#12100B" points="0,70.4 0,33.6 5.7,33.6 5.7,64.5 \\t\\t" />
+        <polygon
+          fill="#12100B"
+          points="0,70.4 0,33.6 5.7,33.6 5.7,64.5 \\t\\t"
+        />
       </g>
     </g>
     <g>
@@ -158,7 +162,11 @@ const Chocolatey: React.FC<IconProps> = ({ className }) => (
         />
       </g>
     </g>
-    <polygon opacity="0.2" fill="#FFFFFF" points="103.6,0 98,0 98,52.4 103.6,48.4 " />
+    <polygon
+      opacity="0.2"
+      fill="#FFFFFF"
+      points="103.6,0 98,0 98,52.4 103.6,48.4 "
+    />
     <polygon opacity="0.2" fill="#12100B" points="5.6,52.4 5.6,0 0,0 0,48 " />
   </svg>
 );
@@ -181,6 +189,7 @@ export const Icons = {
   loader: LoaderIcon,
   login: LogIn,
   mail: Mail,
+  menu: Menu,
   play: Play,
   playCircle: PlayCircle,
   proxy: Router,

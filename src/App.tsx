@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { Layout } from "./containers";
 import { ThemeProvider } from "next-themes";
 import AuthProvider from "./context/auth.context";
+import { SidebarProvider } from "./context";
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 const queryClient = new QueryClient()
@@ -13,7 +14,9 @@ function App() {
       <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <AuthProvider>
-          <Layout />
+          <SidebarProvider>
+            <Layout />
+          </SidebarProvider>
         </AuthProvider>
       </BrowserRouter>
       </QueryClientProvider>

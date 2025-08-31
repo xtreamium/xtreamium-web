@@ -1,3 +1,5 @@
+import { Icons } from '@/components/icons';
+
 const ProxySettingsPage: React.FC = () => {
   return (
     <div className="min-h-screen p-4 bg-base-100">
@@ -13,20 +15,8 @@ const ProxySettingsPage: React.FC = () => {
 
         <div className="mt-6 shadow-lg card bg-base-200">
           <div className="card-body">
-            <h2 className="card-title text-warning">
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+            <h2 className="card-title text-primary">
+              <Icons.settings className="w-6 h-6" />
               General Settings
             </h2>
 

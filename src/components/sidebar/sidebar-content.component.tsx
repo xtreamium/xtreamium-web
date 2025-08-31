@@ -1,24 +1,40 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
-import { Category, User } from "@/models";
-import { ApiService } from "@/services";
-import { useQuery } from "@tanstack/react-query";
-import useServerStore from "@/services/state/server.state";
-import Loading from "@/components/widgets/loading.component";
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { Category, User } from '@/models';
+import { ApiService } from '@/services';
+import { useQuery } from '@tanstack/react-query';
+import useServerStore from '@/services/state/server.state';
+import Loading from '@/components/widgets/loading.component';
+import { SidebarContext } from '@/context';
+
 type SidebarContentProps = {
   user: User;
 };
 const SidebarContent: React.FC<SidebarContentProps> = ({ user }) => {
   const { selectedServer } = useServerStore();
+  const { closeSidebar } = React.useContext(SidebarContext);
+  const location = useLocation();
   const server = user.servers.find((s) => s.id === selectedServer);
+
+  // Close sidebar on mobile when location changes
+  React.useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1024) {
+        // lg breakpoint
+        closeSidebar();
+      }
+    };
+
+    handleResize(); // Close on navigation for mobile
+  }, [location.pathname, closeSidebar]);
 
   if (!server) {
     return <div className="text-base-content">No Server Selected</div>;
   }
 
   const query = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => ApiService.getCategories(server),
+    queryKey: ['categories'],
+    queryFn: () => ApiService.getCategories(server)
   });
 
   if (query.isLoading) {
@@ -52,12 +68,12 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ user }) => {
         </a>
         <ul className="mt-6">
           {query.data.map((category: Category) => (
-            <li className="relative px-6 py-3" key={category.category_id}>
+            <li className="relative px-6 py-3 text-secondary-content" key={category.category_id}>
               <NavLink
                 to={`/category/${category.category_id}`}
                 className={({ isActive }) =>
                   `inline-flex items-center w-full text-sm font-semibold transition-colors duration-150 hover:text-accent ${
-                    isActive && "text-info"
+                    isActive && 'text-info'
                   }`
                 }
                 children={({ isActive }) => {
