@@ -1,6 +1,5 @@
 import React from 'react';
 import { useTheme } from 'next-themes';
-import 'tailwindcss/tailwind.css';
 import { Icons } from './icons';
 
 const ThemeChanger = () => {
