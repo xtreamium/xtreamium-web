@@ -94,4 +94,4 @@ const RegisterPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

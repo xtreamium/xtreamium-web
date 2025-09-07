@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react-swc";
 export default defineConfig({
   server: {
     open: false,
+    allowedHosts: ["streams.dev.fergl.ie", "streams.fergl.ie"],
   },
   plugins: [react()],
   resolve: {

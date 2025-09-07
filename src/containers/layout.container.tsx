@@ -11,6 +11,7 @@ import { useQuery } from '@tanstack/react-query';
 import AddServerPage from '@/pages/add-server.page';
 import useServerStore from '@/services/state/server.state';
 import ProxySettingsPage from '@/pages/proxy-settings.page';
+import RegisterPage from '@/pages/register.page';
 const Layout = () => {
   const query = useQuery({
     queryKey: ['user'],
