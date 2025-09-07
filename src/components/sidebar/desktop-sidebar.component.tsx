@@ -10,7 +10,7 @@ const DesktopSidebar: React.FC<DesktopSidebarProps> = ({ user }) => {
 
   return (
     <aside
-      className={`z-30 flex-shrink-0 hidden lg:block transition-all duration-300 overflow-y-auto ${
+      className={`z-30 shrink-0 hidden lg:block transition-all duration-300 overflow-y-auto ${
         isSidebarOpen ? 'w-64' : 'w-0'
       }`}
     >

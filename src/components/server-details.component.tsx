@@ -70,7 +70,7 @@ const ServerDetails = () => {
         <Label>
           <span>Server Name</span>
           <Input
-            className="flex-grow mt-1"
+            className="grow mt-1"
             type="text"
             placeholder="Name of your new server"
             autoComplete="off"
@@ -83,7 +83,7 @@ const ServerDetails = () => {
         <Label className="mt-4">
           <span>Server address</span>
           <Input
-            className="flex-grow mt-1"
+            className="grow mt-1"
             type="text"
             placeholder="my.streams.com"
             autoComplete="off"
@@ -96,7 +96,7 @@ const ServerDetails = () => {
         <Label className="mt-4">
           <span>Username</span>
           <Input
-            className="flex-grow mt-1"
+            className="grow mt-1"
             type="text"
             placeholder="username"
             autoComplete="off"
@@ -110,7 +110,7 @@ const ServerDetails = () => {
         <Label className="mt-4">
           <span>Password</span>
           <Input
-            className="flex-grow mt-1"
+            className="grow mt-1"
             type="password"
             autoComplete="off"
             data-lpignore="true"
@@ -124,7 +124,7 @@ const ServerDetails = () => {
         <Label className="mt-4">
           <span>EPG Url</span>
           <Input
-            className="flex-grow mt-1"
+            className="grow mt-1"
             type="text"
             autoComplete="on"
             data-lpignore="true"

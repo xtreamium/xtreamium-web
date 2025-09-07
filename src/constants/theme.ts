@@ -100,26 +100,26 @@ const defaultTheme = {
   },
   // Textarea
   textarea: {
-    base: "block w-full text-sm dark:text-gray-300 rounded-md focus:outline-none",
+    base: "block w-full text-sm dark:text-gray-300 rounded-md focus:outline-hidden",
     active:
-      "focus:border-purple-400 border-gray-300 dark:border-gray-600 dark:focus:border-gray-600 dark:bg-gray-700 dark:focus:ring-gray-300 focus:ring focus:ring-purple-300",
+      "focus:border-purple-400 border-gray-300 dark:border-gray-600 dark:focus:border-gray-600 dark:bg-gray-700 dark:focus:ring-gray-300 focus:ring-3 focus:ring-purple-300",
     disabled: "cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800",
     valid:
-      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring focus:ring-green-200 dark:focus:ring-green-200",
+      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring-3 focus:ring-green-200 dark:focus:ring-green-200",
     invalid:
-      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring focus:ring-red-200 dark:focus:ring-red-200",
+      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring-3 focus:ring-red-200 dark:focus:ring-red-200",
   },
   // Select
   select: {
-    base: "block w-full text-sm dark:text-gray-300 focus:outline-none rounded-md",
+    base: "block w-full text-sm dark:text-gray-300 focus:outline-hidden rounded-md",
     active:
-      "focus:border-purple-400 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring focus:ring-purple-300 dark:focus:ring-gray-300 dark:focus:border-gray-600",
+      "focus:border-purple-400 border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-3 focus:ring-purple-300 dark:focus:ring-gray-300 dark:focus:border-gray-600",
     select: "leading-5",
     disabled: "cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800",
     valid:
-      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring focus:ring-green-200 dark:focus:ring-green-200",
+      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring-3 focus:ring-green-200 dark:focus:ring-green-200",
     invalid:
-      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring focus:ring-red-200 dark:focus:ring-red-200",
+      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring-3 focus:ring-red-200 dark:focus:ring-red-200",
   },
   // Label
   label: {
@@ -130,18 +130,18 @@ const defaultTheme = {
   },
   // Input
   input: {
-    base: "block w-full text-sm focus:outline-none dark:text-gray-300 leading-5 rounded-md h-8 p-2",
+    base: "block w-full text-sm focus:outline-hidden dark:text-gray-300 leading-5 rounded-md h-8 p-2",
     active:
-      "focus:border-purple-400 border-gray-300 dark:border-gray-600 focus:ring focus:ring-purple-300 dark:focus:border-gray-600 dark:focus:ring-gray-300 dark:bg-gray-700",
+      "focus:border-purple-400 border-gray-300 dark:border-gray-600 focus:ring-3 focus:ring-purple-300 dark:focus:border-gray-600 dark:focus:ring-gray-300 dark:bg-gray-700",
     disabled: "cursor-not-allowed opacity-50 bg-gray-300 dark:bg-gray-800",
     valid:
-      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring focus:ring-green-200 dark:focus:ring-green-200",
+      "border-green-600 dark:bg-gray-700 focus:border-green-400 dark:focus:border-green-400 focus:ring-3 focus:ring-green-200 dark:focus:ring-green-200",
     invalid:
-      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring focus:ring-red-200 dark:focus:ring-red-200",
+      "border-red-600 dark:bg-gray-700 focus:border-red-400 dark:focus:border-red-400 focus:ring-3 focus:ring-red-200 dark:focus:ring-red-200",
     radio:
-      "text-purple-600 form-radio focus:border-purple-400 focus:outline-none focus:ring focus:ring-purple-300 focus:ring-offset-0 dark:focus:ring-gray-300",
+      "text-purple-600 form-radio focus:border-purple-400 focus:outline-hidden focus:ring-3 focus:ring-purple-300 focus:ring-offset-0 dark:focus:ring-gray-300",
     checkbox:
-      "text-purple-600 form-checkbox focus:border-purple-400 focus:outline-none focus:ring focus:ring-purple-300 focus:ring-offset-0 rounded dark:focus:ring-gray-300",
+      "text-purple-600 form-checkbox focus:border-purple-400 focus:outline-hidden focus:ring-3 focus:ring-purple-300 focus:ring-offset-0 rounded-sm dark:focus:ring-gray-300",
   },
   // HelperText
   helperText: {
@@ -159,7 +159,7 @@ const defaultTheme = {
   },
   // Button
   button: {
-    base: "align-bottom inline-flex items-center justify-center cursor-pointer leading-5 transition-colors duration-150 font-medium focus:outline-none",
+    base: "align-bottom inline-flex items-center justify-center cursor-pointer leading-5 transition-colors duration-150 font-medium focus:outline-hidden",
     block: "w-full",
     size: {
       larger: "px-10 py-4 rounded-lg",
@@ -186,17 +186,17 @@ const defaultTheme = {
     primary: {
       base: "text-white bg-purple-600 border border-transparent",
       active:
-        "active:bg-purple-600 hover:bg-purple-700 focus:ring focus:ring-purple-300",
+        "active:bg-purple-600 hover:bg-purple-700 focus:ring-3 focus:ring-purple-300",
       disabled: "opacity-50 cursor-not-allowed",
     },
     outline: {
-      base: "text-gray-600 border-gray-300 border dark:text-gray-400 focus:outline-none",
+      base: "text-gray-600 border-gray-300 border dark:text-gray-400 focus:outline-hidden",
       active:
-        "active:bg-transparent hover:border-gray-500 focus:border-gray-500 active:text-gray-500 focus:ring focus:ring-gray-300",
+        "active:bg-transparent hover:border-gray-500 focus:border-gray-500 active:text-gray-500 focus:ring-3 focus:ring-gray-300",
       disabled: "opacity-50 cursor-not-allowed bg-gray-300",
     },
     link: {
-      base: "text-gray-600 dark:text-gray-400 focus:outline-none border border-transparent",
+      base: "text-gray-600 dark:text-gray-400 focus:outline-hidden border border-transparent",
       active:
         "active:bg-transparent hover:bg-gray-100 focus:ring-inset focus:ring-gray-300 dark:hover:bg-gray-500 dark:hover:text-gray-300 dark:hover:bg-opacity-10",
       disabled: "opacity-50 cursor-not-allowed",

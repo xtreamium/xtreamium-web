@@ -4,7 +4,7 @@ import { Icons } from "./icons";
 const ProxyInstallComponent: React.FC = () => {
   return (
     <TabGroup className="px-4 py-3 mb-8">
-      <TabList className="tabs tabs-lifted -mb-[var(--tab-border)] ">
+      <TabList className="tabs tabs-lifted -mb-(--tab-border) ">
         <Tab className="tab">Windows</Tab>
         <Tab className="tab">Linux</Tab>
         <Tab className="tab">Mac</Tab>

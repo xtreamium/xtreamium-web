@@ -50,7 +50,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
         {({}) => (
           <>
             <PopoverButton
-              className="w-full h-full p-2 text-left hover:bg-base-200/50 transition-colors duration-150 rounded-none border-none bg-transparent focus:outline-none focus:ring-0 min-h-[3rem]"
+              className="w-full h-full p-2 text-left hover:bg-base-200/50 transition-colors duration-150 rounded-none border-none bg-transparent focus:outline-hidden focus:ring-0 min-h-12"
               onMouseOver={() => {
                 setIsHover(true);
               }}
@@ -84,7 +84,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
                 <div className="tooltip tooltip-open tooltip-top">
                   <div className="bg-base-100 border border-base-300 rounded-lg shadow-xl p-0 w-80 max-w-sm">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-primary to-primary-focus px-4 py-3 rounded-t-lg">
+                    <div className="bg-linear-to-r from-primary to-primary-focus px-4 py-3 rounded-t-lg">
                       <h3 className="text-primary-content font-semibold text-base leading-tight">
                         {title}
                       </h3>

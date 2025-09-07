@@ -99,7 +99,7 @@ const ProxyStatus: React.FC = () => {
       </div>
       <ul
         tabIndex={0}
-        className="z-50 p-2 mt-4 shadow dropdown-content menu bg-base-100 rounded-box w-52"
+        className="z-50 p-2 mt-4 shadow-sm dropdown-content menu bg-base-100 rounded-box w-52"
         role="menu"
       >
         <li>

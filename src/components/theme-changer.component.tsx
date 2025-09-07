@@ -84,7 +84,7 @@ const ThemeChanger = () => {
             <div
               onClick={() => changeTheme(theme)}
               key={theme}
-              className="overflow-hidden rounded-lg outline-base-content outline outline-2 outline-offset-2"
+              className="overflow-hidden rounded-lg outline-base-content outline-solid outline-2 outline-offset-2"
             >
               <div
                 data-theme={theme}
@@ -92,12 +92,12 @@ const ThemeChanger = () => {
               >
                 <div className="grid grid-cols-5 grid-rows-3">
                   <div className="flex col-span-5 row-span-3 row-start-1 gap-1 px-4 py-3">
-                    <div className="flex-grow text-sm font-bold">{theme}</div>
-                    <div className="flex flex-wrap flex-shrink-0 gap-1">
-                      <div className="w-2 rounded bg-primary" />
-                      <div className="w-2 rounded bg-secondary" />
-                      <div className="w-2 rounded bg-accent" />
-                      <div className="w-2 rounded bg-neutral" />
+                    <div className="grow text-sm font-bold">{theme}</div>
+                    <div className="flex flex-wrap shrink-0 gap-1">
+                      <div className="w-2 rounded-sm bg-primary" />
+                      <div className="w-2 rounded-sm bg-secondary" />
+                      <div className="w-2 rounded-sm bg-accent" />
+                      <div className="w-2 rounded-sm bg-neutral" />
                     </div>
                   </div>
                 </div>
