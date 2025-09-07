@@ -143,7 +143,7 @@ const CategoryPage = () => {
       <table className="table">
         <tbody>
           {channelQuery.data.map((stream: Stream) => [
-            <React.Fragment >
+            <React.Fragment key={stream.stream_id}>
               <tr>
                 <td>
                   <div className="flex items-center gap-3">
@@ -200,7 +200,7 @@ const CategoryPage = () => {
                 </td>
               </tr>
               <tr key={`${stream.num}-epg`}>
-                <Suspense fallback={<h1>Loading epg</h1>}>
+                <Suspense fallback={<td colSpan={3}><div className="text-center py-4">Loading EPG...</div></td>}>
                   <EPGComponent
                     server={server}
                     channelId={stream.epg_channel_id}

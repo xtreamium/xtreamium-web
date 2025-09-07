@@ -1,10 +1,9 @@
 import http from './http.service';
 import { Category, EPGListing, Server } from '@/models';
 import { Stream } from '@/models';
-import axios, { AxiosResponse } from 'axios';
+import { AxiosResponse } from 'axios';
 import { User } from '@/models';
 import { TOKEN_KEY } from '@/constants/storage';
-import { QueryKey } from '@tanstack/react-query';
 import { StatusCodes } from 'http-status-codes';
 
 class ApiService {
@@ -16,6 +15,22 @@ class ApiService {
         Authorization: 'Bearer ' + localStorage.getItem(TOKEN_KEY)
       }
     };
+  };
+  public register = async (
+    email: string,
+    password: string
+  ): Promise<AxiosResponse> => {
+    const params = new URLSearchParams();
+    params.append('username', email);
+    params.append('password', password);
+
+    const response = await http.post('/user', params.toString(), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    return response;
   };
   public login = async (
     email: string,

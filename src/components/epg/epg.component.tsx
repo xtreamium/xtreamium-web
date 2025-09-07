@@ -9,6 +9,7 @@ interface IEPGComponentProps {
 }
 const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
   const [epg, setEpg] = React.useState<EPGListing[]>([]);
+
   React.useEffect(() => {
     const fetchChannels = async () => {
       const response = await ApiService.getEPGForChannel(server, channelId);
@@ -26,21 +27,27 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
     const timebar = [];
     const programs = [];
     let currentStartRendering = 0;
-    const cellDuration = 1000 * 60 * 30;
-    const totalDuration = cellDuration * 9;
+    const cellDuration = 1000 * 60 * 30; // 30 minutes
+    const totalSlots = 24; // Show 12 hours (24 slots of 30 minutes each)
+    const totalDuration = cellDuration * totalSlots;
 
-    for (let i = 0; i <= 8; i++) {
-      //need to find how long the first program has been running for and
-      //set the width of that to a multiple of the width of the other cells
+    // Create time slots for 12 hours ahead
+    for (let i = 0; i < totalSlots; i++) {
       const currentRenderingTime = new Date(
         startTime.getTime() + cellDuration * i
       );
-      const time = dateToTimeString(
-        currentRenderingTime //half hour segments
-      );
-      timebar.push(<td key={i}>{time}</td>);
+      const time = dateToTimeString(currentRenderingTime);
 
-      //need to find the program that is playing at this time
+      timebar.push(
+        <th
+          key={i}
+          className="px-4 py-2 text-xs font-medium text-primary-content whitespace-nowrap min-w-[120px]"
+        >
+          {time}
+        </th>
+      );
+
+      // Find the program that is playing at this time
       const nowPlaying = epg.find((r) => {
         return (
           r.getStartTime() <= currentRenderingTime.getTime() &&
@@ -49,18 +56,18 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
       });
 
       if (nowPlaying && currentStartRendering !== nowPlaying?.getStartTime()) {
-        //calculate the duration of the program as a percentage of the total duration.
-        const thisDurationPercentage =
-          ((i === 0
-            ? nowPlaying.getStopTime() - startTime.getTime()
-            : nowPlaying.getStopTime() - nowPlaying.getStartTime()) /
-            totalDuration) *
-          100;
+        // Calculate the duration of the program as a percentage of the total duration.
+        const programDuration = i === 0
+          ? nowPlaying.getStopTime() - startTime.getTime()
+          : nowPlaying.getStopTime() - nowPlaying.getStartTime();
+
+        const thisDurationPercentage = (programDuration / totalDuration) * 100;
+
         programs.push(
           <td
-            key={i}
-            className="h-10 text-xs break-words hover:bg-indigo-400 hover:text-white"
-            style={{ width: `${thisDurationPercentage}%` }}
+            key={`${i}-${nowPlaying.getStartTime()}`}
+            className="h-12 text-xs break-words hover:bg-indigo-400 hover:text-white border-r border-base-300 min-w-[120px]"
+            style={{ width: `${Math.max(thisDurationPercentage, 5)}%` }} // Minimum 5% width
           >
             <EpgItem
               channelUrl="TODO: Fetch Channel URL"
@@ -71,22 +78,38 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
             />
           </td>
         );
+        currentStartRendering = nowPlaying.getStartTime();
       }
-      currentStartRendering = nowPlaying?.getStartTime() || 0;
     }
 
     return (
-      <td colSpan={3} className="text-base-content ">
-        <table className="w-full table-fixed">
-          <thead className="mb-7">
-            <tr className="font-semibold bg-primary">{timebar}</tr>
-          </thead>
-        </table>
-        <table className="w-full text-base-100 bg-secondary">
-          <tbody className="w-full mt-2">
-            <tr className="w-full">{programs}</tr>
-          </tbody>
-        </table>
+      <td colSpan={3} className="p-0 text-base-content">
+        {/* Horizontal scrollable container */}
+        <div className="w-full max-w-full overflow-x-auto">
+          <div className="min-w-[1200px]"> {/* Minimum width to ensure horizontal scroll */}
+            {/* Time header */}
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-primary">
+                  {timebar}
+                </tr>
+              </thead>
+            </table>
+
+            {/* Programs */}
+            <table className="w-full border-collapse bg-secondary">
+              <tbody>
+                <tr className="w-full">
+                  {programs.length > 0 ? programs : (
+                    <td className="h-12 px-4 py-2 text-center text-base-100">
+                      No EPG data available
+                    </td>
+                  )}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </td>
     );
   };

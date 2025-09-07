@@ -1,5 +1,5 @@
-import ImageLight from "@/assets/images/love-tv.jpg";
-import ServerDetails from "@/components/server-details.component";
+import ImageLight from '@/assets/images/love-tv.jpg';
+import ServerDetails from '@/components/server-details.component';
 const OnboardingPage = () => {
   return (
     <div className="flex items-center min-h-screen p-6 bg-gray-50 dark:bg-gray-900">

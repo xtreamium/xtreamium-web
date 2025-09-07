@@ -48,6 +48,7 @@ const Layout = () => {
                   />
                   <Route path="/dashboard" element={<HomePage />} />
                   <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
                   <Route
                     path="category/:categoryId"
                     element={<CategoryPage />}

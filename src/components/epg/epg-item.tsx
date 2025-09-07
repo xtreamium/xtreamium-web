@@ -45,12 +45,12 @@ const EpgItem: React.FC<EpgItemProps> = ({
   };
 
   return (
-    <div className="w-60">
-      <Popover className="relative">
+    <div className="w-full h-full">
+      <Popover className="relative w-full h-full">
         {({}) => (
           <>
             <PopoverButton
-              className="w-full h-full p-2 text-left hover:bg-base-200/50 transition-colors duration-150 rounded-none border-none bg-transparent focus:outline-none focus:ring-0"
+              className="w-full h-full p-2 text-left hover:bg-base-200/50 transition-colors duration-150 rounded-none border-none bg-transparent focus:outline-none focus:ring-0 min-h-[3rem]"
               onMouseOver={() => {
                 setIsHover(true);
               }}
@@ -60,7 +60,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
                 }, 1000);
               }}
             >
-              <span className="text-sm font-medium truncate block text-base-content">
+              <span className="text-sm font-medium block text-base-content leading-tight">
                 {title}
               </span>
             </PopoverButton>
