@@ -3,7 +3,6 @@ import { Home, Info, Radio, Settings } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
@@ -25,15 +24,7 @@ export function AppSidebar() {
   const location = useLocation()
 
   return (
-    <Sidebar variant="inset">
-      <SidebarHeader>
-        <SidebarMenuButton size="lg" asChild>
-          <a href="/" className="flex items-center">
-            <Radio />
-            <span className="font-semibold">Xtreamium</span>
-          </a>
-        </SidebarMenuButton>
-      </SidebarHeader>
+    <Sidebar variant="inset" className="mt-[57px]">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
