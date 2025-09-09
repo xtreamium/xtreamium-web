@@ -22,18 +22,18 @@ const ProxySettingsPage: React.FC = () => {
 
             <div className="space-y-4">
               <div className="w-full form-control">
-                <label className="label">
+                <div className="mb-2">
                   <span className="font-medium label-text">
                     MPV command line arguments
                   </span>
-                </label>
+                </div>
                 <textarea
                   className="h-24 textarea textarea-bordered"
                   placeholder=""
                 ></textarea>
-                <label className="label">
+                <div className="mt-1">
                   <span className="label-text-alt">Use \ for line breaks.</span>
-                </label>
+                </div>
               </div>
 
               <div className="w-full form-control">

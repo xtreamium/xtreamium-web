@@ -13,12 +13,24 @@ type HeaderProps = { user: User };
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const { toggleSidebar } = React.useContext(SidebarContext);
 
+  const handleToggleSidebar = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log('Toggle sidebar clicked');
+    try {
+      toggleSidebar();
+    } catch (error) {
+      console.error('Error toggling sidebar:', error);
+    }
+  };
+
   return (
     <div className="w-full navbar">
       <div className="flex-1">
         <button
+          type="button"
           className="btn btn-ghost"
-          onClick={toggleSidebar}
+          onClick={handleToggleSidebar}
           aria-label="Toggle sidebar"
         >
           <Icons.menu className="w-6 h-6" />

@@ -16,16 +16,15 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ user }) => {
   const location = useLocation();
   const server = user.servers.find((s) => s.id === selectedServer);
 
-  // Close sidebar on mobile when location changes
-  React.useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 1024) {
-        // lg breakpoint
-        closeSidebar();
-      }
-    };
+  const prevLocationRef = React.useRef(location.pathname);
 
-    handleResize(); // Close on navigation for mobile
+  // Close sidebar on mobile when navigating to a new page
+  React.useEffect(() => {
+    // Only close if the pathname actually changed (not on initial render or sidebar toggle)
+    if (prevLocationRef.current !== location.pathname && window.innerWidth < 1024) {
+      closeSidebar();
+    }
+    prevLocationRef.current = location.pathname;
   }, [location.pathname, closeSidebar]);
 
   if (!server) {

@@ -37,7 +37,7 @@ const Layout = () => {
         {/* Content area with sidebar below header */}
         <div className="flex flex-1 overflow-hidden">
           {query?.data?.servers && <Sidebar user={query.data} />}
-          <div className="flex-1 h-full overflow-auto main-wrapper">
+          <div className="flex-1 h-full overflow-auto bg-base-100">
             <Main>
               <Suspense fallback={<ThemedSuspense />}>
                 <Routes>
