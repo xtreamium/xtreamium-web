@@ -41,26 +41,36 @@ const Sidebar: React.FC<SidebarProps> = ({ user }) => {
         />
       )}
 
-      {/* Unified sidebar - responsive for both mobile and desktop */}
+      {/* Mobile sidebar - completely overlay on mobile */}
       <aside
         className={`
-          fixed lg:relative
-          inset-y-0 lg:inset-y-auto
+          fixed lg:hidden
+          inset-y-0
           left-0
-          z-50 lg:z-30
+          z-50
           w-64
-          pt-16 lg:pt-0
+          pt-16
           overflow-y-auto
           bg-base-100
-          transition-all duration-300 ease-in-out
-          ${isSidebarOpen
-            ? 'translate-x-0 lg:w-64'
-            : '-translate-x-full lg:translate-x-0 lg:w-0'
-          }
+          transition-transform duration-300 ease-in-out
+          ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        <div className={`h-full w-64 transition-opacity duration-300 ${
-          isSidebarOpen ? 'opacity-100' : 'lg:opacity-0'
+        <SidebarContent user={user} />
+      </aside>
+
+      {/* Desktop sidebar - part of layout flow */}
+      <aside
+        className={`
+          hidden lg:block
+          z-30
+          transition-all duration-300 ease-in-out
+          overflow-hidden
+          ${isSidebarOpen ? 'w-64' : 'w-0'}
+        `}
+      >
+        <div className={`h-full w-64 overflow-y-auto transition-opacity duration-300 ${
+          isSidebarOpen ? 'opacity-100' : 'opacity-0'
         }`}>
           <SidebarContent user={user} />
         </div>

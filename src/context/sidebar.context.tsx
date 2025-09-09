@@ -22,7 +22,7 @@ export const SidebarProvider = ({ children }: ISidebarProvider) => {
   React.useEffect(() => {
     const handleResize = () => {
       const isLargeScreen = window.innerWidth >= 1024;
-      
+
       if (!isInitialized) {
         // Initial setup based on screen size
         setIsSidebarOpen(isLargeScreen);

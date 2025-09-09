@@ -67,7 +67,7 @@ const SidebarContent: React.FC<SidebarContentProps> = ({ user }) => {
         </a>
         <ul className="mt-6">
           {query.data.map((category: Category) => (
-            <li className="relative px-6 py-3 text-secondary-content" key={category.category_id}>
+            <li className="relative px-6 py-3" key={category.category_id}>
               <NavLink
                 to={`/category/${category.category_id}`}
                 className={({ isActive }) =>
