@@ -11,8 +11,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Bell, Search, LogOut, User, CreditCard } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+type HeaderProps = { user: User };
 
-export function Header() {
+const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header className="w-full bg-card border-b border-border sticky top-0 z-50">
       <div className="flex items-center justify-between px-6 py-3">
@@ -89,4 +90,5 @@ export function Header() {
       </div>
     </header>
   );
-}
+};
+export default Header;

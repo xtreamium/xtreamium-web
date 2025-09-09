@@ -23,7 +23,6 @@ function App() {
             </ul>
           </div>
           <div className="bg-card p-6 rounded-lg border">
-            <h2 className="text-xl font-semibold mb-2">Navigation</h2>
             <p className="text-muted-foreground">
               Use the sidebar to navigate between different sections of your
               app.

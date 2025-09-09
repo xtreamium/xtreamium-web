@@ -160,7 +160,11 @@ class ApiService {
     password: string,
     epgUrl: string
   ): Promise<boolean> => {
-    logger.info("Adding server", { url: import.meta.env.VITE_API_URL }, "api.service");
+    logger.info(
+      "Adding server",
+      { url: import.meta.env.VITE_API_URL },
+      "api.service"
+    );
     const options = this._getRequestOptions();
     const response = await http.post(
       "user/server",

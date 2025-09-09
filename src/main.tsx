@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.css";
 import App from "./app.tsx";
+import AuthProvider from "@/contexts/auth-context.tsx";
 
 // Create a QueryClient instance
 const queryClient = new QueryClient({
@@ -16,12 +17,19 @@ const queryClient = new QueryClient({
   },
 });
 
-createRoot(document.getElementById("root")!).render(
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <App />
-        <ReactQueryDevtools initialIsOpen={false} />
+        <AuthProvider>
+          <App />
+          <ReactQueryDevtools initialIsOpen={false} />
+        </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>

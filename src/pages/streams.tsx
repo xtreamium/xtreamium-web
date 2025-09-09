@@ -1,23 +1,48 @@
-import { useQuery } from '@tanstack/react-query'
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { QueryKeys } from '../types'
-import { logger } from '../lib/logger'
+import { useQuery } from "@tanstack/react-query";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { QueryKeys } from "../types";
+import { logger } from "../lib/logger";
 
 function StreamsPage() {
-  const { data: streams, isLoading, error } = useQuery({
+  const {
+    data: streams,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: QueryKeys.STREAMS,
     queryFn: async () => {
       // This would be your actual API call to fetch streams
       // For now, returning mock data
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       return [
-        { id: '1', name: 'Channel 1', category: 'Entertainment', url: 'http://example.com/stream1' },
-        { id: '2', name: 'Channel 2', category: 'Sports', url: 'http://example.com/stream2' },
-        { id: '3', name: 'Channel 3', category: 'News', url: 'http://example.com/stream3' },
-      ]
+        {
+          id: "1",
+          name: "Channel 1",
+          category: "Entertainment",
+          url: "http://example.com/stream1",
+        },
+        {
+          id: "2",
+          name: "Channel 2",
+          category: "Sports",
+          url: "http://example.com/stream2",
+        },
+        {
+          id: "3",
+          name: "Channel 3",
+          category: "News",
+          url: "http://example.com/stream3",
+        },
+      ];
     },
-  })
+  });
 
   if (isLoading) {
     return (
@@ -25,7 +50,7 @@ function StreamsPage() {
         <h1 className="text-2xl font-bold">IPTV Streams</h1>
         <div>Loading streams...</div>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -38,7 +63,7 @@ function StreamsPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -52,10 +77,14 @@ function StreamsPage() {
               <CardDescription>{stream.category}</CardDescription>
             </CardHeader>
             <CardContent>
-              <Button 
+              <Button
                 onClick={() => {
                   // Here you would call your backend API to start streaming via proxy
-                  logger.info('Starting stream', { url: stream.url, name: stream.name }, 'StreamsPage')
+                  logger.info(
+                    "Starting stream",
+                    { url: stream.url, name: stream.name },
+                    "StreamsPage"
+                  );
                 }}
                 className="w-full"
               >
@@ -66,7 +95,7 @@ function StreamsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default StreamsPage
+export default StreamsPage;
