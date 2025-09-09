@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Button } from '../components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
 import { QueryKeys } from '../types'
+import { logger } from '../lib/logger'
 
 function StreamsPage() {
   const { data: streams, isLoading, error } = useQuery({
@@ -54,7 +55,7 @@ function StreamsPage() {
               <Button 
                 onClick={() => {
                   // Here you would call your backend API to start streaming via proxy
-                  console.log(`Starting stream: ${stream.url}`)
+                  logger.info('Starting stream', { url: stream.url, name: stream.name }, 'StreamsPage')
                 }}
                 className="w-full"
               >

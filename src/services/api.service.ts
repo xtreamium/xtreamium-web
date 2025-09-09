@@ -7,6 +7,7 @@ import type { Server } from "@/models/server";
 import type { Category } from "@/models/category";
 import type { Stream } from "@/models/stream";
 import { EPGListing } from "@/models/epg-listing";
+import { logger } from "@/lib/logger";
 
 class ApiService {
   private _getRequestOptions = () => {
@@ -159,7 +160,7 @@ class ApiService {
     password: string,
     epgUrl: string
   ): Promise<boolean> => {
-    console.log("api.service", "url", import.meta.env.VITE_API_URL);
+    logger.info("Adding server", { url: import.meta.env.VITE_API_URL }, "api.service");
     const options = this._getRequestOptions();
     const response = await http.post(
       "user/server",

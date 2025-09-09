@@ -4,7 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev:plain": "vite",
+    "dev": "vite & local-ssl-proxy --key /etc/letsencrypt/live/dev.fergl.ie/privkey.pem --cert /etc/letsencrypt/live/dev.fergl.ie/fullchain.pem --source 3000 --target 5173",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
