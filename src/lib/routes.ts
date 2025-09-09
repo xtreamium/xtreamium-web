@@ -5,6 +5,7 @@ import type { RouteConfig } from '../types'
 const HomePage = lazy(() => import('../pages/home'))
 const AboutPage = lazy(() => import('../pages/about'))
 const StreamsPage = lazy(() => import('../pages/streams'))
+const SettingsPage = lazy(() => import('../pages/settings'))
 const NotFoundPage = lazy(() => import('../pages/404'))
 
 // Route configuration
@@ -26,7 +27,7 @@ export const routes: RouteConfig[] = [
   },
   {
     path: '/settings',
-    element: HomePage, // Placeholder - replace with your settings component
+    element: SettingsPage,
     name: 'Settings',
   },
   {
