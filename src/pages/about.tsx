@@ -21,8 +21,8 @@ function AboutPage() {
     },
   })
 
-  if (isLoading) return <div>Loading app information...</div>
-  if (error) return <div>Error loading app information!</div>
+  if (isLoading) {return <div>Loading app information...</div>}
+  if (error) {return <div>Error loading app information!</div>}
 
   return (
     <div>

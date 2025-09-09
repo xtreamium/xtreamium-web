@@ -1,19 +1,21 @@
-import http from './http.service';
-import { Category, EPGListing, Server } from '@/models';
-import { Stream } from '@/models';
-import { AxiosResponse } from 'axios';
-import { User } from '@/models';
-import { TOKEN_KEY } from '@/constants/storage';
-import { StatusCodes } from 'http-status-codes';
+import http from "./http.service";
+import type { AxiosResponse } from "axios";
+import { TOKEN_KEY } from "@/constants/storage";
+import { StatusCodes } from "http-status-codes";
+import type { User } from "@/models/user";
+import type { Server } from "@/models/server";
+import type { Category } from "@/models/category";
+import type { Stream } from "@/models/stream";
+import { EPGListing } from "@/models/epg-listing";
 
 class ApiService {
   private _getRequestOptions = () => {
     return {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + localStorage.getItem(TOKEN_KEY)
-      }
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + localStorage.getItem(TOKEN_KEY),
+      },
     };
   };
   public register = async (
@@ -21,13 +23,13 @@ class ApiService {
     password: string
   ): Promise<AxiosResponse> => {
     const params = new URLSearchParams();
-    params.append('username', email);
-    params.append('password', password);
+    params.append("username", email);
+    params.append("password", password);
 
-    const response = await http.post('/user', params.toString(), {
+    const response = await http.post("/user", params.toString(), {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
 
     return response;
@@ -37,37 +39,37 @@ class ApiService {
     password: string
   ): Promise<AxiosResponse> => {
     const params = new URLSearchParams();
-    params.append('grant_type', '');
-    params.append('username', email);
-    params.append('password', password);
+    params.append("grant_type", "");
+    params.append("username", email);
+    params.append("password", password);
 
-    const response = await http.post('/user/token', params.toString(), {
+    const response = await http.post("/user/token", params.toString(), {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      }
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
     });
     return response;
   };
 
   public getUser = async (token: string): Promise<User> => {
     const requestOptions = {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'Bearer ' + token
-      }
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
     };
 
-    const response = await http.get('/user/me', requestOptions);
+    const response = await http.get("/user/me", requestOptions);
     return response.data as User;
   };
 
   public getCurrentUser = async (): Promise<User> => {
-    const response = await http.get('/user/me', this._getRequestOptions());
+    const response = await http.get("/user/me", this._getRequestOptions());
     return response.data as User;
   };
   public getUserServers = async (): Promise<Server[]> => {
-    const response = await http.get('/user/servers', this._getRequestOptions());
+    const response = await http.get("/user/servers", this._getRequestOptions());
     return response.data as Server[];
   };
 
@@ -77,10 +79,10 @@ class ApiService {
       ...options,
       headers: {
         ...options.headers,
-        'x-xtream-server': server.url,
-        'x-xtream-username': server.username,
-        'x-xtream-password': server.password
-      }
+        "x-xtream-server": server.url,
+        "x-xtream-username": server.username,
+        "x-xtream-password": server.password,
+      },
     });
     return response.data;
   };
@@ -95,10 +97,10 @@ class ApiService {
       ...options,
       headers: {
         ...options.headers,
-        'x-xtream-server': server.url,
-        'x-xtream-username': server.username,
-        'x-xtream-password': server.password
-      }
+        "x-xtream-server": server.url,
+        "x-xtream-username": server.username,
+        "x-xtream-password": server.password,
+      },
     });
     return response.data as Stream[]; //.filter((r) => r.name === "BBC One FHD");
   };
@@ -112,13 +114,13 @@ class ApiService {
       ...options,
       headers: {
         ...options.headers,
-        'x-xtream-server': server.url,
-        'x-xtream-username': server.username,
-        'x-xtream-password': server.password
-      }
+        "x-xtream-server": server.url,
+        "x-xtream-username": server.username,
+        "x-xtream-password": server.password,
+      },
     });
     if (res.status !== 200) {
-      alert('Failed to get stream url');
+      alert("Failed to get stream url");
       return;
     }
     return res?.data.url;
@@ -135,10 +137,10 @@ class ApiService {
         ...options,
         headers: {
           ...options.headers,
-          'x-xtream-server': server.url,
-          'x-xtream-username': server.username,
-          'x-xtream-password': server.password
-        }
+          "x-xtream-server": server.url,
+          "x-xtream-username": server.username,
+          "x-xtream-password": server.password,
+        },
       }
     );
     return response.data.map((d: unknown) =>
@@ -157,16 +159,16 @@ class ApiService {
     password: string,
     epgUrl: string
   ): Promise<boolean> => {
-    console.log('api.service', 'url', import.meta.env.VITE_API_URL);
+    console.log("api.service", "url", import.meta.env.VITE_API_URL);
     const options = this._getRequestOptions();
     const response = await http.post(
-      'user/server',
+      "user/server",
       {
         name: name,
         url: server,
         username: username,
         password: password,
-        epg_url: epgUrl
+        epg_url: epgUrl,
       },
       options
     );

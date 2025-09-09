@@ -19,7 +19,7 @@ const api = {
   // Example GET request
   fetchData: async (id: string): Promise<DataItem> => {
     const response = await fetch(`/api/data/${id}`)
-    if (!response.ok) throw new Error('Failed to fetch data')
+    if (!response.ok) {throw new Error('Failed to fetch data')}
     return response.json()
   },
 
@@ -30,7 +30,7 @@ const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
-    if (!response.ok) throw new Error('Failed to create data')
+    if (!response.ok) {throw new Error('Failed to create data')}
     return response.json()
   },
 
@@ -41,7 +41,7 @@ const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     })
-    if (!response.ok) throw new Error('Failed to update data')
+    if (!response.ok) {throw new Error('Failed to update data')}
     return response.json()
   },
 
@@ -50,7 +50,7 @@ const api = {
     const response = await fetch(`/api/data/${id}`, {
       method: 'DELETE',
     })
-    if (!response.ok) throw new Error('Failed to delete data')
+    if (!response.ok) {throw new Error('Failed to delete data')}
     return response.json()
   },
 }
