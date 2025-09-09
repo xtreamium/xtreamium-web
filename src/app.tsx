@@ -1,34 +1,67 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Routes, Route, Link } from 'react-router-dom'
+import { Suspense } from 'react'
+import { routes, navigationItems } from './lib/routes'
 import './app.css'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+// Loading component
+function LoadingSpinner() {
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs text-red-500">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div style={{ textAlign: 'center', padding: '2rem' }}>
+      <div>Loading...</div>
+    </div>
+  )
+}
+
+// Navigation component
+function Navigation() {
+  return (
+    <nav style={{ 
+      padding: '1rem', 
+      borderBottom: '1px solid #ccc', 
+      marginBottom: '2rem',
+      backgroundColor: '#f8f9fa'
+    }}>
+      {navigationItems.map((item) => (
+        <Link 
+          key={item.path} 
+          to={item.path} 
+          style={{ 
+            marginRight: '1rem', 
+            color: '#646cff',
+            textDecoration: 'none',
+            padding: '0.5rem 1rem',
+            borderRadius: '4px',
+            border: '1px solid transparent'
+          }}
+        >
+          {item.name}
+        </Link>
+      ))}
+    </nav>
+  )
+}
+
+function App() {
+  return (
+    <div>
+      <Navigation />
+      <main style={{ padding: '0 1rem' }}>
+        <Suspense fallback={<LoadingSpinner />}>
+          <Routes>
+            {routes.map((route) => {
+              const Component = route.element
+              return (
+                <Route 
+                  key={route.path} 
+                  path={route.path} 
+                  element={<Component />} 
+                />
+              )
+            })}
+          </Routes>
+        </Suspense>
+      </main>
+    </div>
   )
 }
 
