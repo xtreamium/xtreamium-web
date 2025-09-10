@@ -1,4 +1,5 @@
 import {
+  Bell,
   CirclePlus,
   CircleX,
   BellDot,
@@ -26,8 +27,8 @@ import {
   HardDrive,
   Settings,
   LoaderIcon,
-  Menu
-} from 'lucide-react';
+  Menu,
+} from "lucide-react";
 type IconProps = {
   className: string | undefined;
 };
@@ -176,6 +177,7 @@ export const Icons = {
   airplay: Airplay,
   alarm: BellDot,
   avatar: PersonStanding,
+  bell: Bell,
   cast: Cast,
   chevronUp: ChevronUp,
   chevronDown: ChevronDown,
@@ -200,5 +202,5 @@ export const Icons = {
   rocket: Rocket,
   user: UserRound,
   winget: Winget,
-  chocolatey: Chocolatey
+  chocolatey: Chocolatey,
 };

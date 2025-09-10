@@ -1,4 +1,4 @@
-import { Server } from "./server";
+import type { Server } from "./server";
 
 export interface User {
   id: string;
