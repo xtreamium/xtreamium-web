@@ -1,7 +1,7 @@
 import useServerStore from "@/services/state/server.state";
 import React from "react";
 import { Icons } from "@/components/icons";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ApiService } from "@/services";
 import type { User } from "@/models/user";
@@ -89,9 +89,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
         ))}
         <DropdownMenuItem asChild>
           <NavLink to={`/server/add`}>
-            <Button variant="ghost" size="sm" className="w-full opacity-50">
-              <Icons.add className="w-4 h-4 mr-2" /> Add Server
-            </Button>
+            <Icons.add className="w-4 h-4 mr-2" /> Add Server
           </NavLink>
         </DropdownMenuItem>
       </DropdownMenuContent>

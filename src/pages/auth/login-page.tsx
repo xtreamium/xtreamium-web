@@ -1,100 +1,111 @@
 import React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { Icons } from "@/components/icons";
+import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 
-type LoginPageProps = {
-  email: string;
-  password: string;
-};
+import { MailIcon, GithubIcon } from "lucide-react";
+
+const loginSchema = z.object({
+  email: z.email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const LoginPage: React.FC = () => {
   const {
     register,
     handleSubmit,
-    setError,
-    formState: { errors },
-  } = useForm<LoginPageProps>({
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormData>({
     defaultValues: {
       email: "fergal.moran+xtreamium@gmail.com",
       password: "hackmyballz",
     },
   });
   const auth = useAuth();
-  const onSubmit: SubmitHandler<LoginPageProps> = async (data) => {
+  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     await auth.login(data.email, data.password);
   };
 
   return (
     <div className="flex flex-col items-center justify-center mx-auto md:h-screen lg:py-0">
-      <h3 className="text-xl font-semibold text-center">Login to XTreamium</h3>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div>
-          <div className="form-control">
-            <label className="label">
-              <span className="label-text">Email Address</span>
-            </label>
-            <div className="flex flex-row items-center px-3 border form-control rounded-box border-base-content/20">
-              <Icons.mail className="w-4 h-4" />
-              <input
-                {...register("email", { required: "Email is required" })}
-                placeholder="Email Address"
-                className="w-full transition-all input focus:border-transparent focus:outline-0 input-sm focus:outline-offset-0"
-                name="email"
+      <Card className="w-full md:w-[350px]">
+        <CardHeader>
+          <CardTitle>Login</CardTitle>
+          <CardDescription>
+            Enter your credentials to access your account
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div className="grid grid-cols-2 gap-4">
+            <Button variant="outline" className="w-full">
+              <MailIcon />
+              Google
+            </Button>
+            <Button variant="outline" className="w-full">
+              <GithubIcon />
+              GitHub
+            </Button>
+          </div>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background text-muted-foreground px-2">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                {...register("email")}
+                aria-invalid={errors.email ? "true" : "false"}
               />
               {errors.email && (
-                <span className="mt-1 text-sm text-error">
-                  Unknown/invalid email
-                </span>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.email.message}
+                </p>
               )}
             </div>
-          </div>
-          <div className="mt-3 form-control">
-            <label className="label">
-              <span className="label-text">Password</span>
-            </label>
-            <div className="flex flex-row items-center px-3 border form-control rounded-box border-base-content/20">
-              <Icons.key className="w-4 h-4" />
-              <input
-                {...register("password", { required: "Password is required" })}
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
                 type="password"
-                placeholder="Password"
-                className="w-full transition-all input focus:border-transparent focus:outline-0 input-sm focus:outline-offset-0"
-                name="password"
+                placeholder="Enter your password"
+                {...register("password")}
+                aria-invalid={errors.password ? "true" : "false"}
               />
-              <button
-                aria-label="Show/Hide password"
-                className="btn hover:bg-base-content/10 btn-xs btn-circle btn-ghost"
-              >
-                <Icons.eye className="w-4 h-4" />
-              </button>
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
-            <label className="label">
-              <span className="label-text" />
-              <a
-                className="text-xs label-text text-base-content/80"
-                href="/auth/forgot-password"
-              >
-                Forgot Password?
-              </a>
-            </label>
-          </div>
-        </div>
-        <div className="mt-6">
-          <button className="gap-2 text-base btn btn-primary btn-block">
-            <Icons.login className="w-4 h-4" />
-            Login
-          </button>
-        </div>
-
-        <p className="mt-6 text-sm text-center text-base-content/80">
-          Haven't account{" "}
-          <a className="text-primary hover:underline" href="/auth/register">
-            Create One
-          </a>
-        </p>
-      </form>
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Logging in..." : "Login with Email"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };

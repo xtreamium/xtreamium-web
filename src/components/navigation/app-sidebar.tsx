@@ -23,7 +23,6 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
   const { selectedServer } = useServerStore();
   const location = useLocation();
   const server = user.servers.find((s) => s.id === selectedServer);
-
   if (!server) {
     return <div className="text-base-content">No Server Selected</div>;
   }
@@ -49,7 +48,14 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
               {query.data?.map((item) => {
                 return (
                   <SidebarMenuItem key={item.category_id}>
-                    <SidebarMenuButton asChild isActive>
+                    <SidebarMenuButton
+                      className="hover:text-foreground active:text-foreground hover:bg-[var(--primary)]/10 active:bg-[var(--primary)]/10"
+                      isActive={
+                        location.pathname === `/channel/${item.category_id}`
+                      }
+                      tooltip={item.category_name}
+                      asChild
+                    >
                       <Link to={`/channel/${item.category_id}`}>
                         <Icons.alarm />
                         <span>{item.category_name}</span>
