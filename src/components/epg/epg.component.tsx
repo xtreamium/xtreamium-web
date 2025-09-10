@@ -19,7 +19,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
     if (channelId) {
       fetchChannels();
     }
-  }, [channelId]);
+  }, [channelId, server]);
 
   const _mapHeaderRows = () => {
     const currentTime = new Date();
@@ -42,7 +42,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
       timebar.push(
         <th
           key={i}
-          className="px-4 py-2 text-xs font-medium text-primary-content whitespace-nowrap min-w-[120px]"
+          className="px-4 py-2 text-xs font-medium text-primary-foreground whitespace-nowrap min-w-[120px]"
         >
           {time}
         </th>
@@ -68,7 +68,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
         programs.push(
           <td
             key={`${i}-${nowPlaying.getStartTime()}`}
-            className="h-12 text-xs break-words hover:bg-indigo-400 hover:text-white border-r border-base-300 min-w-[120px]"
+            className="h-12 text-xs break-words hover:bg-primary/80 hover:text-primary-foreground border-r border-border min-w-[120px]"
             style={{ width: `${Math.max(thisDurationPercentage, 5)}%` }} // Minimum 5% width
           >
             <EpgItem
@@ -85,7 +85,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
     }
 
     return (
-      <td colSpan={3} className="p-0 text-base-content">
+      <td colSpan={3} className="p-0 text-foreground">
         {/* Horizontal scrollable container */}
         <div className="w-full max-w-full overflow-x-auto">
           <div className="min-w-[1200px]">
@@ -98,13 +98,13 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
               </thead>
             </table>
             {/* Programs */}
-            <table className="w-full border-collapse bg-secondary">
+            <table className="w-full border-collapse bg-secondary/50">
               <tbody>
                 <tr className="w-full">
                   {programs.length > 0 ? (
                     programs
                   ) : (
-                    <td className="h-12 px-4 py-2 text-center text-base-100">
+                    <td className="h-12 px-4 py-2 text-center text-muted-foreground">
                       No EPG data available
                     </td>
                   )}

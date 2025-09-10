@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ApiService } from "@/services";
@@ -10,11 +10,14 @@ import { logger } from "@/lib/logger";
 import Loading from "@/components/loading";
 import type { Stream } from "@/models/stream";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
 
 const ChannelPage = () => {
   const { selectedServer } = useServerStore();
+  const navigate = useNavigate();
   const userQuery = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -24,45 +27,57 @@ const ChannelPage = () => {
 
   const channelQuery = useQuery({
     queryKey: [`channels_${params.channelId}`],
-    queryFn: () => ApiService.getChannels(server, params.channelId as string),
+    queryFn: () => {
+      if (!server) {
+        throw new Error("No server selected");
+      }
+      return ApiService.getChannels(server, params.channelId as string);
+    },
     enabled: !!server,
   });
+
   const copyStreamUrl = async (streamId: number) => {
+    if (!server) {
+      return;
+    }
     try {
       const url = await ApiService.getStreamUrl(server, streamId);
-      console.log("channel.page", "copyStreamUrl", url);
+      logger.info("channel.page", "copyStreamUrl", url);
       if (url) {
         navigator.clipboard.writeText(url).then(() => {
           toast.success(
             <>
-              <div className="font-bold text-gray-800">
+              <div className="font-bold text-foreground">
                 🙌 URL copied to clipboard
               </div>
             </>,
             {
               position: "top-right",
-              closeOnClick: true,
             }
           );
         });
       }
     } catch (err) {
-      console.error("channel.page", "copyStreamUrl", err);
+      logger.error("channel.page", "copyStreamUrl", String(err));
       toast.error(
         <>
-          <div className="font-bold text-gray-800">🤦 Failed to copy URL</div>
+          <div className="font-bold text-foreground">🤦 Failed to copy URL</div>
         </>,
         {
           position: "top-right",
-          closeOnClick: true,
         }
       );
     }
   };
+
   const playStreamInternal = async (streamId: number) => {
     navigate(`/play/${streamId}`);
   };
+
   const playStream = async (streamId: number) => {
+    if (!server) {
+      return;
+    }
     const url = await ApiService.getStreamUrl(server, streamId);
     if (url) {
       const query = `play/${encodeURIComponent(url)}`;
@@ -79,14 +94,14 @@ const ChannelPage = () => {
         if (response.status === 501) {
           toast(
             <>
-              <div className="font-bold text-gray-800">
+              <div className="font-bold text-foreground">
                 🚫 Unable to play stream!
               </div>
-              <div className="text-gray-700 font-sm">
+              <div className="text-muted-foreground font-sm">
                 Cannot find mpv installation.
               </div>
               <a
-                className="font-bold text-indigo-600"
+                className="font-bold text-primary"
                 href="https://github.com/fergalmoran/xtreamium/#installmpv"
                 target="_blank"
                 rel="noreferrer noopener"
@@ -96,125 +111,168 @@ const ChannelPage = () => {
             </>,
             {
               position: "top-right",
-              closeOnClick: true,
             }
           );
         }
       } catch (e) {
-        console.log(e);
+        logger.error("channel.page", "playStream", String(e));
         toast(
-          <>
-            <div className="font-bold text-gray-800">
-              🚫 Unable to play stream!
+          <div>
+            <div>🚫 Unable to play stream!</div>
+            <div>
+              <a
+                href="https://github.com/xtreamium/xtreamium-proxy/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >
+                Make sure you've installed the local server.
+              </a>
             </div>
-            <div className="text-gray-700 font-sm">
-              Make sure you've installed the local server.
-            </div>
-            <a
-              className="font-bold text-indigo-600"
-              href="https://github.com/fergalmoran/xtreamium/#localserver"
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Instructions here
-            </a>
-          </>,
-          {
-            position: "top-right",
-          }
+          </div>
         );
+
       }
     }
   };
+
   if (!server) {
-    return <div className="text-base-content">No Server Selected</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Icons.info className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground">
+                No Server Selected
+              </h3>
+              <p className="text-muted-foreground mt-2">
+                Please select a server to view channels.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   if (channelQuery.isLoading) {
     return <Loading />;
   }
+
   if (!channelQuery.data) {
-    return <div>No data</div>;
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Icons.info className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold text-foreground">
+                No Data Available
+              </h3>
+              <p className="text-muted-foreground mt-2">
+                Unable to load channel information.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
+
   return (
-    <div className="overflow-x-auto pt-4 px-2">
-      <table className="table">
-        <tbody>
-          {channelQuery.data.map((stream: Stream) => [
-            <React.Fragment key={stream.stream_id}>
-              <tr>
-                <td>
-                  <div className="flex items-center gap-3">
-                    <div className="avatar">
-                      <div className="w-12 h-12 mask mask-squircle">
-                        <ImageWithFallback
-                          className="hidden w-10 h-10 md:block"
-                          src={stream.stream_icon}
-                          alt="Stream icon"
-                          fallback="/images/unknown-stream.svg"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="font-bold">{stream.name}</div>
-                    </div>
+    <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="space-y-4">
+        {channelQuery.data.map((stream: Stream) => (
+          <Card key={stream.stream_id} className="overflow-hidden">
+            <CardHeader className="pb-4">
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0">
+                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted border">
+                    <ImageWithFallback
+                      className="w-full h-full object-cover"
+                      src={stream.stream_icon}
+                      alt={`${stream.name} icon`}
+                      fallback="/images/unknown-stream.svg"
+                    />
                   </div>
-                </td>
-                <td>
-                  <div className="flex items-center space-x-1">
-                    {import.meta.env.DEV && (
-                      <Button
-                        title="Cast stream to device"
-                        aria-label="Edit"
-                        onClick={() => playStream(stream.stream_id)}
-                      >
-                        <Icons.cast />
-                      </Button>
-                    )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-foreground text-lg truncate">
+                    {stream.name}
+                  </h3>
+                  <Badge variant="secondary" className="mt-1">
+                    Stream ID: {stream.stream_id}
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {import.meta.env.DEV && (
                     <Button
-                      title="Play to xtreamium local proxy"
-                      aria-label="Edit"
+                      size="sm"
+                      variant="outline"
+                      title="Cast stream to device"
                       onClick={() => playStream(stream.stream_id)}
+                      className="gap-2"
                     >
-                      <Icons.airplay />
+                      <Icons.cast className="h-4 w-4" />
+                      Cast
                     </Button>
-                    {import.meta.env.DEV && (
-                      <Button
-                        title="Play stream in browser"
-                        aria-label="Edit"
-                        onClick={() => playStreamInternal(stream.stream_id)}
-                      >
-                        <Icons.play />
-                      </Button>
-                    )}
+                  )}
+                  <Button
+                    size="sm"
+                    variant="default"
+                    title="Play to xtreamium local proxy"
+                    onClick={() => playStream(stream.stream_id)}
+                    className="gap-2"
+                  >
+                    <Icons.airplay className="h-4 w-4" />
+                    Play
+                  </Button>
+                  {import.meta.env.DEV && (
                     <Button
-                      title="Copy stream URL"
-                      aria-label="Edit"
-                      onClick={() => copyStreamUrl(stream.stream_id)}
+                      size="sm"
+                      variant="secondary"
+                      title="Play stream in browser"
+                      onClick={() => playStreamInternal(stream.stream_id)}
+                      className="gap-2"
                     >
-                      <Icons.copy />
+                      <Icons.play className="h-4 w-4" />
+                      Browser
                     </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    title="Copy stream URL"
+                    onClick={() => copyStreamUrl(stream.stream_id)}
+                    className="gap-2"
+                  >
+                    <Icons.copy className="h-4 w-4" />
+                    Copy
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <Suspense
+                fallback={
+                  <div className="py-8 text-center">
+                    <div className="inline-flex items-center gap-2 text-muted-foreground">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                      Loading EPG...
+                    </div>
                   </div>
-                </td>
-              </tr>
-              <tr key={`${stream.num}-epg`}>
-                <Suspense
-                  fallback={
-                    <td colSpan={3}>
-                      <div className="py-4 text-center">Loading EPG...</div>
-                    </td>
-                  }
-                >
-                  <EPGComponent
-                    server={server}
-                    channelId={stream.epg_channel_id}
-                  />
-                </Suspense>
-              </tr>
-            </React.Fragment>,
-          ])}
-        </tbody>
-      </table>
+                }
+              >
+                <EPGComponent
+                  server={server}
+                  channelId={stream.epg_channel_id}
+                />
+              </Suspense>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };

@@ -6,6 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ApiService } from "@/services";
 import LoginPage from "@/pages/auth/login-page";
 import useServerStore from "@/services/state/server.state";
+import { Toaster } from "sonner";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -30,6 +31,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <SidebarProvider>
+      <Toaster position="top-center" closeButton={true} />
       <div className="min-h-screen bg-background flex flex-col w-full">
         <Header user={query.data} />
         <div className="flex flex-1 overflow-hidden">
