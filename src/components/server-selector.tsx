@@ -76,17 +76,6 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
         sideOffset={4}
       >
-        <DropdownMenuLabel className="p-0 font-normal">
-          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-            <Avatar className="size-8 rounded-lg">
-              <Icons.server className="w-5 h-5" />{" "}
-            </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">{server?.name}</span>
-            </div>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator />
         {user.servers.map((s) => (
           <React.Fragment key={s.id}>
             <DropdownMenuGroup>
@@ -98,7 +87,6 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
             <DropdownMenuSeparator />
           </React.Fragment>
         ))}
-        <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <NavLink to={`/server/add`}>
             <Button variant="ghost" size="sm" className="w-full opacity-50">
