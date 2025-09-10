@@ -1,4 +1,4 @@
-import React, { Fragment } from "react";
+import React from "react";
 import { Icons } from "../icons";
 import { dateToTimeString } from "@/utils/date-utils";
 import {
@@ -6,9 +6,10 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { logger } from "@/lib/logger";
+import { toast } from "sonner";
+import { ProxyService } from "@/services/proxy.service";
 
 type EpgItemProps = {
   channelUrl: string;
@@ -25,25 +26,35 @@ const EpgItem: React.FC<EpgItemProps> = ({
   startTime,
   endTime,
 }) => {
-  const [isHover, setIsHover] = React.useState(false);
   const recordShow = async (
     channelUrl: string,
     startTime: number,
     endTime: number
   ) => {
-    const response = await fetch(`${import.meta.env.VITE_PROXY_URL}/record`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain",
-      },
-      body: JSON.stringify({
-        url: channelUrl,
-        startTime: startTime,
-        endTime: endTime,
-      }),
-    });
+    const result = await ProxyService.recordShow(
+      channelUrl,
+      startTime,
+      endTime
+    );
+    logger.debug("epg-item", "recordShow", "Recording requested");
 
-    console.log("epg-item", "recordShow", response);
+    if (!result) {
+      toast(
+        <div>
+          <div>🚫 Unable to schedule recording!</div>
+          <div>
+            <a
+              href="https://github.com/xtreamium/xtreamium-proxy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Make sure you've installed the proxy and that it is running.
+            </a>
+          </div>
+        </div>
+      );
+    }
   };
 
   return (

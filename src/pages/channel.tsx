@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
+import { ProxyService } from "@/services/proxy.service";
 
 const ChannelPage = () => {
   const { selectedServer } = useServerStore();
@@ -80,18 +81,9 @@ const ChannelPage = () => {
     }
     const url = await ApiService.getStreamUrl(server, streamId);
     if (url) {
-      const query = `play/${encodeURIComponent(url)}`;
       try {
-        const response = await fetch(
-          `${import.meta.env.VITE_PROXY_URL}/${query}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "text/plain",
-            },
-          }
-        );
-        if (response.status === 501) {
+        const response = await ProxyService.play(url);
+        if (!response) {
           toast(
             <>
               <div className="font-bold text-foreground">
@@ -131,7 +123,6 @@ const ChannelPage = () => {
             </div>
           </div>
         );
-
       }
     }
   };

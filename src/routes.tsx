@@ -7,6 +7,7 @@ import SettingsPage from "@/pages/settings";
 import LoginPage from "@/pages/auth/login-page";
 import NotFoundPage from "@/pages/404";
 import ChannelPage from "@/pages/channel";
+import ProxySettingsPage from "@/pages/proxy-settings.page";
 
 export const AppRoutes = () => {
   return (
@@ -18,6 +19,7 @@ export const AppRoutes = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/home" element={<HomePage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route path="/proxy/settings" element={<ProxySettingsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/channel/:channelId" element={<ChannelPage />} />
       <Route path="*" element={<NotFoundPage />} />

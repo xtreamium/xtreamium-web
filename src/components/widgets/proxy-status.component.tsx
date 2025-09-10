@@ -1,9 +1,17 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React from "react";
+import type { Dispatch, SetStateAction } from "react";
 import { Icons } from "@/components/icons";
 import * as signalR from "@microsoft/signalr";
 import { clsx } from "clsx";
 import { Link } from "react-router-dom";
 import { logger } from "@/lib/logger";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type ConnectionState = 'checking' | 'connected' | 'disconnected';
 const ConnectionState = {
@@ -40,9 +48,8 @@ const _createConnection = (
 };
 
 const ProxyStatus: React.FC = () => {
-  let connection;
+  const connectionRef = React.useRef<signalR.HubConnection | null>(null);
 
-  const [iconClass, setIconClass] = React.useState("w-6 h-6 text-red-600");
   const [connectionState, setConnectionState] = React.useState<ConnectionState>(
     ConnectionState.Checking
   );
@@ -52,9 +59,9 @@ const ProxyStatus: React.FC = () => {
       logger.debug("proxy-status.component", "Proxy is connected");
       return;
     }
-    connection = _createConnection(setConnectionState);
+    connectionRef.current = _createConnection(setConnectionState);
     if (connectionState === ConnectionState.Disconnected) {
-      connection = _createConnection(setConnectionState);
+      connectionRef.current = _createConnection(setConnectionState);
       if (connectionState === ConnectionState.Disconnected) {
         setTimeout(() => {
           logger.debug("proxy-status.component", "Rechecking connection");
@@ -64,55 +71,46 @@ const ProxyStatus: React.FC = () => {
     }
   }, [connectionState]);
 
-  React.useEffect(() => {
-    setIconClass(
-      clsx(
-        "w-6",
-        "h-6",
-        connectionState === ConnectionState.Checking
-          ? "animate-spin text-orange-700"
-          : connectionState === ConnectionState.Connected
-          ? "text-green-600"
-          : "text-red-600"
-      )
+  const iconClass = React.useMemo(() => {
+    return clsx(
+      "w-4",
+      "h-4",
+      connectionState === ConnectionState.Checking
+        ? "animate-spin text-orange-700"
+        : connectionState === ConnectionState.Connected
+        ? "text-green-600"
+        : "text-red-600"
     );
-    logger.debug("proxy-status.component", "Icon class is", iconClass);
   }, [connectionState]);
 
   return (
-    <div title="Proxy Status" className="dropdown dropdown-end ">
-      <div
-        tabIndex={0}
-        onClick={() => {
-          // if (document.activeElement instanceof HTMLElement) {
-          //   document.activeElement.blur();
-          // } else {
-          // }
-        }}
-        className="gap-1 normal-case btn btn-ghost"
-      >
-        {connectionState === ConnectionState.Checking ? (
-          <Icons.loader
-            className={clsx(iconClass, "animate-spin text-orange-700")}
-          />
-        ) : (
-          <Icons.proxy className={iconClass} />
-        )}
-        <Icons.chevronDown className="hidden w-5 h-5 fill-current opacity-60 sm:inline-block" />
-      </div>
-      <ul
-        tabIndex={0}
-        className="z-50 p-2 mt-4 shadow-sm dropdown-content menu bg-base-100 rounded-box w-52"
-        role="menu"
-      >
-        <li>
-          <Link to="/proxy/settings">
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button 
+          variant="ghost" 
+          size="sm"
+          className="gap-1 h-8"
+          title="Proxy Status"
+        >
+          {connectionState === ConnectionState.Checking ? (
+            <Icons.loader
+              className={clsx(iconClass, "animate-spin text-orange-700")}
+            />
+          ) : (
+            <Icons.proxy className={iconClass} />
+          )}
+          <Icons.chevronDown className="hidden w-4 h-4 fill-current opacity-60 sm:inline-block" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-52">
+        <DropdownMenuItem asChild>
+          <Link to="/proxy/settings" className="flex items-center gap-2">
             <Icons.server className="w-4 h-4" />
             Proxy Settings
           </Link>
-        </li>
-      </ul>
-    </div>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 };
 
