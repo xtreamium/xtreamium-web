@@ -8,12 +8,22 @@ import type { User } from "@/models/user";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  BadgeCheckIcon,
+  BellIcon,
+  ChevronDown,
+  CreditCardIcon,
+  LogOutIcon,
+  SparklesIcon,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type ServerSelectorComponentProps = {
   user: User;
@@ -23,6 +33,8 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
   user,
 }) => {
   // All hooks must be called at the top level
+  const [open, setOpen] = React.useState(false);
+
   const queryClient = useQueryClient();
   const { selectedServer, setSelectedServer } = useServerStore();
   const deleteServerMutation = useMutation({
@@ -51,41 +63,40 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
     }
     queryClient.invalidateQueries({ queryKey: ["categories"] });
   }
-
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="gap-1">
-          <Icons.server className="w-5 h-5" />
-          <span className="hidden font-normal md:inline">{server?.name}</span>
-          <Icons.chevronDown className="hidden w-4 h-4 opacity-60 sm:inline-block" />
+        <Button variant="outline" className="gap-2 px-2">
+          <Icons.server className="w-5 h-5" />{" "}
+          <div className="truncate">{server?.name}</div>
+          <ChevronDown />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56">
-        <DropdownMenuLabel>Select Server</DropdownMenuLabel>
+      <DropdownMenuContent
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+        sideOffset={4}
+      >
+        <DropdownMenuLabel className="p-0 font-normal">
+          <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+            <Avatar className="size-8 rounded-lg">
+              <Icons.server className="w-5 h-5" />{" "}
+            </Avatar>
+            <div className="grid flex-1 text-left text-sm leading-tight">
+              <span className="truncate font-semibold">{server?.name}</span>
+            </div>
+          </div>
+        </DropdownMenuLabel>
         <DropdownMenuSeparator />
         {user.servers.map((s) => (
-          <DropdownMenuItem
-            key={s.id}
-            className="flex items-center justify-between"
-            onSelect={() => _handleClick(s.id)}
-          >
-            <span className="font-[sans-serif]">{s.name}</span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-auto p-1 text-red-500 hover:text-red-600"
-              onClick={async (e) => {
-                e.stopPropagation();
-                const result = await deleteServerMutation.mutateAsync(s.id);
-                if (result) {
-                  queryClient.invalidateQueries({ queryKey: ["user"] });
-                }
-              }}
-            >
-              <Icons.delete className="w-4 h-4" />
-            </Button>
-          </DropdownMenuItem>
+          <React.Fragment key={s.id}>
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => _handleClick(s.id)}>
+                <SparklesIcon />
+                {s.name}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+          </React.Fragment>
         ))}
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
