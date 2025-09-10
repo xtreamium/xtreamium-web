@@ -2,6 +2,14 @@ import React from "react";
 import { ApiService } from "@/services";
 import { dateToTimeString, roundDateDown } from "@/utils/date-utils";
 import EpgItem from "./epg-item";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { Server } from "@/models/server";
 import type { EPGListing } from "@/models/epg-listing";
 interface IEPGComponentProps {
@@ -40,12 +48,12 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
       const time = dateToTimeString(currentRenderingTime);
 
       timebar.push(
-        <th
+        <TableHead
           key={i}
           className="px-4 py-2 text-xs font-medium text-primary-foreground whitespace-nowrap min-w-[120px]"
         >
           {time}
-        </th>
+        </TableHead>
       );
 
       // Find the program that is playing at this time
@@ -66,7 +74,7 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
         const thisDurationPercentage = (programDuration / totalDuration) * 100;
 
         programs.push(
-          <td
+          <TableCell
             key={`${i}-${nowPlaying.getStartTime()}`}
             className="h-12 text-xs break-words hover:bg-primary/80 hover:text-primary-foreground border-r border-border min-w-[120px]"
             style={{ width: `${Math.max(thisDurationPercentage, 5)}%` }} // Minimum 5% width
@@ -78,42 +86,39 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
               endTime={nowPlaying.getStopTime()}
               description={nowPlaying.getDescription()}
             />
-          </td>
+          </TableCell>
         );
         currentStartRendering = nowPlaying.getStartTime();
       }
     }
 
     return (
-      <td colSpan={3} className="p-0 text-foreground">
+      <div className="p-0 text-foreground">
         {/* Horizontal scrollable container */}
         <div className="w-full max-w-full overflow-x-auto">
           <div className="min-w-[1200px]">
             {" "}
             {/* Minimum width to ensure horizontal scroll */}
-            {/* Time header */}
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="bg-primary">{timebar}</tr>
-              </thead>
-            </table>
-            {/* Programs */}
-            <table className="w-full border-collapse bg-secondary/50">
-              <tbody>
-                <tr className="w-full">
+            {/* Time header and Programs */}
+            <Table className="border-collapse">
+              <TableHeader>
+                <TableRow className="bg-primary">{timebar}</TableRow>
+              </TableHeader>
+              <TableBody className="bg-secondary/50">
+                <TableRow className="w-full">
                   {programs.length > 0 ? (
                     programs
                   ) : (
-                    <td className="h-12 px-4 py-2 text-center text-muted-foreground">
+                    <TableCell className="h-12 px-4 py-2 text-center text-muted-foreground">
                       No EPG data available
-                    </td>
+                    </TableCell>
                   )}
-                </tr>
-              </tbody>
-            </table>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
-      </td>
+      </div>
     );
   };
   return epg && epg.length ? _mapHeaderRows() : null;
