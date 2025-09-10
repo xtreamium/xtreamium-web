@@ -9,7 +9,8 @@ const useServerStore = create<ServerState>()(
   persist(
     (set) => ({
       selectedServer: 0,
-      setSelectedServer: (server: number) => set(() => ({ selectedServer: server })),
+      setSelectedServer: (server: number) =>
+        set(() => ({ selectedServer: server })),
     }),
     {
       name: "server-state", // name of the item in the storage (must be unique)

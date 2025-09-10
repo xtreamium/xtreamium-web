@@ -1,16 +1,20 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react-swc";
+import path from "path";
+import tailwindcss from "@tailwindcss/vite";
 
-// https://vitejs.dev/config/
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+
+// https://vite.dev/config/
 export default defineConfig({
+  plugins: [react(), tailwindcss()],
   server: {
-    open: false,
-    allowedHosts: ["streams.dev.fergl.ie", "streams.fergl.ie"],
+    port: 5173,
+    strictPort: true,
+    allowedHosts: ["streams.dev.fergl.ie"],
   },
-  plugins: [react()],
   resolve: {
     alias: {
-      "@": "/src",
+      "@": path.resolve(__dirname, "./src"),
     },
   },
 });

@@ -1,4 +1,4 @@
-import { convertUTCToLocal } from "@/utils/date-utils";
+import { convertUTCToLocal } from "@/lib/utils/date-utils";
 
 export interface IEPGListingMap {
   channel: string;

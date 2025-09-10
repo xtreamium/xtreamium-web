@@ -5,7 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   Download,
-  LucideIcon,
+  type LucideIcon,
   Info,
   Eye,
   Mail,
