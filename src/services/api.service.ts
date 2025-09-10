@@ -90,11 +90,11 @@ class ApiService {
 
   public getChannels = async (
     server: Server,
-    categoryId: string
+    channelId: string
   ): Promise<Stream[]> => {
     const options = this._getRequestOptions();
 
-    const response = await http.get(`/epg/channels/${categoryId}`, {
+    const response = await http.get(`/epg/channels/${channelId}`, {
       ...options,
       headers: {
         ...options.headers,

@@ -39,7 +39,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        navigate("/dashboard");
+        navigate("/");
         location.reload();
         return;
       }
@@ -55,7 +55,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        navigate("/dashboard");
+        navigate("/");
         location.reload();
         return;
       }

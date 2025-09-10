@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Bell, Search, LogOut, User, CreditCard } from "lucide-react";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Link } from "react-router-dom";
+import ServerSelectorComponent from "@/components/server-selector";
 type HeaderProps = { user: User };
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
@@ -45,6 +46,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             </Button>
           </div>
         </div>
+        <ServerSelectorComponent user={user} />
 
         {/* Right side - Profile dropdown */}
         <div className="flex items-center gap-3">

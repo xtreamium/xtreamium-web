@@ -50,7 +50,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
                 return (
                   <SidebarMenuItem key={item.category_id}>
                     <SidebarMenuButton asChild isActive>
-                      <Link to={`/category/${item.category_id}`}>
+                      <Link to={`/channel/${item.category_id}`}>
                         <Icons.alarm />
                         <span>{item.category_name}</span>
                       </Link>
