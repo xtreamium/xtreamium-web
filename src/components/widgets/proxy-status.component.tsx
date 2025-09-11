@@ -12,12 +12,18 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-type ConnectionState = 'checking' | 'connected' | 'disconnected';
+type ConnectionState = "checking" | "connected" | "disconnected";
 const ConnectionState = {
-  Checking: 'checking' as const,
-  Connected: 'connected' as const,
-  Disconnected: 'disconnected' as const,
+  Checking: "checking" as const,
+  Connected: "connected" as const,
+  Disconnected: "disconnected" as const,
 } as const;
 
 const _createConnection = (
@@ -83,34 +89,56 @@ const ProxyStatus: React.FC = () => {
     );
   }, [connectionState]);
 
+  const getTooltipText = () => {
+    switch (connectionState) {
+      case ConnectionState.Checking:
+        return "Checking proxy connection...";
+      case ConnectionState.Connected:
+        return "Proxy is connected and ready";
+      case ConnectionState.Disconnected:
+        return "Proxy is disconnected";
+      default:
+        return "Unknown proxy status";
+    }
+  };
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="sm"
-          className="gap-1 h-8"
-          title="Proxy Status"
-        >
-          {connectionState === ConnectionState.Checking ? (
-            <Icons.loader
-              className={clsx(iconClass, "animate-spin text-orange-700")}
-            />
-          ) : (
-            <Icons.proxy className={iconClass} />
-          )}
-          <Icons.chevronDown className="hidden w-4 h-4 fill-current opacity-60 sm:inline-block" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-52">
-        <DropdownMenuItem asChild>
-          <Link to="/proxy/settings" className="flex items-center gap-2">
-            <Icons.server className="w-4 h-4" />
-            Proxy Settings
-          </Link>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <TooltipProvider>
+      <Tooltip>
+        <DropdownMenu>
+          <TooltipTrigger asChild>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-1 h-8"
+                title="Proxy Status"
+              >
+                {connectionState === ConnectionState.Checking ? (
+                  <Icons.loader
+                    className={clsx(iconClass, "animate-spin text-orange-700")}
+                  />
+                ) : (
+                  <Icons.proxy className={iconClass} />
+                )}
+                <Icons.chevronDown className="hidden w-4 h-4 fill-current opacity-60 sm:inline-block" />
+              </Button>
+            </DropdownMenuTrigger>
+          </TooltipTrigger>
+          <DropdownMenuContent align="end" className="w-52">
+            <DropdownMenuItem asChild>
+              <Link to="/proxy/settings" className="flex items-center gap-2">
+                <Icons.server className="w-4 h-4" />
+                Proxy Settings
+              </Link>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <TooltipContent side="bottom" className="text-sm">
+          {getTooltipText()}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 

@@ -1,6 +1,5 @@
 import React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
-import { Icons } from "@/components/icons";
 import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
 import {
@@ -13,8 +12,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Icons } from "@/components/icons";
 
-import { MailIcon, GithubIcon } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.email("Invalid email address"),
@@ -51,11 +50,11 @@ const LoginPage: React.FC = () => {
         <CardContent className="space-y-8">
           <div className="grid grid-cols-2 gap-4">
             <Button variant="outline" className="w-full">
-              <MailIcon />
+              <Icons.mail />
               Google
             </Button>
             <Button variant="outline" className="w-full">
-              <GithubIcon />
+              <Icons.github className="mr-2 h-4 w-4" />
               GitHub
             </Button>
           </div>

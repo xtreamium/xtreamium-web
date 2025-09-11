@@ -1,5 +1,6 @@
 import axios, { HttpStatusCode } from "axios";
 import { logger } from "@/lib/logger";
+import type { Settings } from "@/models/settings";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_PROXY_URL,
@@ -26,6 +27,22 @@ class InternalProxyService {
 
     logger.debug("proxy.service", "recordShow", response.statusText);
     return response.status === HttpStatusCode.Accepted;
+  };
+
+  getSettings = async (): Promise<Settings> => {
+    const response = await client.get("/settings");
+    if (response.status === HttpStatusCode.Ok) {
+      return response.data as Settings;
+    }
+    throw new Error("Failed to fetch proxy settings");
+  };
+
+  saveSettings = async (settings: Settings): Promise<boolean> => {
+    const response = await client.post("/settings", settings);
+    if (response.status === HttpStatusCode.Ok) {
+      return true;
+    }
+    throw new Error("Failed to save proxy settings");
   };
 }
 export const ProxyService = new InternalProxyService();

@@ -61,9 +61,9 @@ const EpgItem: React.FC<EpgItemProps> = ({
     <div className="w-full h-full">
       <HoverCard>
         <HoverCardTrigger asChild>
-          <Button variant="ghost" className="w-full h-full hover:*:">
+          <div className="w-full h-full p-2 cursor-pointer flex items-center justify-center text-sm font-medium transition-colors hover:text-primary">
             {title}
-          </Button>
+          </div>
         </HoverCardTrigger>
         <HoverCardContent className="w-80 max-w-sm p-0">
           <div className="bg-gradient-to-r from-primary to-primary/90 px-4 py-3 rounded-t-md">
