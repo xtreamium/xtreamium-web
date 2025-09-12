@@ -1,9 +1,8 @@
 import useServerStore from "@/services/state/server.state";
 import React from "react";
 import { Icons } from "@/components/icons";
-import { Link, NavLink } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ApiService } from "@/services";
+import { NavLink } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User } from "@/models/user";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,19 +10,10 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  BadgeCheckIcon,
-  BellIcon,
-  ChevronDown,
-  CreditCardIcon,
-  LogOutIcon,
-  SparklesIcon,
-} from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenuTriggerFixed } from "@/components/dropdown-menu-trigger-fixed";
+import { ChevronDown, SparklesIcon } from "lucide-react";
 
 type ServerSelectorComponentProps = {
   user: User;
@@ -32,18 +22,11 @@ type ServerSelectorComponentProps = {
 const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
   user,
 }) => {
-  // All hooks must be called at the top level
   const [open, setOpen] = React.useState(false);
 
   const queryClient = useQueryClient();
   const { selectedServer, setSelectedServer } = useServerStore();
-  const deleteServerMutation = useMutation({
-    mutationFn: (serverId: number) => {
-      return ApiService.deleteServer(serverId);
-    },
-  });
 
-  // Now we can do conditional logic after hooks
   const server = user.servers.find((s) => s.id === selectedServer);
 
   if (!user || !user.servers || user.servers.length === 0) {
@@ -65,13 +48,13 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
   }
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
+      <DropdownMenuTriggerFixed asChild>
         <Button variant="outline" className="gap-2 px-2">
-          <Icons.server className="w-5 h-5" />{" "}
-          <div className="truncate">{server?.name}</div>
+          <Icons.server className="w-5 h-5" />
+          <span className="truncate">{server?.name}</span>
           <ChevronDown />
         </Button>
-      </DropdownMenuTrigger>
+      </DropdownMenuTriggerFixed>
       <DropdownMenuContent
         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
         sideOffset={4}

@@ -25,22 +25,24 @@ function CastProvider({ children }: { children: React.ReactNode }) {
       let castSender: any;
       while (true) {
         try {
-          // @ts-ignore
+          // @ts-expect-error - Chrome Cast API is loaded externally
           castReceiver = window.chrome.cast as CastReceiver;
-          // @ts-ignore
+          // @ts-expect-error - Chrome Cast API is loaded externally
           castSender = window.cast.framework as any;
           toBreak = true;
-        } catch (err) {
+        } catch (_err) {
           tries--;
           if (!tries) {
             toBreak = true;
           }
-        } finally {
-          if (toBreak) break;
+        }
+        
+        if (toBreak) {
+          break;
         }
         await wait(95);
       }
-      // @ts-ignore
+      // @ts-expect-error - Chrome Cast API is loaded externally
       if (tries !== 0 && !!castReceiver) {
         setCast({
           castReceiver,

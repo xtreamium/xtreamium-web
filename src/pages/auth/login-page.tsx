@@ -1,6 +1,5 @@
 import React from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
-import { z } from "zod";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Card,
@@ -14,13 +13,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 
-
-const loginSchema = z.object({
-  email: z.email("Invalid email address"),
-  password: z.string().min(8, "Password must be at least 8 characters long"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
 const LoginPage: React.FC = () => {
   const {

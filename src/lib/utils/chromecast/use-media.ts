@@ -45,14 +45,14 @@ function useMedia() {
   const [media, setMedia] = useState<unknown>(null);
   const [isMedia, setIsMedia] = useState(false);
   useEffect(() => {
-    if (!session && isMedia) setIsMedia(false);
+    if (!session && isMedia) {setIsMedia(false);}
   }, [session, isMedia]);
 
   const playMedia = useCallback(
     (src: string, autoplay?: boolean) =>
       new Promise((res, rej) => {
         if (!castReceiver || !session)
-          return rej(new Error("An Error occurred"));
+          {return rej(new Error("An Error occurred"));}
 
         const mediaInfo = new castReceiver.media.MediaInfo(src);
         const request = new castReceiver.media.LoadRequest(mediaInfo);
@@ -73,7 +73,7 @@ function useMedia() {
 
   const addMedia = useCallback(
     async (src: string) => {
-      if (!castReceiver || !media) return;
+      if (!castReceiver || !media) {return;}
       const mediaInfo = new castReceiver.media.MediaInfo(src);
       const queueItem = new castReceiver.media.QueueItem(mediaInfo);
       await media.queueAppendItem(queueItem);
@@ -82,28 +82,28 @@ function useMedia() {
   );
 
   const play = useCallback(async () => {
-    if (!media) return;
+    if (!media) {return;}
     await media.play();
   }, [media]);
 
   const pause = useCallback(async () => {
-    if (!media) return;
+    if (!media) {return;}
     await media.pause();
   }, [media]);
 
   const prev = useCallback(async () => {
-    if (!media) return;
+    if (!media) {return;}
     await media.queuePrev();
   }, [media]);
 
   const next = useCallback(async () => {
-    if (!media) return;
+    if (!media) {return;}
     await media.queueNext();
   }, [media]);
 
   const to = useCallback(
     async (seconds: number) => {
-      if (!media && !castReceiver) return;
+      if (!media && !castReceiver) {return;}
 
       const seek = new castReceiver.media.SeekRequest();
 

@@ -16,6 +16,8 @@ import Loading from "./loading";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Required" }),
@@ -29,6 +31,8 @@ type ServerSchema = z.infer<typeof schema>;
 
 const ServerDetails = () => {
   const navigate = useNavigate();
+  const [epgCheckError, setEpgCheckError] = useState<string | null>(null);
+  const [isCheckingEpg, setIsCheckingEpg] = useState(false);
 
   const userQuery = useQuery({
     queryKey: ["user"],
@@ -51,23 +55,42 @@ const ServerDetails = () => {
   }
 
   const onSubmit = async (data: ServerSchema) => {
-    const validated = await ApiService.addServer(
-      data.name,
-      data.server,
-      data.username,
-      data.password,
-      data.epgUrl
-    );
-    if (validated) {
-      navigate("/dashboard");
+    setEpgCheckError(null);
+    setIsCheckingEpg(true);
+    
+    try {
+      // Check if EPG URL is accessible before adding the server
+      const isEpgUrlAccessible = await ApiService.checkUrl(data.epgUrl);
+      if (!isEpgUrlAccessible) {
+        setEpgCheckError("EPG URL is not accessible. Please check the URL and try again.");
+        return;
+      }
+      
+      const validated = await ApiService.addServer(
+        data.name,
+        data.server,
+        data.username,
+        data.password,
+        data.epgUrl
+      );
+      if (validated) {
+        navigate("/dashboard");
+      }
+    } finally {
+      setIsCheckingEpg(false);
     }
-  };
-
-  return (
+  };  return (
     <div className="w-full max-w-md mx-auto">
       <h1 className="mb-6 text-2xl font-semibold text-foreground">
         XTream Codes Details
       </h1>
+      
+      {epgCheckError && (
+        <Alert className="mb-4 border-destructive">
+          <Icons.info className="h-4 w-4" />
+          <AlertDescription>{epgCheckError}</AlertDescription>
+        </Alert>
+      )}
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -172,10 +195,19 @@ const ServerDetails = () => {
           <Button
             type="submit"
             className="w-full mt-6"
-            disabled={form.formState.isSubmitting}
+            disabled={form.formState.isSubmitting || isCheckingEpg}
           >
-            <Icons.rocket className="mr-2 h-4 w-4" />
-            Let's go!
+            {isCheckingEpg ? (
+              <>
+                <Icons.loader className="mr-2 h-4 w-4 animate-spin" />
+                Checking EPG URL...
+              </>
+            ) : (
+              <>
+                <Icons.rocket className="mr-2 h-4 w-4" />
+                Let's go!
+              </>
+            )}
           </Button>
         </form>
       </Form>

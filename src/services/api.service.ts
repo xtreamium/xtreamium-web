@@ -9,7 +9,6 @@ import type { Stream } from "@/models/stream";
 import { EPGListing } from "@/models/epg-listing";
 import { logger } from "@/lib/logger";
 
-
 class ApiService {
   private _getRequestOptions = () => {
     return {
@@ -154,6 +153,22 @@ class ApiService {
     const response = await http.delete(`user/server/${serverId}`, options);
     return response.status === StatusCodes.OK;
   };
+  public checkUrl = async (url: string): Promise<boolean> => {
+    try {
+      await fetch(url, {
+        method: 'HEAD',
+        mode: 'no-cors', // Use no-cors to avoid CORS issues when checking external URLs
+        cache: 'no-cache',
+      });
+      // For no-cors mode, we can't check the actual response status
+      // but if the fetch doesn't throw, the URL is likely accessible
+      return true;
+    } catch (error) {
+      logger.error("URL check failed", { url, error }, "api.service");
+      return false;
+    }
+  };
+
   public addServer = async (
     name: string,
     server: string,

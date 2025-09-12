@@ -8,4 +8,10 @@ We have a backend API server written in python (fastapi) which the frontend comm
 
 All component should use snake-case for filenames and CamelCase for component names.
 
+All our API calls should be run using axios.
+
 This app uses local-ssl-proxy so we can run it on https, the cert is letsencrypt and the local url will be https://streams.dev.fergl.ie:3000/
+
+Keep comments in the code to a minimum, only add comments where absolutely necessary.
+
+All components in src/components/ui should never be edited as these are shadcn components. If you need to modify a component, create a new component in src/components with the modifications you need but only do this as an absolute last resort and ask me first .

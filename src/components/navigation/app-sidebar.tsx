@@ -1,5 +1,4 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Info, Radio, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -23,14 +22,16 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
   const { selectedServer } = useServerStore();
   const location = useLocation();
   const server = user.servers.find((s) => s.id === selectedServer);
+  
+  const query = useQuery({
+    queryKey: ["categories", selectedServer],
+    queryFn: () => server ? ApiService.getCategories(server) : Promise.resolve([]),
+    enabled: !!server,
+  });
+
   if (!server) {
     return <div className="text-base-content">No Server Selected</div>;
   }
-
-  const query = useQuery({
-    queryKey: ["categories"],
-    queryFn: () => ApiService.getCategories(server),
-  });
 
   if (query.isLoading) {
     return <div className="text-base-content">Loading...</div>;

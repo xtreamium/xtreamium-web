@@ -3,9 +3,17 @@ import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,13 +45,7 @@ const ProxySettingsPage: React.FC = () => {
     retry: false,
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-    setValue,
-    reset,
-  } = useForm<ProxySettingsForm>({
+  const form = useForm<ProxySettingsForm>({
     resolver: zodResolver(proxySettingsSchema),
     defaultValues: {
       mpvArguments: "",
@@ -51,6 +53,12 @@ const ProxySettingsPage: React.FC = () => {
       port: 8080,
     },
   });
+
+  const {
+    setValue,
+    reset,
+    formState: { isSubmitting },
+  } = form;
 
   // Update form when data is loaded
   React.useEffect(() => {
@@ -134,132 +142,182 @@ const ProxySettingsPage: React.FC = () => {
 
   return (
     <div className="container mx-auto max-w-4xl p-6">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Proxy Settings</h1>
-          <p className="text-muted-foreground mt-2">
-            Configure your proxy settings to optimize streaming performance
+      <div className="space-y-8">
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+            Proxy Settings
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Configure your proxy settings to optimize streaming performance and
+            customize playback behavior.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Icons.settings className="h-5 w-5" />
-                General Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="mpv-args">MPV command line arguments</Label>
-                <Textarea
-                  id="mpv-args"
-                  placeholder=""
-                  className="min-h-24"
-                  {...register("mpvArguments")}
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <Card className="border-border/40 shadow-sm">
+              <CardHeader className="pb-6">
+                <CardTitle className="flex items-center gap-3 text-xl">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <Icons.settings className="h-5 w-5 text-primary" />
+                  </div>
+                  General Settings
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-8">
+                <FormField
+                  control={form.control}
+                  name="mpvArguments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">
+                        MPV Command Line Arguments
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="--no-border --ontop --screen=2 --cache=yes --demuxer-max-bytes=5GiB"
+                          className="min-h-[100px] resize-none border-input bg-background text-sm"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Enter custom MPV arguments to customize playback
+                        behavior. Use \ for line breaks.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.mpvArguments && (
-                  <p className="text-sm text-destructive">
-                    {errors.mpvArguments.message}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Use \ for line breaks.
-                </p>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="port">Port Number</Label>
-                <Input
-                  id="port"
-                  type="number"
-                  placeholder="8080"
-                  min="1"
-                  max="65535"
-                  {...register("port", { valueAsNumber: true })}
+                <FormField
+                  control={form.control}
+                  name="port"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">
+                        Port Number
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="8080"
+                          min="1"
+                          max="65535"
+                          className="max-w-xs bg-background"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The port number for the proxy server (1-65535).
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-                {errors.port && (
-                  <p className="text-sm text-destructive">
-                    {errors.port.message}
-                  </p>
+
+                <FormField
+                  control={form.control}
+                  name="recordingsPath"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">
+                        Recordings Path
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="/home/user/recordings"
+                            readOnly
+                            className="flex-1 bg-muted/50 cursor-not-allowed"
+                            {...field}
+                          />
+                          <input
+                            type="file"
+                            className="hidden"
+                            id="recordings-path-input"
+                            {...({ webkitdirectory: "true" } as Record<
+                              string,
+                              unknown
+                            >)}
+                            onChange={handleRecordingsPathChange}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="px-4"
+                            asChild
+                          >
+                            <label
+                              htmlFor="recordings-path-input"
+                              className="cursor-pointer flex items-center gap-2"
+                            >
+                              <Icons.server className="h-4 w-4" />
+                              Browse
+                            </label>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Select the folder where recorded streams will be saved.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CardContent>
+            </Card>
+
+            <div className="flex flex-col gap-4 pt-6 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleResetToDefaults}
+                className="gap-2"
+              >
+                <Icons.rocket className="h-4 w-4" />
+                Reset to Defaults
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={handleTestConnection}
+                className="gap-2"
+              >
+                <Icons.play className="h-4 w-4" />
+                Test Connection
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="gap-2 min-w-[140px]"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Icons.download className="h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Icons.download className="h-4 w-4" />
+                    Save Settings
+                  </>
                 )}
-                <p className="text-sm text-muted-foreground">
-                  Enter a port number between 1 and 65535.
-                </p>
-              </div>
+              </Button>
+            </div>
+          </form>
+        </Form>
 
-              <div className="space-y-2">
-                <Label htmlFor="recordings-path">Recordings Path</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="recordings-path"
-                    type="text"
-                    placeholder="/home/user/recordings"
-                    readOnly
-                    className="flex-1"
-                    {...register("recordingsPath")}
-                  />
-                  <input
-                    type="file"
-                    className="hidden"
-                    id="recordings-path-input"
-                    {...({ webkitdirectory: "true" } as Record<
-                      string,
-                      unknown
-                    >)}
-                    onChange={handleRecordingsPathChange}
-                  />
-                  <Button type="button" variant="outline" asChild>
-                    <label
-                      htmlFor="recordings-path-input"
-                      className="cursor-pointer"
-                    >
-                      <Icons.server className="h-4 w-4" />
-                      Browse
-                    </label>
-                  </Button>
-                </div>
-                {errors.recordingsPath && (
-                  <p className="text-sm text-destructive">
-                    {errors.recordingsPath.message}
-                  </p>
-                )}
-                <p className="text-sm text-muted-foreground">
-                  Select a folder where recordings will be saved.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleResetToDefaults}
-            >
-              <Icons.rocket className="h-4 w-4" />
-              Reset to Defaults
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={handleTestConnection}
-            >
-              <Icons.play className="h-4 w-4" />
-              Test Connection
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              <Icons.download className="h-4 w-4" />
-              {isSubmitting ? "Saving..." : "Save Settings"}
-            </Button>
-          </div>
-        </form>
-
-        <Alert>
-          <Icons.info className="h-4 w-4" />
-          <AlertTitle>Need help?</AlertTitle>
-          <AlertDescription>
+        <Alert className="border-blue-200 bg-blue-50/50 dark:border-blue-800 dark:bg-blue-950/20">
+          <Icons.info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <AlertTitle className="text-blue-900 dark:text-blue-100">
+            Need help?
+          </AlertTitle>
+          <AlertDescription className="text-blue-800 dark:text-blue-200">
             Proxy settings help route your streaming traffic through a secure
             connection. Contact your network administrator if you're unsure
             about these settings.

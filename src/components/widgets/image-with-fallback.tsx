@@ -11,7 +11,7 @@ const ImageWithFallback = ({
   ...props
 }: ImageWithFallbackProps) => {
   return (
-    <img {...props} src={src} onError={(e: any) => (e.target.src = fallback)} />
+    <img {...props} src={src} onError={(e: React.SyntheticEvent<HTMLImageElement>) => (e.currentTarget.src = fallback)} />
   );
 };
 

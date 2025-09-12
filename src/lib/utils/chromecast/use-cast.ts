@@ -65,28 +65,28 @@ function useCast(props?: Props) {
   const [isConnect, setIsConnect] = useState(false);
   const initiliazeCast = useCallback(
     (media_player: string) => {
-      if (!castReceiver) return;
+      if (!castReceiver) {return;}
       const sessionRequest = new castReceiver.SessionRequest(
         castReceiver.media[media_player]
       );
       const apiConfig = new castReceiver.ApiConfig(
-        // @ts-ignore
+        // @ts-expect-error - Chrome Cast API types are incomplete
         sessionRequest,
-        (e: any) => {
+        (_e: any) => {
           // console.log("ss listener", e);
-          if (setSession) setSession(e);
+          if (setSession) {setSession(_e);}
           setIsConnect(true);
         },
-        (e: any) => {
+        (_e: any) => {
           // console.log("rc listener", e);
         }
       );
       castReceiver.initialize(
         apiConfig,
-        (e: any) => {
+        (_e: any) => {
           // console.log("init success", e);
         },
-        (e: any) => {
+        (_e: any) => {
           // console.log("init error", e);
         }
       );
@@ -101,16 +101,16 @@ function useCast(props?: Props) {
     () =>
       new Promise((res, rej) => {
         if (castReceiver) {
-          // @ts-ignore
+          // @ts-expect-error - Chrome Cast API types are incomplete
           castReceiver.requestSession(
-            (e: any) => {
-              if (setSession) setSession(e);
+            (_e: any) => {
+              if (setSession) {setSession(_e);}
               setIsConnect(true);
-              res(e);
+              res(_e);
             },
-            (e: any) => {
+            (_e: any) => {
               setIsConnect(false);
-              if (!isConnect) return rej(e);
+              if (!isConnect) {return rej(_e);}
               return res(null);
             }
           );
@@ -123,11 +123,11 @@ function useCast(props?: Props) {
     if (castReceiver) {
       setCast({ castReceiver });
       if (auto_initialize && !initialize_media_player)
-        throw new Error(
+        {throw new Error(
           "if you pass auto_initialize: true, you should pass initialize_media_player"
-        );
+        );}
       else if (auto_initialize && initialize_media_player)
-        initiliazeCast(initialize_media_player);
+        {initiliazeCast(initialize_media_player);}
     }
   }, [castReceiver, castSender]);
 
