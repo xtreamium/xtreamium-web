@@ -133,7 +133,7 @@ class ApiService {
   ): Promise<EPGListing[]> {
     const options = this._getRequestOptions();
     const response = await http.get(
-      `${import.meta.env.VITE_API_URL}/epg/listing/${channelId}`,
+      `${import.meta.env.VITE_API_URL}/epg/listing/${server.id}/${channelId}`,
       {
         ...options,
         headers: {
@@ -156,9 +156,9 @@ class ApiService {
   public checkUrl = async (url: string): Promise<boolean> => {
     try {
       await fetch(url, {
-        method: 'HEAD',
-        mode: 'no-cors', // Use no-cors to avoid CORS issues when checking external URLs
-        cache: 'no-cache',
+        method: "HEAD",
+        mode: "no-cors", // Use no-cors to avoid CORS issues when checking external URLs
+        cache: "no-cache",
       });
       // For no-cors mode, we can't check the actual response status
       // but if the fetch doesn't throw, the URL is likely accessible

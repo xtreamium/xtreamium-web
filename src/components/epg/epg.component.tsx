@@ -1,127 +1,210 @@
-import React from "react";
 import { ApiService } from "@/services";
-import { dateToTimeString, roundDateDown } from "@/utils/date-utils";
-import EpgItem from "./epg-item";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import type { Server } from "@/models/server";
-import type { EPGListing } from "@/models/epg-listing";
+import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Icons } from "@/components/icons";
+
 interface IEPGComponentProps {
   server: Server;
   channelId: string;
 }
+
+interface RawEPGItem {
+  start: string;
+  stop: string;
+  title: string;
+  description: string;
+  categories: string[];
+}
+
 const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
-  const [epg, setEpg] = React.useState<EPGListing[]>([]);
-
-  React.useEffect(() => {
-    const fetchChannels = async () => {
-      const response = await ApiService.getEPGForChannel(server, channelId);
-      setEpg(response);
-    };
-    if (channelId) {
-      fetchChannels();
-    }
-  }, [channelId, server]);
-
-  const _mapHeaderRows = () => {
-    const currentTime = new Date();
-    const startTime = roundDateDown(currentTime, 30 * 60 * 1000);
-
-    const timebar = [];
-    const programs = [];
-    let currentStartRendering = 0;
-    const cellDuration = 1000 * 60 * 30; // 30 minutes
-    const totalSlots = 24; // Show 12 hours (24 slots of 30 minutes each)
-    const totalDuration = cellDuration * totalSlots;
-
-    // Create time slots for 12 hours ahead
-    for (let i = 0; i < totalSlots; i++) {
-      const currentRenderingTime = new Date(
-        startTime.getTime() + cellDuration * i
-      );
-      const time = dateToTimeString(currentRenderingTime);
-
-      timebar.push(
-        <TableHead
-          key={i}
-          className="px-4 py-2 text-xs font-medium text-primary-foreground whitespace-nowrap min-w-[120px]"
-        >
-          {time}
-        </TableHead>
-      );
-
-      // Find the program that is playing at this time
-      const nowPlaying = epg.find((r) => {
-        return (
-          r.getStartTime() <= currentRenderingTime.getTime() &&
-          r.getStopTime() >= currentRenderingTime.getTime()
-        );
-      });
-
-      if (nowPlaying && currentStartRendering !== nowPlaying?.getStartTime()) {
-        // Calculate the duration of the program as a percentage of the total duration.
-        const programDuration =
-          i === 0
-            ? nowPlaying.getStopTime() - startTime.getTime()
-            : nowPlaying.getStopTime() - nowPlaying.getStartTime();
-
-        const thisDurationPercentage = (programDuration / totalDuration) * 100;
-
-        programs.push(
-          <TableCell
-            key={`${i}-${nowPlaying.getStartTime()}`}
-            className="h-12 text-xs break-words hover:bg-primary/80 hover:text-primary-foreground border-r border-border min-w-[120px]"
-            style={{ width: `${Math.max(thisDurationPercentage, 5)}%` }} // Minimum 5% width
-          >
-            <EpgItem
-              channelUrl="TODO: Fetch Channel URL"
-              title={nowPlaying.getTitle()}
-              startTime={nowPlaying.getStartTime()}
-              endTime={nowPlaying.getStopTime()}
-              description={nowPlaying.getDescription()}
-            />
-          </TableCell>
-        );
-        currentStartRendering = nowPlaying.getStartTime();
+  const epgQuery = useQuery({
+    queryKey: [`epg_${channelId}`],
+    queryFn: () => {
+      if (!server) {
+        throw new Error("No server selected");
       }
+      return ApiService.getEPGForChannel(server, channelId);
+    },
+    enabled: !!server,
+  });
+
+  const parseDateTime = (dateTimeStr: string): number => {
+    // Parse format: "20250915121000 +0100"
+    const [dateTime] = dateTimeStr.split(" ");
+    const year = parseInt(dateTime.slice(0, 4));
+    const month = parseInt(dateTime.slice(4, 6)) - 1; // Month is 0-indexed
+    const day = parseInt(dateTime.slice(6, 8));
+    const hour = parseInt(dateTime.slice(8, 10));
+    const minute = parseInt(dateTime.slice(10, 12));
+    const second = parseInt(dateTime.slice(12, 14));
+
+    return new Date(year, month, day, hour, minute, second).getTime();
+  };
+
+  const formatTime = (timestamp: number): string => {
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false,
+    });
+  };
+
+  const formatDuration = (start: number, end: number): string => {
+    const durationMs = end - start;
+    const minutes = Math.floor(durationMs / (1000 * 60));
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+
+    if (hours > 0) {
+      return `${hours}h ${remainingMinutes}m`;
+    }
+    return `${remainingMinutes}m`;
+  };
+
+  const getCurrentAndUpcomingShows = (epgData: unknown[]) => {
+    const now = Date.now();
+
+    // Check if the data contains raw JSON objects with start/stop strings
+    const rawShows = epgData.filter((item: unknown): item is RawEPGItem => {
+      return (
+        typeof item === "object" &&
+        item !== null &&
+        "start" in item &&
+        "stop" in item &&
+        "title" in item &&
+        typeof (item as RawEPGItem).start === "string"
+      );
+    });
+
+    if (rawShows.length > 0) {
+      // Handle raw JSON format
+      return rawShows.filter((show) => {
+        const endTime = parseDateTime(show.stop);
+        return endTime > now;
+      });
     }
 
+    // If not raw format, try EPGListing format (fallback)
+    return [];
+  };
+
+  const isCurrentlyPlaying = (show: RawEPGItem): boolean => {
+    const now = Date.now();
+    const startTime = parseDateTime(show.start);
+    const endTime = parseDateTime(show.stop);
+
+    return now >= startTime && now <= endTime;
+  };
+
+  if (epgQuery.isLoading) {
+    return <div className="p-4">Loading EPG data...</div>;
+  }
+
+  if (epgQuery.error) {
+    return <div className="p-4 text-red-500">Error loading EPG data</div>;
+  }
+
+  if (!epgQuery.data || epgQuery.data.length === 0) {
+    return <div className="p-4">No EPG data available</div>;
+  }
+
+  const shows = getCurrentAndUpcomingShows(epgQuery.data);
+
+  if (shows.length === 0) {
     return (
-      <div className="p-0 text-foreground">
-        {/* Horizontal scrollable container */}
-        <div className="w-full max-w-full overflow-x-auto">
-          <div className="min-w-[1200px]">
-            {" "}
-            {/* Minimum width to ensure horizontal scroll */}
-            {/* Time header and Programs */}
-            <Table className="border-collapse">
-              <TableHeader>
-                <TableRow className="bg-primary">{timebar}</TableRow>
-              </TableHeader>
-              <TableBody className="bg-secondary/50">
-                <TableRow className="w-full">
-                  {programs.length > 0 ? (
-                    programs
-                  ) : (
-                    <TableCell className="h-12 px-4 py-2 text-center text-muted-foreground">
-                      No EPG data available
-                    </TableCell>
-                  )}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </div>
+      <div className="p-4">
+        <div>No upcoming shows</div>
+        <div className="text-xs mt-2 text-gray-500">
+          Total shows in data: {epgQuery.data.length}
+        </div>
+        <div className="text-xs text-gray-500">
+          Current time: {new Date().toLocaleString()}
         </div>
       </div>
     );
-  };
-  return epg && epg.length ? _mapHeaderRows() : null;
+  }
+
+  return (
+    <TooltipProvider>
+      <div className="w-full">
+        <ScrollArea className="w-full">
+          <div className="flex gap-4 pb-4 pr-4">
+            {shows.map((show, index) => {
+              const startTime = parseDateTime(show.start);
+              const endTime = parseDateTime(show.stop);
+              const duration = formatDuration(startTime, endTime);
+              const isPlaying = isCurrentlyPlaying(show);
+
+              return (
+                <Card
+                  key={index}
+                  className={`flex flex-col flex-shrink-0 w-80 ${
+                    isPlaying ? "ring-1 ring-primary" : ""
+                  }`}
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm font-medium text-muted-foreground">
+                        {formatTime(startTime)} - {formatTime(endTime)}
+                      </CardTitle>
+                      <Badge variant="outline" className="text-xs">
+                        {duration}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="flex flex-col flex-1">
+                    <h4 className="font-semibold leading-tight mb-3">
+                      {show.title}
+                    </h4>
+
+                    <p className="text-sm text-muted-foreground line-clamp-3 flex-1">
+                      {show.description}
+                    </p>
+
+                    <div className="flex items-center justify-between mt-3">
+                      {isPlaying && (
+                        <Badge variant="default" className="w-fit">
+                          Now Playing
+                        </Badge>
+                      )}
+
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon"
+                            variant="outline"
+                            className="h-8 w-8 rounded-full bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950/50 dark:border-red-800 dark:hover:bg-red-900/50 ml-auto"
+                          >
+                            <Icons.record className="h-4 w-4 text-red-600 dark:text-red-400" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Record</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+          <ScrollBar orientation="horizontal" className="mt-2" />
+        </ScrollArea>
+      </div>
+    </TooltipProvider>
+  );
 };
 
 export default EPGComponent;

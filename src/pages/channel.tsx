@@ -147,10 +147,6 @@ const ChannelPage = () => {
     );
   }
 
-  if (channelQuery.isLoading) {
-    return <Loading />;
-  }
-
   if (!channelQuery.data) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

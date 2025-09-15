@@ -1,7 +1,12 @@
+import { Icons } from "@/components/icons";
 import React from "react";
 
-const Loading: React.FC = () => {
-  return <span className="loading loading-spinner text-secondary"></span>;
+type LoadingProps = {
+  children?: React.ReactNode;
+};
+
+const Loading: React.FC<LoadingProps> = ({ children }) => {
+  return <Icons.loader className="animate-spin p-1"> {children}</Icons.loader>;
 };
 
 export default Loading;

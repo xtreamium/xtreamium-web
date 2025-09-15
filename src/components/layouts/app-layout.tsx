@@ -7,6 +7,7 @@ import { ApiService } from "@/services";
 import LoginPage from "@/pages/auth/login-page";
 import useServerStore from "@/services/state/server.state";
 import { Toaster } from "sonner";
+import Loading from "@/components/loading";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -23,7 +24,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     setSelectedServer(query.data.servers[0].id);
   }
   if (query.isLoading) {
-    return <div>Loading...</div>;
+    return <Loading>Farts</Loading>;
   }
   if (!query.data) {
     return <LoginPage />;

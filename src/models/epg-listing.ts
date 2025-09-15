@@ -1,12 +1,4 @@
 import { convertUTCToLocal } from "@/lib/utils/date-utils";
-
-export interface IEPGListingMap {
-  channel: string;
-  start: number;
-  stop: number;
-  title: string[];
-  desc: string[];
-}
 export class EPGListing {
   channel!: string;
   private start!: number;
