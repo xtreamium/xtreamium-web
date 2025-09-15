@@ -62,17 +62,19 @@ const EpgItem: React.FC<EpgItemProps> = ({
       <HoverCard>
         <HoverCardTrigger asChild>
           <div className="w-full h-full p-2 cursor-pointer flex items-center justify-center text-sm font-medium transition-colors hover:text-secondary-foreground">
-            {title}
+            <span className="truncate text-center w-full">
+              {title}
+            </span>
           </div>
         </HoverCardTrigger>
-        <HoverCardContent className="w-80 max-w-sm p-0 border-border shadow-lg">
+        <HoverCardContent className="w-80 max-w-sm p-0 border-border shadow-lg bg-popover">
           <div className="bg-primary px-4 py-3 rounded-t-lg">
             <h3 className="text-primary-foreground font-semibold text-base leading-tight">
               {title}
             </h3>
           </div>
-          <div className="bg-card p-4 space-y-4 rounded-b-lg">
-            <p className="text-foreground text-sm leading-relaxed font-medium">
+          <div className="bg-popover p-4 space-y-4 rounded-b-lg">
+            <p className="text-popover-foreground text-sm leading-relaxed font-medium">
               {description}
             </p>
             <div className="flex items-center justify-between pt-3 border-t border-border">

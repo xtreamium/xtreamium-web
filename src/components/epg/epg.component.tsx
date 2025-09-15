@@ -1,21 +1,16 @@
 import { ApiService } from "@/services";
 import type { Server } from "@/models/server";
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
 import {
-  Tooltip,
-  TooltipContent,
   TooltipProvider,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Icons } from "@/components/icons";
+import EpgItem from "./epg-item";
 
 interface IEPGComponentProps {
   server: Server;
   channelId: string;
+  streamId: number;
 }
 
 interface RawEPGItem {
@@ -26,7 +21,7 @@ interface RawEPGItem {
   categories: string[];
 }
 
-const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
+const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   const epgQuery = useQuery({
     queryKey: [`epg_${channelId}`],
     queryFn: () => {
@@ -58,18 +53,6 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
       minute: "2-digit",
       hour12: false,
     });
-  };
-
-  const formatDuration = (start: number, end: number): string => {
-    const durationMs = end - start;
-    const minutes = Math.floor(durationMs / (1000 * 60));
-    const hours = Math.floor(minutes / 60);
-    const remainingMinutes = minutes % 60;
-
-    if (hours > 0) {
-      return `${hours}h ${remainingMinutes}m`;
-    }
-    return `${remainingMinutes}m`;
   };
 
   const getCurrentAndUpcomingShows = (epgData: unknown[]) => {
@@ -135,73 +118,75 @@ const EPGComponent = ({ server, channelId }: IEPGComponentProps) => {
     );
   }
 
+  // Timeline View Render Function
+  const renderTimelineView = () => (
+    <ScrollArea className="w-full">
+      <div className="flex pb-4 pr-4">
+        {/* Time Header */}
+        <div className="h-16 bg-purple-500 flex items-center justify-center text-white text-sm font-medium min-w-0 flex-1">
+          {shows.map((show, index) => {
+            const startTime = parseDateTime(show.start);
+            const endTime = parseDateTime(show.stop);
+            const duration = endTime - startTime;
+            const width = Math.max(120, (duration / (1000 * 60)) * 2); // 2px per minute, min 120px
+            
+            return (
+              <div
+                key={`time-${index}`}
+                className="border-r border-purple-400 px-2 text-center flex-shrink-0"
+                style={{ width: `${width}px` }}
+              >
+                {formatTime(startTime)}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      
+      <div className="flex pb-4 pr-4">
+        {/* Program Row */}
+        <div className="h-12 bg-orange-500 flex items-center text-white text-sm font-medium min-w-0 flex-1">
+          {shows.map((show, index) => {
+            const startTime = parseDateTime(show.start);
+            const endTime = parseDateTime(show.stop);
+            const duration = endTime - startTime;
+            const width = Math.max(120, (duration / (1000 * 60)) * 2); // 2px per minute, min 120px
+            const isPlaying = isCurrentlyPlaying(show);
+            
+            return (
+              <div
+                key={`show-${index}`}
+                className={`border-r border-orange-400 flex-shrink-0 ${
+                  isPlaying ? 'bg-orange-600' : ''
+                }`}
+                style={{ width: `${width}px`, height: '48px' }}
+              >
+                <EpgItem
+                  channelUrl={`${server.url}/live/${server.username}/${server.password}/${streamId}.m3u8`}
+                  title={show.title}
+                  description={show.description}
+                  startTime={startTime}
+                  endTime={endTime}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <ScrollBar orientation="horizontal" className="mt-2" />
+    </ScrollArea>
+  );
+
   return (
     <TooltipProvider>
       <div className="w-full">
-        <ScrollArea className="w-full">
-          <div className="flex gap-4 pb-4 pr-4">
-            {shows.map((show, index) => {
-              const startTime = parseDateTime(show.start);
-              const endTime = parseDateTime(show.stop);
-              const duration = formatDuration(startTime, endTime);
-              const isPlaying = isCurrentlyPlaying(show);
-
-              return (
-                <Card
-                  key={index}
-                  className={`flex flex-col flex-shrink-0 w-80 ${
-                    isPlaying ? "ring-1 ring-primary" : ""
-                  }`}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium text-muted-foreground">
-                        {formatTime(startTime)} - {formatTime(endTime)}
-                      </CardTitle>
-                      <Badge variant="outline" className="text-xs">
-                        {duration}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="flex flex-col flex-1">
-                    <h4 className="font-semibold leading-tight mb-3">
-                      {show.title}
-                    </h4>
-
-                    <p className="text-sm text-muted-foreground line-clamp-3 flex-1">
-                      {show.description}
-                    </p>
-
-                    <div className="flex items-center justify-between mt-3">
-                      {isPlaying && (
-                        <Badge variant="default" className="w-fit">
-                          Now Playing
-                        </Badge>
-                      )}
-
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            size="icon"
-                            variant="outline"
-                            className="h-8 w-8 rounded-full bg-red-50 border-red-200 hover:bg-red-100 dark:bg-red-950/50 dark:border-red-800 dark:hover:bg-red-900/50 ml-auto"
-                          >
-                            <Icons.record className="h-4 w-4 text-red-600 dark:text-red-400" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Record</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-          <ScrollBar orientation="horizontal" className="mt-2" />
-        </ScrollArea>
+        {/* View Toggle */}
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">TV Guide</h3>
+        </div>
+        
+        {/* Timeline view */}
+        {renderTimelineView()}
       </div>
     </TooltipProvider>
   );

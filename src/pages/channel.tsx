@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import useServerStore from "@/services/state/server.state";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
-import Loading from "@/components/loading";
 import type { Stream } from "@/models/stream";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -254,6 +253,7 @@ const ChannelPage = () => {
                 <EPGComponent
                   server={server}
                   channelId={stream.epg_channel_id}
+                  streamId={stream.stream_id}
                 />
               </Suspense>
             </CardContent>
