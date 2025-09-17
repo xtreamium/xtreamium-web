@@ -6,6 +6,12 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import EpgItem from "./epg-item";
+import {
+  getPrevious30MinuteBoundary,
+  generate30MinuteIntervals,
+  calculateTimelineWidth,
+  THIRTY_MINUTES_MS
+} from "@/utils/date-utils";
 
 interface IEPGComponentProps {
   server: Server;
@@ -119,73 +125,80 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   }
 
   // Timeline View Render Function
-  const renderTimelineView = () => (
-    <ScrollArea className="w-full">
-      <div className="flex pb-4 pr-4">
-        {/* Time Header */}
-        <div className="h-16 bg-purple-500 flex items-center justify-center text-white text-sm font-medium min-w-0 flex-1">
-          {shows.map((show, index) => {
-            const startTime = parseDateTime(show.start);
-            const endTime = parseDateTime(show.stop);
-            const duration = endTime - startTime;
-            const width = Math.max(120, (duration / (1000 * 60)) * 2); // 2px per minute, min 120px
-            
-            return (
+  const renderTimelineView = () => {
+    const now = Date.now();
+    const INTERVAL_WIDTH = 120; // pixels per 30-minute interval
+    
+    // Get the start boundary (previous 30-minute interval to now)
+    const timelineStart = getPrevious30MinuteBoundary(now);
+    
+    // Calculate timeline end based on all shows
+    const lastShowEnd = Math.max(...shows.map(show => parseDateTime(show.stop)));
+    const timelineEnd = lastShowEnd + THIRTY_MINUTES_MS; // Add buffer
+    
+    // Generate 30-minute intervals for the timeline
+    const timeIntervals = generate30MinuteIntervals(timelineStart, timelineEnd - timelineStart);
+    const totalTimelineWidth = timeIntervals.length * INTERVAL_WIDTH;
+    
+    return (
+      <ScrollArea className="w-full">
+        <div className="pb-4 pr-4" style={{ width: `${totalTimelineWidth}px` }}>
+          {/* Time Header */}
+          <div className="h-10 bg-purple-500 flex items-center text-white text-sm font-medium">
+            {timeIntervals.map((intervalStart, index) => (
               <div
                 key={`time-${index}`}
-                className="border-r border-purple-400 px-2 text-center flex-shrink-0"
-                style={{ width: `${width}px` }}
+                className="border-r border-purple-400 px-2 text-left flex-shrink-0 flex items-center"
+                style={{ width: `${INTERVAL_WIDTH}px` }}
               >
-                {formatTime(startTime)}
+                {formatTime(intervalStart)}
               </div>
-            );
-          })}
+            ))}
+          </div>
+          
+          {/* Program Row */}
+          <div className="h-12 bg-orange-500 text-white text-sm font-medium relative">
+            {shows.map((show, index) => {
+              const startTime = parseDateTime(show.start);
+              const endTime = parseDateTime(show.stop);
+              const isPlaying = isCurrentlyPlaying(show);
+              
+              // Calculate position and width based on timeline
+              const leftOffset = ((startTime - timelineStart) / THIRTY_MINUTES_MS) * INTERVAL_WIDTH;
+              const width = calculateTimelineWidth(startTime, endTime, INTERVAL_WIDTH);
+              
+              return (
+                <div
+                  key={`show-${index}`}
+                  className={`absolute border-r border-orange-400 ${
+                    isPlaying ? 'bg-orange-600' : ''
+                  }`}
+                  style={{ 
+                    left: `${leftOffset}px`,
+                    width: `${width}px`, 
+                    height: '48px' 
+                  }}
+                >
+                  <EpgItem
+                    channelUrl={`${server.url}/live/${server.username}/${server.password}/${streamId}.m3u8`}
+                    title={show.title}
+                    description={show.description}
+                    startTime={startTime}
+                    endTime={endTime}
+                  />
+                </div>
+              );
+            })}
+          </div>
         </div>
-      </div>
-      
-      <div className="flex pb-4 pr-4">
-        {/* Program Row */}
-        <div className="h-12 bg-orange-500 flex items-center text-white text-sm font-medium min-w-0 flex-1">
-          {shows.map((show, index) => {
-            const startTime = parseDateTime(show.start);
-            const endTime = parseDateTime(show.stop);
-            const duration = endTime - startTime;
-            const width = Math.max(120, (duration / (1000 * 60)) * 2); // 2px per minute, min 120px
-            const isPlaying = isCurrentlyPlaying(show);
-            
-            return (
-              <div
-                key={`show-${index}`}
-                className={`border-r border-orange-400 flex-shrink-0 ${
-                  isPlaying ? 'bg-orange-600' : ''
-                }`}
-                style={{ width: `${width}px`, height: '48px' }}
-              >
-                <EpgItem
-                  channelUrl={`${server.url}/live/${server.username}/${server.password}/${streamId}.m3u8`}
-                  title={show.title}
-                  description={show.description}
-                  startTime={startTime}
-                  endTime={endTime}
-                />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      <ScrollBar orientation="horizontal" className="mt-2" />
-    </ScrollArea>
-  );
+        <ScrollBar orientation="horizontal" className="mt-2" />
+      </ScrollArea>
+    );
+  };
 
   return (
     <TooltipProvider>
       <div className="w-full">
-        {/* View Toggle */}
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">TV Guide</h3>
-        </div>
-        
-        {/* Timeline view */}
         {renderTimelineView()}
       </div>
     </TooltipProvider>

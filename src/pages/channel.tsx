@@ -167,14 +167,14 @@ const ChannelPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div className="space-y-4">
+    <div className="container mx-auto px-4 py-4 space-y-3">
+      <div className="space-y-3">
         {channelQuery.data.map((stream: Stream) => (
           <Card key={stream.stream_id} className="overflow-hidden">
-            <CardHeader className="pb-4">
-              <div className="flex items-center gap-4">
+            <CardHeader className="pb-2 pt-3">
+              <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
-                  <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted border">
+                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted border">
                     <ImageWithFallback
                       className="w-full h-full object-cover"
                       src={stream.stream_icon}
@@ -184,10 +184,10 @@ const ChannelPage = () => {
                   </div>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-lg truncate">
+                  <h3 className="font-semibold text-foreground text-base truncate">
                     {stream.name}
                   </h3>
-                  <Badge variant="secondary" className="mt-1">
+                  <Badge variant="secondary" className="mt-0.5 text-xs">
                     Stream ID: {stream.stream_id}
                   </Badge>
                 </div>
@@ -198,9 +198,9 @@ const ChannelPage = () => {
                       variant="outline"
                       title="Cast stream to device"
                       onClick={() => playStream(stream.stream_id)}
-                      className="gap-2"
+                      className="gap-1.5 h-8 px-2 text-xs"
                     >
-                      <Icons.cast className="h-4 w-4" />
+                      <Icons.cast className="h-3.5 w-3.5" />
                       Cast
                     </Button>
                   )}
@@ -209,9 +209,9 @@ const ChannelPage = () => {
                     variant="default"
                     title="Play to xtreamium local proxy"
                     onClick={() => playStream(stream.stream_id)}
-                    className="gap-2"
+                    className="gap-1.5 h-8 px-2 text-xs"
                   >
-                    <Icons.airplay className="h-4 w-4" />
+                    <Icons.airplay className="h-3.5 w-3.5" />
                     Play
                   </Button>
                   {import.meta.env.DEV && (
@@ -220,9 +220,9 @@ const ChannelPage = () => {
                       variant="secondary"
                       title="Play stream in browser"
                       onClick={() => playStreamInternal(stream.stream_id)}
-                      className="gap-2"
+                      className="gap-1.5 h-8 px-2 text-xs"
                     >
-                      <Icons.play className="h-4 w-4" />
+                      <Icons.play className="h-3.5 w-3.5" />
                       Browser
                     </Button>
                   )}
@@ -231,20 +231,20 @@ const ChannelPage = () => {
                     variant="outline"
                     title="Copy stream URL"
                     onClick={() => copyStreamUrl(stream.stream_id)}
-                    className="gap-2"
+                    className="gap-1.5 h-8 px-2 text-xs"
                   >
-                    <Icons.copy className="h-4 w-4" />
+                    <Icons.copy className="h-3.5 w-3.5" />
                     Copy
                   </Button>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-0">
+            <CardContent className="pt-0 pb-3">
               <Suspense
                 fallback={
-                  <div className="py-8 text-center">
-                    <div className="inline-flex items-center gap-2 text-muted-foreground">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                  <div className="py-4 text-center">
+                    <div className="inline-flex items-center gap-2 text-muted-foreground text-sm">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
                       Loading EPG...
                     </div>
                   </div>
