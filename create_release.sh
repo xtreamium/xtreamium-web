@@ -114,8 +114,12 @@ if ! git rev-parse --git-dir > /dev/null 2>&1; then
 fi
 
 # Check if we have uncommitted changes
+# Refresh the index first to avoid false positives
+git update-index --refresh >/dev/null 2>&1 || true
+
 if ! git diff-index --quiet HEAD --; then
     print_error "You have uncommitted changes. Please commit or stash them before creating a release."
+    print_status "Run 'git status' to see the changes."
     exit 1
 fi
 
