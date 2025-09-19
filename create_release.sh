@@ -14,9 +14,9 @@ BUMP_TYPE="patch"
 
 # Cleanup function to restore package.json if script exits unexpectedly
 cleanup() {
-    if [ -f "package.json.backup" ]; then
+    if [ -f "~package.json" ]; then
         print_warning "Script interrupted. Restoring original package.json..."
-        mv package.json.backup package.json
+        mv ~package.json package.json
         print_success "Original package.json restored"
     fi
 }
@@ -184,7 +184,7 @@ fi
 print_status "Updating package.json version to $NEW_VERSION"
 
 # Create a backup of the original package.json
-cp package.json package.json.backup
+cp package.json ~package.json
 
 if command -v node &> /dev/null; then
     node -e "
@@ -218,14 +218,14 @@ fi
 # Check if build failed and restore backup if needed
 if [ "$BUILD_SUCCESS" = false ]; then
     print_error "Build failed! Restoring original package.json..."
-    mv package.json.backup package.json
+    mv ~package.json package.json
     print_error "Package.json has been restored to original state"
     print_error "Please fix the build issues before creating a release"
     exit 1
 fi
 
 # Remove backup since build succeeded
-rm package.json.backup
+rm ~package.json
 print_success "Build completed successfully"
 
 # Commit the version change
