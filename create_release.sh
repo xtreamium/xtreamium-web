@@ -9,6 +9,21 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Default version bump type
+BUMP_TYPE="patch"
+
+# Cleanup function to restore package.json if script exits unexpectedly
+cleanup() {
+    if [ -f "package.json.backup" ]; then
+        print_warning "Script interrupted. Restoring original package.json..."
+        mv package.json.backup package.json
+        print_success "Original package.json restored"
+    fi
+}
+
+# Set up trap to call cleanup on script exit
+trap cleanup EXIT
+
 # Function to print colored output
 print_status() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -25,6 +40,72 @@ print_warning() {
 print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
+
+# Function to show help
+show_help() {
+    cat << EOF
+Usage: $(basename "$0") [OPTIONS]
+
+Create a new release by incrementing the version in package.json and publishing to GitHub.
+
+OPTIONS:
+    -h, --help      Show this help message and exit
+    -M, --major     Increment major version (X.0.0)
+    -m, --minor     Increment minor version (X.Y.0)
+    -p, --patch     Increment patch version (X.Y.Z) [default]
+
+EXAMPLES:
+    $(basename "$0")              # Increment patch version (default)
+    $(basename "$0") --patch      # Increment patch version
+    $(basename "$0") --minor      # Increment minor version
+    $(basename "$0") --major      # Increment major version
+
+DESCRIPTION:
+    This script will:
+    1. Check for uncommitted changes (must be clean)
+    2. Read current version from package.json
+    3. Increment the specified version component
+    4. Update package.json with new version
+    5. Build the project to verify it works
+    6. Commit the version change to git
+    7. Create and push a git tag
+    8. Create a GitHub release (if gh CLI is available)
+
+REQUIREMENTS:
+    - Git repository with remote configured
+    - Node.js (for reading/updating package.json)
+    - Clean working directory (no uncommitted changes)
+    - GitHub CLI (gh) for automatic release creation (optional)
+
+EOF
+}
+
+# Parse command line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -M|--major)
+            BUMP_TYPE="major"
+            shift
+            ;;
+        -m|--minor)
+            BUMP_TYPE="minor"
+            shift
+            ;;
+        -p|--patch)
+            BUMP_TYPE="patch"
+            shift
+            ;;
+        *)
+            print_error "Unknown option: $1"
+            echo "Use --help for usage information."
+            exit 1
+            ;;
+    esac
+done
 
 # Check if we're in a git repository
 if ! git rev-parse --git-dir > /dev/null 2>&1; then
@@ -55,6 +136,7 @@ fi
 # Get current version from package.json
 CURRENT_VERSION=$(node -p "require('./package.json').version")
 print_status "Current version: $CURRENT_VERSION"
+print_status "Bump type: $BUMP_TYPE"
 
 # Split version into parts
 IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
@@ -62,11 +144,33 @@ MAJOR=${VERSION_PARTS[0]}
 MINOR=${VERSION_PARTS[1]}
 PATCH=${VERSION_PARTS[2]}
 
-# Increment patch version
-NEW_PATCH=$((PATCH + 1))
-NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+# Calculate new version based on bump type
+case $BUMP_TYPE in
+    major)
+        NEW_MAJOR=$((MAJOR + 1))
+        NEW_MINOR=0
+        NEW_PATCH=0
+        NEW_VERSION="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+        ;;
+    minor)
+        NEW_MAJOR=$MAJOR
+        NEW_MINOR=$((MINOR + 1))
+        NEW_PATCH=0
+        NEW_VERSION="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+        ;;
+    patch)
+        NEW_MAJOR=$MAJOR
+        NEW_MINOR=$MINOR
+        NEW_PATCH=$((PATCH + 1))
+        NEW_VERSION="$NEW_MAJOR.$NEW_MINOR.$NEW_PATCH"
+        ;;
+    *)
+        print_error "Invalid bump type: $BUMP_TYPE"
+        exit 1
+        ;;
+esac
 
-print_status "New version will be: $NEW_VERSION"
+print_status "New version will be: $NEW_VERSION ($BUMP_TYPE bump)"
 
 # Ask for confirmation
 read -p "Do you want to create release $NEW_VERSION? (y/N): " -n 1 -r
@@ -78,6 +182,10 @@ fi
 
 # Update package.json version
 print_status "Updating package.json version to $NEW_VERSION"
+
+# Create a backup of the original package.json
+cp package.json package.json.backup
+
 if command -v node &> /dev/null; then
     node -e "
         const fs = require('fs');
@@ -95,12 +203,29 @@ print_success "Updated package.json version"
 
 # Build the project to ensure everything works
 print_status "Building project to verify everything works..."
+BUILD_SUCCESS=true
+
 if command -v bun &> /dev/null; then
-    bun run build
+    if ! bun run build; then
+        BUILD_SUCCESS=false
+    fi
 else
-    npm run build
+    if ! npm run build; then
+        BUILD_SUCCESS=false
+    fi
 fi
 
+# Check if build failed and restore backup if needed
+if [ "$BUILD_SUCCESS" = false ]; then
+    print_error "Build failed! Restoring original package.json..."
+    mv package.json.backup package.json
+    print_error "Package.json has been restored to original state"
+    print_error "Please fix the build issues before creating a release"
+    exit 1
+fi
+
+# Remove backup since build succeeded
+rm package.json.backup
 print_success "Build completed successfully"
 
 # Commit the version change
@@ -147,6 +272,9 @@ else
     print_warning "GitHub CLI not available. Please create the release manually at:"
     print_warning "https://github.com/xtreamium/xtreamium-web/releases/new?tag=v$NEW_VERSION"
 fi
+
+# Clear the trap since we completed successfully
+trap - EXIT
 
 print_success "Release process completed!"
 print_status "Version $NEW_VERSION has been:"
