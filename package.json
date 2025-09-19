@@ -1,14 +1,18 @@
 {
   "name": "xtreamium-web",
   "private": true,
-  "version": "0.2.3",
+  "version": "0.2.2",
   "type": "module",
   "scripts": {
     "dev:plain": "vite",
     "dev": "vite & local-ssl-proxy --key /etc/letsencrypt/live/dev.fergl.ie/privkey.pem --cert /etc/letsencrypt/live/dev.fergl.ie/fullchain.pem --source 3000 --target 5173",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "release": "./scripts/create_release.sh",
+    "release:patch": "./scripts/create_release.sh --patch",
+    "release:minor": "./scripts/create_release.sh --minor",
+    "release:major": "./scripts/create_release.sh --major"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

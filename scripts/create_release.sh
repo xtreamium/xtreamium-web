@@ -2,6 +2,27 @@
 
 set -e
 
+# Change to the project root directory (parent of scripts/)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
+cd "$PROJECT_ROOT"
+
+print_status() {
+    echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+print_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+print_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
+}
+
+print_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -11,6 +32,8 @@ NC='\033[0m' # No Color
 
 # Default version bump type
 BUMP_TYPE="patch"
+
+print_status "Working directory: $(pwd)"
 
 # Cleanup function to restore package.json if script exits unexpectedly
 cleanup() {
