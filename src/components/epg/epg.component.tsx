@@ -154,7 +154,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
       <ScrollArea className="w-full">
         <div className="pb-4 pr-4" style={{ width: `${totalTimelineWidth}px` }}>
           {/* Time Header */}
-          <div className="h-10 bg-purple-500 flex items-center text-white text-sm font-medium">
+          <div className="h-10 bg-primary flex items-center text-primary-foreground text-sm font-medium">
             {timeIntervals.map((intervalStart, index) => {
               const isFirstInterval = index === 0;
               const intervalWidth = isFirstInterval ? firstIntervalWidth : INTERVAL_WIDTH;
@@ -162,7 +162,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
               return (
                 <div
                   key={`time-${index}`}
-                  className="border-r border-purple-400 px-2 text-left flex-shrink-0 flex items-center"
+                  className="border-r border-primary-foreground/20 px-2 text-left flex-shrink-0 flex items-center"
                   style={{ width: `${intervalWidth}px` }}
                 >
                   {formatTime(intervalStart)}
@@ -172,7 +172,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
           </div>
           
           {/* Program Row */}
-          <div className="h-12 bg-orange-500 text-white text-sm font-medium relative">
+          <div className="h-12 bg-secondary text-secondary-foreground text-sm font-medium relative">
             {shows.map((show, index) => {
               const startTime = parseDateTime(show.start);
               const endTime = parseDateTime(show.stop);
@@ -204,8 +204,8 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
               return (
                 <div
                   key={`show-${index}`}
-                  className={`absolute border-r border-orange-400 ${
-                    isPlaying ? 'bg-orange-600' : ''
+                  className={`absolute border-r border-border transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer ${
+                    isPlaying ? 'bg-accent text-accent-foreground' : 'bg-secondary/80 text-secondary-foreground'
                   }`}
                   style={{ 
                     left: `${leftOffset}px`,
