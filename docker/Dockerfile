@@ -1,16 +1,16 @@
-FROM node:24-alpine AS builder
+FROM oven/bun:1-alpine AS builder
 
 ARG RUN_MODE=production
 
 WORKDIR /app
-COPY package.json package-lock.json* ./
+COPY package.json bun.lockb ./
 COPY .env.${RUN_MODE} .env
 
-RUN npm install
+RUN bun install --frozen-lockfile
 COPY . .
 
 ENV NODE_ENV=$RUN_MODE
-RUN npm run build
+RUN bun run build
 
 FROM nginx:alpine
 
