@@ -1,16 +1,16 @@
-FROM node:lts as builder
+FROM oven/bun:latest as builder
 
 ARG RUN_MODE=production
 
 WORKDIR /app
-COPY package.json package.json
+COPY package.json bun.lockb ./
 COPY .env.${RUN_MODE} .env
 
-RUN yarn install
+RUN bun install --frozen-lockfile
 COPY . .
 
 ENV NODE_ENV=$RUN_MODE
-RUN yarn build --mode $RUN_MODE
+RUN bun run build --mode $RUN_MODE
 
 FROM nginx:alpine
 ENV NODE_ENV=$RUN_MODE
