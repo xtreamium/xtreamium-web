@@ -31,8 +31,8 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            docker.io/fergalmoran/xtreamium-frontend
-            ghcr.io/xtreamium/xtreamium-frontend
+            docker.io/fergalmoran/xtreamium-web
+            ghcr.io/xtreamium/xtreamium-web
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
