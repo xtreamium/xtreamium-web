@@ -1,69 +1,175 @@
-# React + TypeScript + Vite
+# Xtreamium Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React-based web application for streaming IPTV content from your subscription to a local proxy application, which launches media players like MPV or VLC to play the streams.
 
-Currently, two official plugins are available:
+## 🎥 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **IPTV Stream Management** - Browse and organize your IPTV channels
+- **EPG Integration** - Electronic Program Guide support for channel listings
+- **Local Proxy Integration** - Connects to a local ASP.NET proxy application
+- **Multi-Server Support** - Manage multiple IPTV server configurations
+- **Channel Search** - Find channels quickly with built-in search
+- **Theme Support** - Dark/light theme toggle
+- **Responsive Design** - Works on desktop and mobile devices
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: React 19 + TypeScript + Vite
+- **UI Components**: Radix UI + shadcn/ui + Tailwind CSS v4
+- **State Management**: Zustand + TanStack Query
+- **Routing**: React Router v7
+- **HTTP Client**: Axios
+- **Package Manager**: Bun
+- **Build Tool**: Vite
+- **Deployment**: Docker + Nginx
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Quick Start
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- [Bun](https://bun.sh/) (latest version)
+- Node.js 18+ (for development)
+
+### Development Setup
+
+1. **Clone the repository**
+
+   ```bash
+   git clone <repository-url>
+   cd xtreamium-web
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   bun install
+   ```
+
+3. **Set up environment**
+
+   ```bash
+   # Copy environment file
+   cp .env.production .env.development
+   # Edit the environment file with your settings
+   ```
+
+4. **Start development server**
+
+   ```bash
+   # Plain development (HTTP)
+   bun run dev:plain
+   
+   # Development with SSL proxy (HTTPS)
+   bun run dev
+   ```
+
+The application will be available at:
+
+- HTTP: `http://localhost:5173`
+- HTTPS: `https://streams.dev.fergl.ie:3000` (requires SSL certificates)
+
+### Building for Production
+
+```bash
+# Build the application
+bun run build
+
+# Preview the production build
+bun run preview
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Docker Deployment
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+```bash
+# Build Docker image
+./scripts/build_docker.sh
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Or with custom tag and environment
+./scripts/build_docker.sh xtreamium-web:v1.0.0 production
+
+# Run the container
+docker run -p 8080:80 xtreamium-web:latest
 ```
+
+## 📦 Scripts
+
+- `bun run dev` - Start development server with SSL proxy
+- `bun run dev:plain` - Start development server (HTTP only)
+- `bun run build` - Build for production
+- `bun run lint` - Run ESLint
+- `bun run preview` - Preview production build
+- `bun run release` - Create a new release
+- `bun run release:patch` - Create a patch release
+- `bun run release:minor` - Create a minor release  
+- `bun run release:major` - Create a major release
+
+## 🏗️ Architecture
+
+The application consists of three main components:
+
+1. **Frontend Web App** (this repository) - React-based UI for managing streams
+2. **Backend API Server** - Python FastAPI server for business logic
+3. **Local Proxy Application** - ASP.NET application running in user space
+
+## 🧩 Key Components
+
+- **Channel Management** - Browse and search IPTV channels
+- **EPG (Electronic Program Guide)** - View program schedules
+- **Server Configuration** - Manage multiple IPTV server connections
+- **Proxy Integration** - Interface with local media player proxy
+- **Theme System** - Dark/light mode with system preference detection
+
+## 🎨 UI Components
+
+Built with [shadcn/ui](https://ui.shadcn.com/) components:
+
+- All UI components are in `src/components/ui/` (do not edit directly)
+- Custom components should be created in `src/components/`
+- Components use snake-case filenames and CamelCase component names
+
+## 🔧 Development Guidelines
+
+- **Package Manager**: Use `bun` for all operations (install, run, build)
+- **API Calls**: Use Axios for HTTP requests
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **File Naming**: snake-case for files, CamelCase for React components
+- **Comments**: Keep to a minimum, only where absolutely necessary
+
+## 📁 Project Structure
+
+```text
+src/
+├── components/          # React components
+│   ├── ui/             # shadcn/ui components (don't edit)
+│   ├── layouts/        # Layout components
+│   ├── navigation/     # Navigation components
+│   ├── widgets/        # Reusable widgets
+│   └── epg/           # EPG-specific components
+├── pages/              # Page components
+├── hooks/              # Custom React hooks
+├── services/           # API and service layer
+├── models/             # TypeScript type definitions
+├── contexts/           # React contexts
+├── lib/               # Utility libraries
+└── utils/             # Helper utilities
+```
+
+## 🚢 Deployment
+
+The application is containerized using Docker with multi-stage builds:
+
+1. **Builder Stage**: Uses Bun to install dependencies and build the app
+2. **Runtime Stage**: Uses Nginx Alpine to serve the static files
+
+GitHub Actions automatically builds and publishes Docker images on tagged releases.
+
+## 🤝 Contributing
+
+1. Follow the existing code style and conventions
+2. Use `bun` for all package management operations
+3. Test locally before submitting changes
+4. Keep component modifications minimal and ask before editing shadcn/ui components
+
+## 📄 License
+
+This project is private and proprietary.
