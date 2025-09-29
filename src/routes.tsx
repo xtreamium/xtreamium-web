@@ -5,6 +5,7 @@ import HomePage from "@/pages/home";
 import AboutPage from "@/pages/about";
 import SettingsPage from "@/pages/settings";
 import LoginPage from "@/pages/auth/login-page";
+import RegisterPage from "@/pages/auth/register-page";
 import NotFoundPage from "@/pages/404";
 import ChannelPage from "@/pages/channel";
 import ProxySettingsPage from "@/pages/proxy-settings.page";
@@ -14,7 +15,8 @@ export const AppRoutes = () => {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/auth/login" element={<LoginPage />} />
+      <Route path="/auth/register" element={<RegisterPage />} />
 
       {/* Protected routes */}
       <Route path="/" element={<HomePage />} />

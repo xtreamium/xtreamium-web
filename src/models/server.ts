@@ -1,5 +1,5 @@
 export interface Server {
-  id: number;
+  id: string;
   name: string;
   url: string;
   username: string;

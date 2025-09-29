@@ -12,46 +12,52 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
+import { useNavigate } from "react-router-dom";
 
-type LoginFormData = {
+type RegisterFormData = {
   email: string;
   password: string;
+  confirmPassword: string;
 };
 
-const LoginPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<LoginFormData>({
+  } = useForm<RegisterFormData>({
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
+  const navigate = useNavigate();
   const auth = useAuth();
-  const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
+  const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setFormError(null);
-    try {
-      await auth.login(data.email, data.password);
-    } catch (error) {
-      setFormError("Invalid email or password. Please try again.");
+    const result = await auth.register(data.email, data.password);
+    if (result) {
+      navigate("/");
+    } else {
+      setFormError("Registration failed. Please try again.");
     }
-  };  return (
+  };
+  return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-br from-background to-muted/20">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Create account</h1>
           <p className="text-muted-foreground">
-            Sign in to your account to continue
+            Sign up to get started with your account
           </p>
         </div>
         <Card className="border-border/50 shadow-lg">
           <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl text-center">Sign in</CardTitle>
+            <CardTitle className="text-2xl text-center">Sign up</CardTitle>
             <CardDescription className="text-center">
-              Choose your preferred sign in method
+              Choose your preferred sign up method
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pb-8">
@@ -105,9 +111,15 @@ const LoginPage: React.FC = () => {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder="Create a password"
                   className="h-11"
-                  {...register("password")}
+                  {...register("password", {
+                    required: "Password is required",
+                    minLength: {
+                      value: 8,
+                      message: "Password must be at least 8 characters",
+                    },
+                  })}
                   aria-invalid={errors.password ? "true" : "false"}
                 />
                 {errors.password && (
@@ -116,9 +128,47 @@ const LoginPage: React.FC = () => {
                   </p>
                 )}
               </div>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="text-sm font-medium"
+                >
+                  Confirm Password
+                </Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  placeholder="Confirm your password"
+                  className="h-11"
+                  {...register("confirmPassword", {
+                    required: "Please confirm your password",
+                    validate: (value, formValues) =>
+                      value === formValues.password || "Passwords do not match",
+                  })}
+                  aria-invalid={errors.confirmPassword ? "true" : "false"}
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-destructive">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
               {formError && (
                 <div className="rounded-md bg-destructive/15 p-3">
-                  <p className="text-sm text-destructive">{formError}</p>
+                  <p className="text-sm text-destructive">
+                    {formError}{" "}
+                    <div>
+                      Try{" "}
+                      <Button
+                        variant="link"
+                        className="px-0 h-auto text-destructive underline font-normal text-sm"
+                        onClick={() => (window.location.href = "/auth/login")}
+                      >
+                        signing in
+                      </Button>{" "}
+                      if you already registered.
+                    </div>
+                  </p>
                 </div>
               )}
               <div className="pt-2">
@@ -127,20 +177,20 @@ const LoginPage: React.FC = () => {
                   className="w-full h-11 font-medium"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Signing in..." : "Sign in with Email"}
+                  {isSubmitting ? "Creating account..." : "Create account"}
                 </Button>
               </div>
             </form>
           </CardContent>
         </Card>
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Already have an account?{" "}
           <Button
             variant="link"
             className="px-0 font-semibold"
-            onClick={() => (window.location.href = "/auth/register")}
+            onClick={() => (window.location.href = "/auth/login")}
           >
-            Sign up
+            Sign in
           </Button>
         </p>
       </div>
@@ -148,4 +198,4 @@ const LoginPage: React.FC = () => {
   );
 };
 
-export default LoginPage;
+export default RegisterPage;

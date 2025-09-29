@@ -146,7 +146,27 @@ const ChannelPage = () => {
     );
   }
 
-  if (!channelQuery.data) {
+  if (channelQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="max-w-md">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <Icons.loader className="mx-auto h-12 w-12 text-muted-foreground mb-4 animate-spin" />
+              <h3 className="text-lg font-semibold text-foreground">
+                Loading Channels
+              </h3>
+              <p className="text-muted-foreground mt-2">
+                Please wait while we fetch channel information...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (channelQuery.isError || !channelQuery.data || channelQuery.data.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md">
@@ -157,7 +177,10 @@ const ChannelPage = () => {
                 No Data Available
               </h3>
               <p className="text-muted-foreground mt-2">
-                Unable to load channel information.
+                {channelQuery.isError 
+                  ? "Failed to load channel information."
+                  : "No channels found for this category."
+                }
               </p>
             </div>
           </CardContent>
@@ -178,7 +201,7 @@ const ChannelPage = () => {
                     <ImageWithFallback
                       className="w-full h-full object-cover"
                       src={stream.stream_icon}
-                      alt={`${stream.name} icon`}
+                      alt={`${stream.name} - ${stream.stream_icon} icon`}
                       fallback="/images/unknown-stream.svg"
                     />
                   </div>

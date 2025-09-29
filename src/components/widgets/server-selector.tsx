@@ -39,7 +39,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
     );
   }
 
-  function _handleClick(id: number): void {
+  function _handleClick(id: string): void {
     setSelectedServer(id);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();

@@ -8,7 +8,7 @@ import type { User } from "@/models/user";
 type AuthContextProps = {
   user?: User;
   token: string;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string) => Promise<boolean>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   getUser: () => Promise<User | undefined>;
@@ -16,7 +16,7 @@ type AuthContextProps = {
 
 const AuthContext = React.createContext<AuthContextProps>({
   token: "",
-  register: async () => {},
+  register: async () => false,
   login: async () => {},
   logout: () => {},
   getUser: async () => undefined,
@@ -36,17 +36,14 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await apiService.register(email, password);
       if (response.status === StatusCodes.CREATED) {
-        setUser(response.data.user);
-        setToken(response.data.access_token);
-        localStorage.setItem(TOKEN_KEY, response.data.access_token);
         navigate("/");
-        location.reload();
-        return;
+        return true;
       }
       throw new Error(response.data);
     } catch (err) {
       console.error(err);
     }
+    return false;
   };
   const login = async (email: string, password: string) => {
     try {
@@ -62,6 +59,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw new Error(response.data);
     } catch (err) {
       console.error(err);
+      throw err; // Re-throw the error so the UI can catch it
     }
   };
   const logout = () => {

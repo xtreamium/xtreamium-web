@@ -2,14 +2,14 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 
 interface ServerState {
-  selectedServer: number;
-  setSelectedServer: (server: number) => void;
+  selectedServer: string;
+  setSelectedServer: (server: string) => void;
 }
 const useServerStore = create<ServerState>()(
   persist(
     (set) => ({
-      selectedServer: 0,
-      setSelectedServer: (server: number) =>
+      selectedServer: "",
+      setSelectedServer: (server: string) =>
         set(() => ({ selectedServer: server })),
     }),
     {

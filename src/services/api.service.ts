@@ -23,13 +23,12 @@ class ApiService {
     email: string,
     password: string
   ): Promise<AxiosResponse> => {
-    const params = new URLSearchParams();
-    params.append("username", email);
-    params.append("password", password);
-
-    const response = await http.post("/user", params.toString(), {
+    const response = await http.post("/user", {
+      email: email,
+      password: password
+    }, {
       headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
+        "Content-Type": "application/json",
       },
     });
 
@@ -155,14 +154,9 @@ class ApiService {
   };
   public checkUrl = async (url: string): Promise<boolean> => {
     try {
-      await fetch(url, {
-        method: "HEAD",
-        mode: "no-cors", // Use no-cors to avoid CORS issues when checking external URLs
-        cache: "no-cache",
-      });
-      // For no-cors mode, we can't check the actual response status
-      // but if the fetch doesn't throw, the URL is likely accessible
-      return true;
+      const options = this._getRequestOptions();
+      const response = await http.post("/utils/check-url", { url }, options);
+      return response.status === StatusCodes.OK && response.data.accessible;
     } catch (error) {
       logger.error("URL check failed", { url, error }, "api.service");
       return false;
@@ -175,7 +169,7 @@ class ApiService {
     username: string,
     password: string,
     epgUrl: string
-  ): Promise<boolean> => {
+  ): Promise<string> => {
     logger.info(
       "Adding server",
       { url: import.meta.env.VITE_API_URL },
@@ -194,6 +188,19 @@ class ApiService {
       options
     );
 
+    return response.data["id"];
+  };
+
+  public refreshEPG = async (serverId: string): Promise<boolean> => {
+    const options = {
+      ...this._getRequestOptions(),
+      timeout: 120000, // 2 minutes timeout for EPG refresh
+    };
+    const response = await http.post(
+      `/epg/refresh?server_id=${serverId}`,
+      {},
+      options
+    );
     return response.status === StatusCodes.OK;
   };
 }
