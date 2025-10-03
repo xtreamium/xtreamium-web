@@ -210,9 +210,6 @@ const ChannelPage = () => {
                   <h3 className="font-semibold text-foreground text-base truncate">
                     {stream.name}
                   </h3>
-                  <Badge variant="secondary" className="mt-0.5 text-xs">
-                    Stream ID: {stream.stream_id}
-                  </Badge>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   {import.meta.env.DEV && (
