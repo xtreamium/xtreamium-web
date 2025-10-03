@@ -7,7 +7,6 @@ import {
   SidebarMenuButton,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { useQuery } from "@tanstack/react-query";
@@ -70,20 +69,17 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
   return (
     <Sidebar variant="inset" className="mt-[57px]">
       <SidebarHeader className="border-b border-sidebar-border">
-        <h2 className="text-xl">Channels</h2>
+        <ChannelSearch
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedIndex={selectedIndex}
+          onSelectedIndexChange={setSelectedIndex}
+          onSelectItem={handleSelectItem}
+          itemCount={filteredCategories.length}
+        />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>
-            <ChannelSearch
-              searchTerm={searchTerm}
-              onSearchChange={setSearchTerm}
-              selectedIndex={selectedIndex}
-              onSelectedIndexChange={setSelectedIndex}
-              onSelectItem={handleSelectItem}
-              itemCount={filteredCategories.length}
-            />
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {filteredCategories.map((item, index) => {
