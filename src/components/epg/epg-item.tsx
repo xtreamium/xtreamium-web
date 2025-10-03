@@ -17,7 +17,6 @@ type EpgItemProps = {
   description: string;
   startTime: number;
   endTime: number;
-  isClippedStart?: boolean;
 };
 
 const EpgItem: React.FC<EpgItemProps> = ({
@@ -26,7 +25,6 @@ const EpgItem: React.FC<EpgItemProps> = ({
   description,
   startTime,
   endTime,
-  isClippedStart = false,
 }) => {
   const recordShow = async (
     channelUrl: string,
@@ -63,10 +61,8 @@ const EpgItem: React.FC<EpgItemProps> = ({
     <div className="w-full h-full">
       <HoverCard>
         <HoverCardTrigger asChild>
-          <div className={`w-full h-full p-2 cursor-pointer flex items-center text-sm font-medium transition-colors hover:text-secondary-foreground ${
-            isClippedStart ? 'justify-start' : 'justify-center'
-          }`}>
-            <span className={`truncate w-full ${isClippedStart ? 'text-left' : 'text-center'}`}>
+          <div className="w-full h-full p-2 cursor-pointer flex items-center justify-start text-sm font-medium transition-colors hover:text-secondary-foreground">
+            <span className="truncate w-full text-left">
               {title}
             </span>
           </div>

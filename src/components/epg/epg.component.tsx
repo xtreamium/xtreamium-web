@@ -2,14 +2,12 @@ import { ApiService } from "@/services";
 import type { Server } from "@/models/server";
 import { useQuery } from "@tanstack/react-query";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import {
-  TooltipProvider,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import EpgItem from "./epg-item";
 import {
   getPrevious30MinuteBoundary,
   generate30MinuteIntervals,
-  THIRTY_MINUTES_MS
+  THIRTY_MINUTES_MS,
 } from "@/utils/date-utils";
 
 interface IEPGComponentProps {
@@ -127,29 +125,40 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   const renderTimelineView = () => {
     const now = Date.now();
     const INTERVAL_WIDTH = 120; // pixels per 30-minute interval
-    
+
     // Get the start boundary (previous 30-minute interval to now)
     const timelineStart = getPrevious30MinuteBoundary(now);
-    
+
     // Calculate how much time is remaining in the first interval
     const timeElapsedInFirstInterval = now - timelineStart;
-    const timeRemainingInFirstInterval = THIRTY_MINUTES_MS - timeElapsedInFirstInterval;
-    const proportionalFirstWidth = (timeRemainingInFirstInterval / THIRTY_MINUTES_MS) * INTERVAL_WIDTH;
-    
+    const timeRemainingInFirstInterval =
+      THIRTY_MINUTES_MS - timeElapsedInFirstInterval;
+    const proportionalFirstWidth =
+      (timeRemainingInFirstInterval / THIRTY_MINUTES_MS) * INTERVAL_WIDTH;
+
     // Ensure minimum width for time text (about 60px should be enough for "HH:MM")
     const MIN_INTERVAL_WIDTH = 60;
-    const firstIntervalWidth = Math.max(MIN_INTERVAL_WIDTH, proportionalFirstWidth);
-    
+    const firstIntervalWidth = Math.max(
+      MIN_INTERVAL_WIDTH,
+      proportionalFirstWidth
+    );
+
     // Calculate timeline end based on all shows
-    const lastShowEnd = Math.max(...shows.map(show => parseDateTime(show.stop)));
+    const lastShowEnd = Math.max(
+      ...shows.map((show) => parseDateTime(show.stop))
+    );
     const timelineEnd = lastShowEnd + THIRTY_MINUTES_MS; // Add buffer
-    
+
     // Generate 30-minute intervals for the timeline
-    const timeIntervals = generate30MinuteIntervals(timelineStart, timelineEnd - timelineStart);
-    
+    const timeIntervals = generate30MinuteIntervals(
+      timelineStart,
+      timelineEnd - timelineStart
+    );
+
     // Calculate total width accounting for the proportional first interval
-    const totalTimelineWidth = firstIntervalWidth + (timeIntervals.length - 1) * INTERVAL_WIDTH;
-    
+    const totalTimelineWidth =
+      firstIntervalWidth + (timeIntervals.length - 1) * INTERVAL_WIDTH;
+
     return (
       <ScrollArea className="w-full">
         <div className="pb-4 pr-4" style={{ width: `${totalTimelineWidth}px` }}>
@@ -157,8 +166,10 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
           <div className="h-10 bg-primary flex items-center text-primary-foreground text-sm font-medium">
             {timeIntervals.map((intervalStart, index) => {
               const isFirstInterval = index === 0;
-              const intervalWidth = isFirstInterval ? firstIntervalWidth : INTERVAL_WIDTH;
-              
+              const intervalWidth = isFirstInterval
+                ? firstIntervalWidth
+                : INTERVAL_WIDTH;
+
               return (
                 <div
                   key={`time-${index}`}
@@ -170,47 +181,63 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
               );
             })}
           </div>
-          
+
           {/* Program Row */}
           <div className="h-12 bg-secondary text-secondary-foreground text-sm font-medium relative">
             {shows.map((show, index) => {
               const startTime = parseDateTime(show.start);
               const endTime = parseDateTime(show.stop);
               const isPlaying = isCurrentlyPlaying(show);
-              
+
               // Calculate position accounting for the proportional first interval
               const calculateLeftOffset = (time: number): number => {
                 if (time <= timelineStart + THIRTY_MINUTES_MS) {
                   // Within the first interval
                   const offsetInFirstInterval = time - timelineStart;
-                  return (offsetInFirstInterval / THIRTY_MINUTES_MS) * firstIntervalWidth;
+                  return (
+                    (offsetInFirstInterval / THIRTY_MINUTES_MS) *
+                    firstIntervalWidth
+                  );
                 } else {
                   // Beyond the first interval
-                  const fullIntervalsAfterFirst = Math.floor((time - timelineStart - THIRTY_MINUTES_MS) / THIRTY_MINUTES_MS);
-                  const remainderInInterval = (time - timelineStart - THIRTY_MINUTES_MS) % THIRTY_MINUTES_MS;
-                  return firstIntervalWidth + (fullIntervalsAfterFirst * INTERVAL_WIDTH) + ((remainderInInterval / THIRTY_MINUTES_MS) * INTERVAL_WIDTH);
+                  const fullIntervalsAfterFirst = Math.floor(
+                    (time - timelineStart - THIRTY_MINUTES_MS) /
+                      THIRTY_MINUTES_MS
+                  );
+                  const remainderInInterval =
+                    (time - timelineStart - THIRTY_MINUTES_MS) %
+                    THIRTY_MINUTES_MS;
+                  return (
+                    firstIntervalWidth +
+                    fullIntervalsAfterFirst * INTERVAL_WIDTH +
+                    (remainderInInterval / THIRTY_MINUTES_MS) * INTERVAL_WIDTH
+                  );
                 }
               };
-              
+
               const rawLeftOffset = calculateLeftOffset(startTime);
               const rawEndOffset = calculateLeftOffset(endTime);
               const rawWidth = rawEndOffset - rawLeftOffset;
-              
+
               // Handle programmes that start before the visible timeline
               const leftOffset = Math.max(0, rawLeftOffset);
               const isClippedStart = rawLeftOffset < 0;
-              const width = isClippedStart ? rawWidth + rawLeftOffset : rawWidth;
-              
+              const width = Math.max(0, isClippedStart
+                ? rawWidth + rawLeftOffset
+                : rawWidth);
+
               return (
                 <div
                   key={`show-${index}`}
-                  className={`absolute border-r border-border transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer ${
-                    isPlaying ? 'bg-accent text-accent-foreground' : 'bg-secondary/80 text-secondary-foreground'
+                  className={`absolute border-r border-border transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer overflow-hidden ${
+                    isPlaying
+                      ? "bg-accent text-accent-foreground"
+                      : "bg-secondary/80 text-secondary-foreground"
                   }`}
-                  style={{ 
+                  style={{
                     left: `${leftOffset}px`,
-                    width: `${width}px`, 
-                    height: '48px' 
+                    width: `${width}px`,
+                    height: "48px",
                   }}
                 >
                   <EpgItem
@@ -219,7 +246,6 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
                     description={show.description}
                     startTime={startTime}
                     endTime={endTime}
-                    isClippedStart={isClippedStart}
                   />
                 </div>
               );
@@ -233,9 +259,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
 
   return (
     <TooltipProvider>
-      <div className="w-full">
-        {renderTimelineView()}
-      </div>
+      <div className="w-full">{renderTimelineView()}</div>
     </TooltipProvider>
   );
 };
