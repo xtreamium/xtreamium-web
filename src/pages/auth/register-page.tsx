@@ -37,6 +37,7 @@ const RegisterPage: React.FC = () => {
   const auth = useAuth();
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setFormError(null);
+    console.log("register-page", "API url", import.meta.env.VITE_API_URL);
     const result = await auth.register(data.email, data.password);
     if (result) {
       navigate("/");
