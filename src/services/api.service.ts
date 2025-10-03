@@ -132,7 +132,7 @@ class ApiService {
   ): Promise<EPGListing[]> {
     const options = this._getRequestOptions();
     const response = await http.get(
-      `${import.meta.env.VITE_API_URL}/epg/listing/${server.id}/${channelId}`,
+      `/epg/listing/${server.id}/${channelId}`,
       {
         ...options,
         headers: {
