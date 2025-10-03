@@ -23,7 +23,7 @@ class ApiService {
     email: string,
     password: string
   ): Promise<AxiosResponse> => {
-    const response = await http.post("/user", {
+    const response = await http.post("user", {
       email: email,
       password: password
     }, {
@@ -43,7 +43,7 @@ class ApiService {
     params.append("username", email);
     params.append("password", password);
 
-    const response = await http.post("/user/token", params.toString(), {
+    const response = await http.post("user/token", params.toString(), {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
       },
@@ -60,22 +60,22 @@ class ApiService {
       },
     };
 
-    const response = await http.get("/user/me", requestOptions);
+    const response = await http.get("user/me", requestOptions);
     return response.data as User;
   };
 
   public getCurrentUser = async (): Promise<User> => {
-    const response = await http.get("/user/me", this._getRequestOptions());
+    const response = await http.get("user/me", this._getRequestOptions());
     return response.data as User;
   };
   public getUserServers = async (): Promise<Server[]> => {
-    const response = await http.get("/user/servers", this._getRequestOptions());
+    const response = await http.get("user/servers", this._getRequestOptions());
     return response.data as Server[];
   };
 
   public getCategories = async (server: Server): Promise<Category[]> => {
     const options = this._getRequestOptions();
-    const response = await http.get(`/epg/categories`, {
+    const response = await http.get(`epg/categories`, {
       ...options,
       headers: {
         ...options.headers,
@@ -93,7 +93,7 @@ class ApiService {
   ): Promise<Stream[]> => {
     const options = this._getRequestOptions();
 
-    const response = await http.get(`/epg/channels/${channelId}`, {
+    const response = await http.get(`epg/channels/${channelId}`, {
       ...options,
       headers: {
         ...options.headers,
@@ -110,7 +110,7 @@ class ApiService {
     streamId: number
   ): Promise<string | undefined> => {
     const options = this._getRequestOptions();
-    const res = await http.get(`/epg/channel/url/${streamId}`, {
+    const res = await http.get(`epg/channel/url/${streamId}`, {
       ...options,
       headers: {
         ...options.headers,
@@ -132,7 +132,7 @@ class ApiService {
   ): Promise<EPGListing[]> {
     const options = this._getRequestOptions();
     const response = await http.get(
-      `/epg/listing/${server.id}/${channelId}`,
+      `epg/listing/${server.id}/${channelId}`,
       {
         ...options,
         headers: {
@@ -147,6 +147,7 @@ class ApiService {
       Object.assign(new EPGListing(), d)
     );
   }
+
   public deleteServer = async (serverId: number): Promise<boolean> => {
     const options = this._getRequestOptions();
     const response = await http.delete(`user/server/${serverId}`, options);
@@ -155,7 +156,7 @@ class ApiService {
   public checkUrl = async (url: string): Promise<boolean> => {
     try {
       const options = this._getRequestOptions();
-      const response = await http.post("/utils/check-url", { url }, options);
+      const response = await http.post("utils/check-url", { url }, options);
       return response.status === StatusCodes.OK && response.data.accessible;
     } catch (error) {
       logger.error("URL check failed", { url, error }, "api.service");
@@ -197,7 +198,7 @@ class ApiService {
       timeout: 120000, // 2 minutes timeout for EPG refresh
     };
     const response = await http.post(
-      `/epg/refresh?server_id=${serverId}`,
+      `epg/refresh?server_id=${serverId}`,
       {},
       options
     );
