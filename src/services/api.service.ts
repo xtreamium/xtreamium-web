@@ -23,7 +23,7 @@ class ApiService {
     email: string,
     password: string
   ): Promise<AxiosResponse> => {
-    const response = await http.post("user", {
+    const response = await http.post("user/", {
       email: email,
       password: password
     }, {
