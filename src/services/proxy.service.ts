@@ -44,5 +44,18 @@ class InternalProxyService {
     }
     throw new Error("Failed to save proxy settings");
   };
+
+  getVersion = async (): Promise<string | null> => {
+    try {
+      const response = await client.get("/version");
+      if (response.status === HttpStatusCode.Ok) {
+        return response.data.version || response.data;
+      }
+      return null;
+    } catch (error) {
+      logger.error("Failed to fetch proxy version", { error }, "proxy.service");
+      return null;
+    }
+  };
 }
 export const ProxyService = new InternalProxyService();

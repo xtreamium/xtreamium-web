@@ -204,6 +204,19 @@ class ApiService {
     );
     return response.status === StatusCodes.OK;
   };
+
+  public getLatestProxyVersion = async (): Promise<string | null> => {
+    try {
+      const response = await http.get("utils/proxy-version");
+      if (response.status === StatusCodes.OK) {
+        return response.data.version || response.data;
+      }
+      return null;
+    } catch (error) {
+      logger.error("Failed to fetch latest proxy version", { error }, "api.service");
+      return null;
+    }
+  };
 }
 
 export default new ApiService();

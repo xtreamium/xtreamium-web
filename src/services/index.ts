@@ -1,3 +1,4 @@
 import ApiService from "./api.service";
-export { ApiService };
+import { ProxyService } from "./proxy.service";
+export { ApiService, ProxyService };
 

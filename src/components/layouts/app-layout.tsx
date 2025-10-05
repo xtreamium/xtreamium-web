@@ -1,14 +1,15 @@
 import type React from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/navigation/app-sidebar";
 import Header from "@/components/navigation/app-header";
 import { useQuery } from "@tanstack/react-query";
-import { ApiService } from "@/services";
+import { ApiService, ProxyService } from "@/services";
 import useServerStore from "@/services/state/server.state";
 import { Toaster } from "sonner";
 import Loading from "@/components/loading";
+import { ProxyOutdated } from "@/components/widgets/proxy-outdated";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -23,6 +24,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     retry: false,
   });
   const { selectedServer, setSelectedServer } = useServerStore();
+  const [showProxyOutdated, setShowProxyOutdated] = useState(false);
+  const [proxyVersions, setProxyVersions] = useState<{
+    current: string;
+    latest: string;
+  } | null>(null);
 
   // Don't redirect if we're already on server management pages
   const isOnServerRoute =
@@ -38,6 +44,29 @@ export function AppLayout({ children }: AppLayoutProps) {
       void navigate("/server/add");
     }
   }, [query.data, navigate, isOnServerRoute]);
+
+  useEffect(() => {
+    const checkProxyVersion = async () => {
+      try {
+        const [currentVersion, latestVersion] = await Promise.all([
+          ProxyService.getVersion(),
+          ApiService.getLatestProxyVersion(),
+        ]);
+
+        if (currentVersion && latestVersion && currentVersion !== latestVersion) {
+          setProxyVersions({
+            current: currentVersion,
+            latest: latestVersion,
+          });
+          setShowProxyOutdated(true);
+        }
+      } catch {
+        // Silently fail version check
+      }
+    };
+
+    void checkProxyVersion();
+  }, []);
 
   if (query.isLoading) {
     return <Loading>Loading query</Loading>;
@@ -82,7 +111,16 @@ export function AppLayout({ children }: AppLayoutProps) {
         <Header user={query.data} />
         <div className="flex flex-1 overflow-hidden">
           <AppSidebar user={query.data} />
-          <main className="flex-1 overflow-auto">{children}</main>
+          <main className="flex-1 overflow-auto flex flex-col">
+            {showProxyOutdated && proxyVersions && (
+              <ProxyOutdated
+                currentVersion={proxyVersions.current}
+                latestVersion={proxyVersions.latest}
+                onDismiss={() => setShowProxyOutdated(false)}
+              />
+            )}
+            {children}
+          </main>
         </div>
       </div>
     </SidebarProvider>
