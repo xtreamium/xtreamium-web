@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
+import { logger } from "@/lib/logger";
 
 type LoginFormData = {
   email: string;
@@ -36,9 +37,11 @@ const LoginPage: React.FC = () => {
     try {
       await auth.login(data.email, data.password);
     } catch (error) {
+      logger.debug("Error submitting login details", error, "login-page");
       setFormError("Invalid email or password. Please try again.");
     }
-  };  return (
+  };
+  return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-br from-background to-muted/20">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
@@ -79,7 +82,10 @@ const LoginPage: React.FC = () => {
                 </div>
               </>
             )}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form
+              onSubmit={() => void handleSubmit(onSubmit)}
+              className="space-y-5"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address

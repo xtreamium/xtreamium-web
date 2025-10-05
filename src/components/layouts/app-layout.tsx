@@ -35,7 +35,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       (!query.data.servers || query.data.servers.length === 0) &&
       !isOnServerRoute
     ) {
-      navigate("/server/add");
+      void navigate("/server/add");
     }
   }, [query.data, navigate, isOnServerRoute]);
 
@@ -46,7 +46,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   if (!query.data) {
     // If we're not on an auth page, navigate to login
     if (!location.pathname.startsWith("/auth/")) {
-      navigate("/auth/login");
+      void navigate("/auth/login");
       return <Loading>Redirecting to login...</Loading>;
     }
     // If we're already on an auth page, render it without layout

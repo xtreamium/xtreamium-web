@@ -17,7 +17,7 @@ import { Icons } from "@/components/icons";
 import ChannelSearch from "@/components/widgets/channel-search";
 import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import Loading from '@/components/loading';
+import Loading from "@/components/loading";
 
 type AppSidebarProps = {
   user: User;
@@ -49,10 +49,10 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
   }, [query.data, searchTerm]);
 
   // Handle selecting a category via keyboard
-  const handleSelectItem = useCallback(() => {
+  const handleSelectItem = useCallback(async () => {
     if (selectedIndex >= 0 && selectedIndex < filteredCategories.length) {
       const selectedCategory = filteredCategories[selectedIndex];
-      navigate(`/channel/${selectedCategory.category_id}`);
+      await navigate(`/channel/${selectedCategory.category_id}`);
       setSearchTerm("");
       setSelectedIndex(-1);
     }
@@ -74,7 +74,7 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
           onSearchChange={setSearchTerm}
           selectedIndex={selectedIndex}
           onSelectedIndexChange={setSelectedIndex}
-          onSelectItem={handleSelectItem}
+          onSelectItem={() => void handleSelectItem()}
           itemCount={filteredCategories.length}
         />
       </SidebarHeader>
@@ -89,7 +89,8 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
                     <SidebarMenuButton
                       className={cn(
                         "hover:text-foreground active:text-foreground hover:bg-[var(--primary)]/10 active:bg-[var(--primary)]/10",
-                        isKeyboardSelected && "bg-[var(--primary)]/20 text-foreground"
+                        isKeyboardSelected &&
+                          "bg-[var(--primary)]/20 text-foreground"
                       )}
                       isActive={
                         location.pathname === `/channel/${item.category_id}`

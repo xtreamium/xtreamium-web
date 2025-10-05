@@ -91,7 +91,7 @@ const ProxySettingsPage: React.FC = () => {
     }
   };
 
-  const handleTestConnection = async () => {
+  const handleTestConnection = () => {
     try {
       // Here you would implement connection testing
       // Show success/failure message
@@ -154,7 +154,10 @@ const ProxySettingsPage: React.FC = () => {
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form
+            onSubmit={() => form.handleSubmit(onSubmit)}
+            className="space-y-8"
+          >
             <Card className="border-border/40 shadow-sm">
               <CardHeader className="pb-6">
                 <CardTitle className="flex items-center gap-3 text-xl">
@@ -276,7 +279,7 @@ const ProxySettingsPage: React.FC = () => {
               <Button
                 type="button"
                 variant="outline"
-                onClick={handleResetToDefaults}
+                onClick={() => handleResetToDefaults()}
                 className="gap-2"
               >
                 <Icons.rocket className="h-4 w-4" />
@@ -285,7 +288,7 @@ const ProxySettingsPage: React.FC = () => {
               <Button
                 type="button"
                 variant="secondary"
-                onClick={handleTestConnection}
+                onClick={() => handleTestConnection()}
                 className="gap-2"
               >
                 <Icons.play className="h-4 w-4" />

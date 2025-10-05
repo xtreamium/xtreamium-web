@@ -1,3 +1,4 @@
+import { logger } from "@/lib/logger";
 import axios from "axios";
 
 const getServerFromStorage = () => {
@@ -15,7 +16,11 @@ const instance = axios.create({
   },
 });
 
-console.log("http.service", "baseURL configured as:", import.meta.env.VITE_API_URL);
+logger.debug(
+  "http.service",
+  "baseURL configured as:",
+  import.meta.env.VITE_API_URL
+);
 
 // Add request interceptor to set dynamic headers
 instance.interceptors.request.use((config) => {
@@ -29,11 +34,19 @@ instance.interceptors.request.use((config) => {
   if (server.password) {
     config.headers["x-xtream-password"] = server.password;
   }
-  
+
   // Debug: log the full URL being requested
-  console.log("http.service", "Making request to:", config.baseURL, config.url, "->", 
-    config.baseURL ? new URL(config.url || "", config.baseURL).href : config.url);
-  
+  logger.debug(
+    "http.service",
+    {
+      url: config.url,
+      baseUrl: config.baseURL
+        ? new URL(config.url || "", config.baseURL).href
+        : config.url,
+    },
+    "Making request to:"
+  );
+
   return config;
 });
 

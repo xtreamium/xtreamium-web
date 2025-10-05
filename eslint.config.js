@@ -22,7 +22,7 @@ export default tseslint.config(
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        project: true,
+        project: ["./tsconfig.app.json", "./tsconfig.node.json"],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -65,6 +65,7 @@ export default tseslint.config(
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-return": "off",
       "@typescript-eslint/no-unsafe-argument": "off",
+      "@typescript-eslint/no-unsafe-enum-comparison": "off",
       "@typescript-eslint/restrict-template-expressions": "off",
       "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/require-await": "off",

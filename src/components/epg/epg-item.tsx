@@ -62,9 +62,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
       <HoverCard>
         <HoverCardTrigger asChild>
           <div className="w-full h-full p-2 cursor-pointer flex items-center justify-start text-sm font-medium transition-colors hover:text-secondary-foreground">
-            <span className="truncate w-full text-left">
-              {title}
-            </span>
+            <span className="truncate w-full text-left">{title}</span>
           </div>
         </HoverCardTrigger>
         <HoverCardContent className="w-80 max-w-sm p-0 border-border shadow-lg bg-popover">
@@ -86,9 +84,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
                 size="sm"
                 variant="destructive"
                 className="h-8 px-3 text-sm gap-1.5 font-medium"
-                onClick={async () =>
-                  await recordShow(channelUrl, startTime, endTime)
-                }
+                onClick={() => void recordShow(channelUrl, startTime, endTime)}
               >
                 <Icons.record className="w-3.5 h-3.5" />
                 Record

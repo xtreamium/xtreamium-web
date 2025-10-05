@@ -10,7 +10,6 @@ import { logger } from "@/lib/logger";
 import type { Stream } from "@/models/stream";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
 import { ProxyService } from "@/services/proxy.service";
@@ -44,7 +43,7 @@ const ChannelPage = () => {
       const url = await ApiService.getStreamUrl(server, streamId);
       logger.info("channel.page", "copyStreamUrl", url);
       if (url) {
-        navigator.clipboard.writeText(url).then(() => {
+        await navigator.clipboard.writeText(url).then(() => {
           toast.success(
             <>
               <div className="font-bold text-foreground">
@@ -71,7 +70,7 @@ const ChannelPage = () => {
   };
 
   const playStreamInternal = async (streamId: number) => {
-    navigate(`/play/${streamId}`);
+    await navigate(`/play/${streamId}`);
   };
 
   const playStream = async (streamId: number) => {
@@ -166,7 +165,11 @@ const ChannelPage = () => {
     );
   }
 
-  if (channelQuery.isError || !channelQuery.data || channelQuery.data.length === 0) {
+  if (
+    channelQuery.isError ||
+    !channelQuery.data ||
+    channelQuery.data.length === 0
+  ) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="max-w-md">
@@ -177,10 +180,9 @@ const ChannelPage = () => {
                 No Data Available
               </h3>
               <p className="text-muted-foreground mt-2">
-                {channelQuery.isError 
+                {channelQuery.isError
                   ? "Failed to load channel information."
-                  : "No channels found for this category."
-                }
+                  : "No channels found for this category."}
               </p>
             </div>
           </CardContent>
@@ -217,7 +219,7 @@ const ChannelPage = () => {
                       size="sm"
                       variant="outline"
                       title="Cast stream to device"
-                      onClick={() => playStream(stream.stream_id)}
+                      onClick={() => void playStream(stream.stream_id)}
                       className="gap-1.5 h-8 px-2 text-xs"
                     >
                       <Icons.cast className="h-3.5 w-3.5" />
@@ -228,7 +230,7 @@ const ChannelPage = () => {
                     size="sm"
                     variant="default"
                     title="Play to xtreamium local proxy"
-                    onClick={() => playStream(stream.stream_id)}
+                    onClick={() => void playStream(stream.stream_id)}
                     className="gap-1.5 h-8 px-2 text-xs"
                   >
                     <Icons.airplay className="h-3.5 w-3.5" />
@@ -239,7 +241,7 @@ const ChannelPage = () => {
                       size="sm"
                       variant="secondary"
                       title="Play stream in browser"
-                      onClick={() => playStreamInternal(stream.stream_id)}
+                      onClick={() => void playStreamInternal(stream.stream_id)}
                       className="gap-1.5 h-8 px-2 text-xs"
                     >
                       <Icons.play className="h-3.5 w-3.5" />
@@ -250,7 +252,7 @@ const ChannelPage = () => {
                     size="sm"
                     variant="outline"
                     title="Copy stream URL"
-                    onClick={() => copyStreamUrl(stream.stream_id)}
+                    onClick={() => void copyStreamUrl(stream.stream_id)}
                     className="gap-1.5 h-8 px-2 text-xs"
                   >
                     <Icons.copy className="h-3.5 w-3.5" />

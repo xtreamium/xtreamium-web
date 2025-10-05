@@ -39,12 +39,12 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
     );
   }
 
-  function _handleClick(id: string): void {
+  async function _handleClick(id: string) {
     setSelectedServer(id);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    queryClient.invalidateQueries({ queryKey: ["categories"] });
+    await queryClient.invalidateQueries({ queryKey: ["categories"] });
   }
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -62,7 +62,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
         {user.servers.map((s) => (
           <React.Fragment key={s.id}>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => _handleClick(s.id)}>
+              <DropdownMenuItem onClick={() => void _handleClick(s.id)}>
                 <SparklesIcon />
                 {s.name}
               </DropdownMenuItem>

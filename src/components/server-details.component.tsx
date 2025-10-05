@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import useServerStore from "@/services/state/server.state";
+import { logger } from "@/lib/logger";
 
 const schema = z.object({
   name: z.string().min(1, { message: "Required" }),
@@ -75,7 +76,11 @@ const ServerDetails = () => {
         )}&password=${encodeURIComponent(password)}`;
         form.setValue("epgUrl", epgUrl);
       } catch (error) {
-        // Invalid URL, don't update EPG URL
+        logger.debug(
+          "Error opening Server Details",
+          error,
+          "server-details.component"
+        );
       }
     } else {
       form.setValue("epgUrl", "");
@@ -113,15 +118,16 @@ const ServerDetails = () => {
 
         try {
           await ApiService.refreshEPG(serverId);
-          
+
           // Set the newly added server as the selected server
           setSelectedServer(serverId);
-          
+
           // Invalidate the user query to refresh server list
           await queryClient.invalidateQueries({ queryKey: ["user"] });
-          
-          navigate("/");
+
+          await navigate("/");
         } catch (error) {
+          logger.debug("Error seting EPG", error, "server-details.component");
           setEpgCheckError(
             "Failed to refresh EPG data. The server has been added but EPG data may not be available yet."
           );
@@ -134,6 +140,7 @@ const ServerDetails = () => {
         );
       }
     } catch (error) {
+      logger.debug("Error seting EPG", error, "server-details.component");
       setEpgCheckError(
         "Failed to add server. Please check your details and try again."
       );
@@ -164,7 +171,8 @@ const ServerDetails = () => {
               <div>
                 <h3 className="font-semibold text-lg">Refreshing EPG Data</h3>
                 <p className="text-muted-foreground text-sm mt-2">
-                  This may take up to 2 minutes. Please wait while we download and process your EPG data...
+                  This may take up to 2 minutes. Please wait while we download
+                  and process your EPG data...
                 </p>
               </div>
             </div>
@@ -173,7 +181,10 @@ const ServerDetails = () => {
       )}
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form
+          onSubmit={() => form.handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="name"

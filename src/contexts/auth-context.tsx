@@ -10,7 +10,7 @@ type AuthContextProps = {
   token: string;
   register: (email: string, password: string) => Promise<boolean>;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   getUser: () => Promise<User | undefined>;
 };
 
@@ -18,7 +18,7 @@ const AuthContext = React.createContext<AuthContextProps>({
   token: "",
   register: async () => false,
   login: async () => {},
-  logout: () => {},
+  logout: async () => {},
   getUser: async () => undefined,
 });
 
@@ -36,7 +36,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await apiService.register(email, password);
       if (response.status === StatusCodes.CREATED) {
-        navigate("/");
+        await navigate("/");
         return true;
       }
       throw new Error(response.data);
@@ -52,7 +52,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        navigate("/");
+        await navigate("/");
         location.reload();
         return;
       }
@@ -62,11 +62,11 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw err; // Re-throw the error so the UI can catch it
     }
   };
-  const logout = () => {
+  const logout = async () => {
     setUser(undefined);
     setToken("");
     localStorage.removeItem(TOKEN_KEY);
-    navigate("/");
+    await navigate("/");
     location.reload();
   };
   const getUser = async (): Promise<User | undefined> => {

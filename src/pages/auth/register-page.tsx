@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 import { useNavigate } from "react-router-dom";
+import { logger } from "@/lib/logger";
 
 type RegisterFormData = {
   email: string;
@@ -37,10 +38,10 @@ const RegisterPage: React.FC = () => {
   const auth = useAuth();
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setFormError(null);
-    console.log("register-page", "API url", import.meta.env.VITE_API_URL);
+    logger.debug("register-page", "API url", import.meta.env.VITE_API_URL);
     const result = await auth.register(data.email, data.password);
     if (result) {
-      navigate("/");
+      await navigate("/");
     } else {
       setFormError("Registration failed. Please try again.");
     }
@@ -86,7 +87,10 @@ const RegisterPage: React.FC = () => {
                 </div>
               </>
             )}
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+            <form
+              onSubmit={() => void handleSubmit(onSubmit)}
+              className="space-y-5"
+            >
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address

@@ -51,7 +51,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => logout()}
+            onClick={() => void logout()}
             className="flex items-center gap-2"
           >
             <Icons.logOut className="h-4 w-4" />
