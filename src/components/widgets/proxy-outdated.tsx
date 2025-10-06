@@ -17,29 +17,34 @@ export function ProxyOutdated({
     <div className="sticky top-0 z-50 px-6 pt-4 pb-2 bg-background">
       <Alert
         variant="destructive"
-        className="border-2 border-destructive bg-destructive text-destructive-foreground py-5 shadow-lg shadow-destructive/20 animate-in fade-in slide-in-from-top-2 duration-500"
+        className="border bg-destructive/10 text-foreground py-4 relative"
       >
-        <AlertTriangle className="h-6 w-6 animate-pulse" />
-        <AlertTitle className="font-bold text-lg">
-          Proxy Update Required
+        {onDismiss && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onDismiss}
+            className="absolute top-2 right-2 h-8 w-8 shrink-0 hover:bg-muted text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+        <AlertTriangle className="h-5 w-5 text-destructive" />
+        <AlertTitle className="font-semibold text-base text-destructive">
+          Your local proxy is outdated!!
         </AlertTitle>
-        <AlertDescription className="text-destructive-foreground">
-          <div className="flex items-center justify-between gap-4">
-            <p className="font-semibold text-base text-destructive-foreground">
-              Your local proxy is outdated (v{currentVersion}). Latest version
-              is v{latestVersion}. Please update your proxy for the best
-              experience.
-            </p>
-            {onDismiss && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onDismiss}
-                className="h-8 w-8 shrink-0 hover:bg-destructive-foreground/10 text-destructive-foreground"
+        <AlertDescription className="text-muted-foreground">
+          <div className="space-y-1 pr-8">
+            <p className="text-sm">
+              Please download the latest version from{" "}
+              <a
+                href="https://github.com/xtreamium/xtreamium-proxy/releases"
+                target="_blank"
+                className="font-semibold text-destructive underline hover:text-destructive/80 transition-colors"
               >
-                <X className="h-4 w-4" />
-              </Button>
-            )}
+                here
+              </a>
+            </p>
           </div>
         </AlertDescription>
       </Alert>

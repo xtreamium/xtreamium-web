@@ -53,7 +53,11 @@ export function AppLayout({ children }: AppLayoutProps) {
           ApiService.getLatestProxyVersion(),
         ]);
 
-        if (currentVersion && latestVersion && currentVersion !== latestVersion) {
+        if (
+          currentVersion &&
+          latestVersion &&
+          currentVersion !== latestVersion
+        ) {
           setProxyVersions({
             current: currentVersion,
             latest: latestVersion,
