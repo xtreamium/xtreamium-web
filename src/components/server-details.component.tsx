@@ -61,15 +61,7 @@ const ServerDetails = () => {
     },
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-    watch,
-    setValue,
-  } = form;
-
-  const watchedFields = watch(["server", "username", "password"]);
+  const watchedFields = form.watch(["server", "username", "password"]);
 
   useEffect(() => {
     const [server, username, password] = watchedFields;
@@ -82,7 +74,7 @@ const ServerDetails = () => {
         }/xmltv.php?username=${encodeURIComponent(
           username
         )}&password=${encodeURIComponent(password)}`;
-        setValue("epgUrl", epgUrl);
+        form.setValue("epgUrl", epgUrl);
       } catch (error) {
         logger.debug(
           "Error opening Server Details",
@@ -91,9 +83,9 @@ const ServerDetails = () => {
         );
       }
     } else {
-      setValue("epgUrl", "");
+      form.setValue("epgUrl", "");
     }
-  }, [watchedFields, setValue]);
+  }, [watchedFields, form]);
 
   if (userQuery.isLoading) {
     return <Loading />;
@@ -187,11 +179,11 @@ const ServerDetails = () => {
 
       <Form {...form}>
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={form.handleSubmit(onSubmit)}
           className="space-y-4"
         >
           <FormField
-            control={control}
+            control={form.control}
             name="name"
             render={({ field }) => (
               <FormItem>
@@ -210,7 +202,7 @@ const ServerDetails = () => {
           />
 
           <FormField
-            control={control}
+            control={form.control}
             name="server"
             render={({ field }) => (
               <FormItem>
@@ -229,7 +221,7 @@ const ServerDetails = () => {
           />
 
           <FormField
-            control={control}
+            control={form.control}
             name="username"
             render={({ field }) => (
               <FormItem>
@@ -249,7 +241,7 @@ const ServerDetails = () => {
           />
 
           <FormField
-            control={control}
+            control={form.control}
             name="password"
             render={({ field }) => (
               <FormItem>
@@ -269,7 +261,7 @@ const ServerDetails = () => {
           />
 
           <FormField
-            control={control}
+            control={form.control}
             name="epgUrl"
             render={({ field }) => (
               <FormItem>
@@ -291,7 +283,7 @@ const ServerDetails = () => {
           <Button
             type="submit"
             className="w-full mt-6"
-            disabled={isSubmitting || isCheckingEpg || isRefreshingEpg}
+            disabled={form.formState.isSubmitting || isCheckingEpg || isRefreshingEpg}
           >
             {isCheckingEpg ? (
               <>
