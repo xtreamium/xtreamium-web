@@ -50,13 +50,7 @@ const ServerDetails = () => {
     queryFn: ApiService.getCurrentUser,
   });
 
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-    watch,
-    setValue,
-  } = useForm<ServerSchema>({
+  const form = useForm<ServerSchema>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
@@ -66,6 +60,14 @@ const ServerDetails = () => {
       epgUrl: "",
     },
   });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+    watch,
+    setValue,
+  } = form;
 
   const watchedFields = watch(["server", "username", "password"]);
 

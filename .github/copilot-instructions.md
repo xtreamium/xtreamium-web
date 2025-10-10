@@ -1,6 +1,6 @@
 This application is for streaming IPTV from your subscription to a local proxy application which will launch mpv or VLC to play the stream.
 
-We use shadcn for components.
+We use shadcn for components. Never edit components in src/components/ui as these are shadcn components. If you need to modify a component, create a new component in src/components with the modifications you need but only do this as an absolute last resort and ask me first .
 
 bun should be used as the package manager for the project. It is used to manage dependencies and run scripts. The `bun install` command should be used to install dependencies, and `bun run` should be used to run scripts. This applies to both local development and CI/CD deployments.
 
