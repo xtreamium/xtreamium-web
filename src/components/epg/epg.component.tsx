@@ -9,6 +9,7 @@ import {
   generate30MinuteIntervals,
   THIRTY_MINUTES_MS,
 } from "@/utils/date-utils";
+import { useState, useEffect } from "react";
 
 interface IEPGComponentProps {
   server: Server;
@@ -25,6 +26,16 @@ interface RawEPGItem {
 }
 
 const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const epgQuery = useQuery({
     queryKey: [`epg_${channelId}`],
     queryFn: () => {
@@ -59,8 +70,6 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   };
 
   const getCurrentAndUpcomingShows = (epgData: unknown[]) => {
-    const now = Date.now();
-
     // Check if the data contains raw JSON objects with start/stop strings
     const rawShows = epgData.filter((item: unknown): item is RawEPGItem => {
       return (
@@ -77,7 +86,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
       // Handle raw JSON format
       return rawShows.filter((show) => {
         const endTime = parseDateTime(show.stop);
-        return endTime > now;
+        return endTime > currentTime;
       });
     }
 
@@ -86,11 +95,10 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   };
 
   const isCurrentlyPlaying = (show: RawEPGItem): boolean => {
-    const now = Date.now();
     const startTime = parseDateTime(show.start);
     const endTime = parseDateTime(show.stop);
 
-    return now >= startTime && now <= endTime;
+    return currentTime >= startTime && currentTime <= endTime;
   };
 
   if (epgQuery.isLoading) {
@@ -123,14 +131,13 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
 
   // Timeline View Render Function
   const renderTimelineView = () => {
-    const now = Date.now();
     const INTERVAL_WIDTH = 120; // pixels per 30-minute interval
 
     // Get the start boundary (previous 30-minute interval to now)
-    const timelineStart = getPrevious30MinuteBoundary(now);
+    const timelineStart = getPrevious30MinuteBoundary(currentTime);
 
     // Calculate how much time is remaining in the first interval
-    const timeElapsedInFirstInterval = now - timelineStart;
+    const timeElapsedInFirstInterval = currentTime - timelineStart;
     const timeRemainingInFirstInterval =
       THIRTY_MINUTES_MS - timeElapsedInFirstInterval;
     const proportionalFirstWidth =

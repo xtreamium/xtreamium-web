@@ -46,6 +46,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [query.data, navigate, isOnServerRoute]);
 
   useEffect(() => {
+    if (!query.data) {
+      return;
+    }
+
     const checkProxyVersion = async () => {
       try {
         const [currentVersion, latestVersion] = await Promise.all([
@@ -70,7 +74,7 @@ export function AppLayout({ children }: AppLayoutProps) {
     };
 
     void checkProxyVersion();
-  }, []);
+  }, [query.data]);
 
   if (query.isLoading) {
     return <Loading>Loading query</Loading>;

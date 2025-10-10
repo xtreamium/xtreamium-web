@@ -83,7 +83,7 @@ const LoginPage: React.FC = () => {
               </>
             )}
             <form
-              onSubmit={() => void handleSubmit(onSubmit)}
+              onSubmit={handleSubmit(onSubmit)}
               className="space-y-5"
             >
               <div className="space-y-2">

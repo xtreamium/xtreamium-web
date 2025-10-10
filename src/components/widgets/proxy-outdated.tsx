@@ -36,6 +36,17 @@ export function ProxyOutdated({
         <AlertDescription className="text-muted-foreground">
           <div className="space-y-1 pr-8">
             <p className="text-sm">
+              Your current version is{" "}
+              <span className="font-semibold text-destructive">
+                {currentVersion}
+              </span>
+              , but the latest version is{" "}
+              <span className="font-semibold text-destructive">
+                {latestVersion}
+              </span>
+              .
+            </p>
+            <p className="text-sm">
               Please download the latest version from{" "}
               <a
                 href="https://github.com/xtreamium/xtreamium-proxy/releases"

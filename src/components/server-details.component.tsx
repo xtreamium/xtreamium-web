@@ -50,7 +50,13 @@ const ServerDetails = () => {
     queryFn: ApiService.getCurrentUser,
   });
 
-  const form = useForm<ServerSchema>({
+  const {
+    control,
+    handleSubmit,
+    formState: { isSubmitting },
+    watch,
+    setValue,
+  } = useForm<ServerSchema>({
     resolver: zodResolver(schema),
     defaultValues: {
       name: "",
@@ -61,7 +67,7 @@ const ServerDetails = () => {
     },
   });
 
-  const watchedFields = form.watch(["server", "username", "password"]);
+  const watchedFields = watch(["server", "username", "password"]);
 
   useEffect(() => {
     const [server, username, password] = watchedFields;
@@ -74,7 +80,7 @@ const ServerDetails = () => {
         }/xmltv.php?username=${encodeURIComponent(
           username
         )}&password=${encodeURIComponent(password)}`;
-        form.setValue("epgUrl", epgUrl);
+        setValue("epgUrl", epgUrl);
       } catch (error) {
         logger.debug(
           "Error opening Server Details",
@@ -83,9 +89,9 @@ const ServerDetails = () => {
         );
       }
     } else {
-      form.setValue("epgUrl", "");
+      setValue("epgUrl", "");
     }
-  }, [watchedFields, form]);
+  }, [watchedFields, setValue]);
 
   if (userQuery.isLoading) {
     return <Loading />;
@@ -119,10 +125,8 @@ const ServerDetails = () => {
         try {
           await ApiService.refreshEPG(serverId);
 
-          // Set the newly added server as the selected server
           setSelectedServer(serverId);
 
-          // Invalidate the user query to refresh server list
           await queryClient.invalidateQueries({ queryKey: ["user"] });
 
           await navigate("/");
@@ -162,7 +166,6 @@ const ServerDetails = () => {
         </Alert>
       )}
 
-      {/* EPG Refresh Overlay */}
       {isRefreshingEpg && (
         <div className="absolute inset-0 bg-background/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
           <div className="bg-card border rounded-lg p-6 shadow-lg max-w-sm mx-4">
@@ -182,103 +185,103 @@ const ServerDetails = () => {
 
       <Form {...form}>
         <form
-          onSubmit={() => form.handleSubmit(onSubmit)}
+          onSubmit={handleSubmit(onSubmit)}
           className="space-y-4"
         >
           <FormField
-            control={form.control}
+            control={control}
             name="name"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Server Name</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    placeholder="Name of your new server"
-                    autoComplete="off"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
+          <FormLabel>Server Name</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              placeholder="Name of your new server"
+              autoComplete="off"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
               </FormItem>
             )}
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="server"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Server Address</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    placeholder="my.streams.com"
-                    autoComplete="off"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
+          <FormLabel>Server Address</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              placeholder="my.streams.com"
+              autoComplete="off"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
               </FormItem>
             )}
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="username"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    placeholder="username"
-                    autoComplete="off"
-                    data-lpignore="true"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
+          <FormLabel>Username</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              placeholder="username"
+              autoComplete="off"
+              data-lpignore="true"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
               </FormItem>
             )}
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    autoComplete="off"
-                    data-lpignore="true"
-                    placeholder="***************"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
+          <FormLabel>Password</FormLabel>
+          <FormControl>
+            <Input
+              type="password"
+              autoComplete="off"
+              data-lpignore="true"
+              placeholder="***************"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
               </FormItem>
             )}
           />
 
           <FormField
-            control={form.control}
+            control={control}
             name="epgUrl"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>EPG URL</FormLabel>
-                <FormControl>
-                  <Input
-                    type="text"
-                    autoComplete="on"
-                    data-lpignore="true"
-                    placeholder="http://my.epg.com/xmltv.php?username=xxxx&password=xxxxx"
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
+          <FormLabel>EPG URL</FormLabel>
+          <FormControl>
+            <Input
+              type="text"
+              autoComplete="on"
+              data-lpignore="true"
+              placeholder="http://my.epg.com/xmltv.php?username=xxxx&password=xxxxx"
+              {...field}
+            />
+          </FormControl>
+          <FormMessage />
               </FormItem>
             )}
           />
@@ -286,9 +289,7 @@ const ServerDetails = () => {
           <Button
             type="submit"
             className="w-full mt-6"
-            disabled={
-              form.formState.isSubmitting || isCheckingEpg || isRefreshingEpg
-            }
+            disabled={isSubmitting || isCheckingEpg || isRefreshingEpg}
           >
             {isCheckingEpg ? (
               <>

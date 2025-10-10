@@ -70,7 +70,14 @@ export default tseslint.config(
       "@typescript-eslint/no-base-to-string": "off",
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/no-floating-promises": "warn",
-      "@typescript-eslint/no-misused-promises": "warn",
+      "@typescript-eslint/no-misused-promises": [
+        "error",
+        {
+          checksVoidReturn: {
+            attributes: false,
+          },
+        },
+      ],
       
       // General rules - Keep sensible ones
       "no-console": ["warn", { allow: ["warn", "error"] }],

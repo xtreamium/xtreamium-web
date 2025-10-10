@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 interface ImageWithFallbackProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {
@@ -11,31 +11,34 @@ const ImageWithFallback = ({
   src,
   ...props
 }: ImageWithFallbackProps) => {
-  const [imgSrc, setImgSrc] = useState(src || fallback);
   const [hasErrored, setHasErrored] = useState(false);
 
-  useEffect(() => {
-    if (!src || src.trim() === '') {
-      setImgSrc(fallback);
-      setHasErrored(true);
-    } else {
-      setImgSrc(src);
-      setHasErrored(false);
+  const getImageSrc = () => {
+    if (hasErrored || !src || src.trim() === '') {
+      return fallback;
     }
-  }, [src, fallback]);
+    return src;
+  };
 
   const handleError = () => {
     if (!hasErrored) {
       setHasErrored(true);
-      setImgSrc(fallback);
+    }
+  };
+
+  const handleLoad = () => {
+    if (hasErrored) {
+      setHasErrored(false);
     }
   };
 
   return (
     <img 
       {...props} 
-      src={imgSrc} 
+      key={src}
+      src={getImageSrc()} 
       onError={handleError}
+      onLoad={handleLoad}
     />
   );
 };
