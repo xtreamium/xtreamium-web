@@ -1,5 +1,6 @@
 export type Settings = {
-  mpvArguments: string;
+  mediaPlayerPath: string;
+  mediaPlayerArguments: string;
   recordingsPath: string;
   port: number;
 };

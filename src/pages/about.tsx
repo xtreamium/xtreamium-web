@@ -12,7 +12,7 @@ function AboutPage() {
         description: 'IPTV streaming application with local proxy support',
         features: [
           'Stream IPTV content through local proxy',
-          'MPV and VLC player integration',
+          'Use whatever media player you want',
           'FastAPI backend support',
           'ASP.Net proxy application',
         ],

@@ -88,7 +88,7 @@ const ChannelPage = () => {
                 🚫 Unable to play stream!
               </div>
               <div className="text-muted-foreground font-sm">
-                Cannot find mpv installation.
+                Cannot find media player installation.
               </div>
               <a
                 className="font-bold text-primary"

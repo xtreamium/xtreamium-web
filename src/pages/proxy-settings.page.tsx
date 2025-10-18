@@ -22,7 +22,8 @@ import { ProxyService } from "@/services/proxy.service";
 
 // Zod schema for form validation
 const proxySettingsSchema = z.object({
-  mpvArguments: z.string().min(0, "MPV arguments must be a valid string"),
+  mediaPlayerPath: z.string().min(1, "Media player path is required"),
+  mediaPlayerArguments: z.string().min(0, "Media player arguments must be a valid string"),
   recordingsPath: z.string().min(1, "Recordings path is required"),
   port: z
     .number()
@@ -48,7 +49,8 @@ const ProxySettingsPage: React.FC = () => {
   const form = useForm<ProxySettingsForm>({
     resolver: zodResolver(proxySettingsSchema),
     defaultValues: {
-      mpvArguments: "",
+      mediaPlayerPath: "",
+      mediaPlayerArguments: "",
       recordingsPath: "",
       port: 8080,
     },
@@ -64,7 +66,8 @@ const ProxySettingsPage: React.FC = () => {
   React.useEffect(() => {
     if (settings) {
       reset({
-        mpvArguments: settings.mpvArguments,
+        mediaPlayerPath: settings.mediaPlayerPath,
+        mediaPlayerArguments: settings.mediaPlayerArguments,
         recordingsPath: settings.recordingsPath,
         port: settings.port,
       });
@@ -91,6 +94,16 @@ const ProxySettingsPage: React.FC = () => {
     }
   };
 
+  const handleMediaPlayerPathChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      // @ts-ignore - File.path is available in Electron/desktop environments
+      setValue("mediaPlayerPath", files[0].path || files[0].name);
+    }
+  };
+
   const handleTestConnection = () => {
     try {
       // Here you would implement connection testing
@@ -102,7 +115,8 @@ const ProxySettingsPage: React.FC = () => {
 
   const handleResetToDefaults = () => {
     reset({
-      mpvArguments: "",
+      mediaPlayerPath: "",
+      mediaPlayerArguments: "",
       recordingsPath: "",
       port: 8080,
     });
@@ -155,7 +169,7 @@ const ProxySettingsPage: React.FC = () => {
 
         <Form {...form}>
           <form
-            onSubmit={() => form.handleSubmit(onSubmit)}
+            onSubmit={form.handleSubmit(onSubmit)}
             className="space-y-8"
           >
             <Card className="border-border/40 shadow-sm">
@@ -170,11 +184,59 @@ const ProxySettingsPage: React.FC = () => {
               <CardContent className="space-y-8">
                 <FormField
                   control={form.control}
-                  name="mpvArguments"
+                  name="mediaPlayerPath"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel className="text-base font-medium">
-                        MPV Command Line Arguments
+                        Media Player Location
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex gap-3">
+                          <Input
+                            type="text"
+                            placeholder="/usr/bin/mpv or C:\Program Files\VLC\vlc.exe"
+                            readOnly
+                            className="flex-1 bg-muted/50 cursor-not-allowed"
+                            {...field}
+                          />
+                          <input
+                            type="file"
+                            className="hidden"
+                            id="media-player-path-input"
+                            onChange={handleMediaPlayerPathChange}
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="px-4"
+                            asChild
+                          >
+                            <label
+                              htmlFor="media-player-path-input"
+                              className="cursor-pointer flex items-center gap-2"
+                            >
+                              <Icons.play className="h-4 w-4" />
+                              Browse
+                            </label>
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormDescription>
+                        Select the executable path for your media player (e.g., mpv, VLC, etc.).
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="mediaPlayerArguments"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-base font-medium">
+                        Media Player Command Line Arguments
                       </FormLabel>
                       <FormControl>
                         <Textarea
@@ -184,8 +246,7 @@ const ProxySettingsPage: React.FC = () => {
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter custom MPV arguments to customize playback
-                        behavior. Use \ for line breaks.
+                        Enter custom arguments to customize playback behavior. Use \ for line breaks.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

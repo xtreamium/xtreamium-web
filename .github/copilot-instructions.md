@@ -1,6 +1,6 @@
 Please stop telling me "You're absolutely right" or "I apologize for the mistake". Sometimes I'm right and sometimes I'm wrong. Just give me the corrected code and feel free to tell me if I'm wrong.
 
-This application is for streaming IPTV from your subscription to a local proxy application which will launch mpv or VLC to play the stream.
+This application is for streaming IPTV from your subscription to a local proxy application which will launch your media player to play the stream.
 
 We use shadcn for components. Never edit components in src/components/ui as these are shadcn components. If you need to modify a component, create a new component in src/components with the modifications you need but only do this as an absolute last resort and ask me first .
 
