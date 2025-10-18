@@ -12,7 +12,7 @@ import { useForm } from "react-hook-form";
 import { ApiService } from "@/services";
 import { Icons } from "./icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Loading from "./loading";
+import { Spinner } from "@/components/ui/spinner";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate } from "react-router-dom";
@@ -88,7 +88,11 @@ const ServerDetails = () => {
   }, [watchedFields, form]);
 
   if (userQuery.isLoading) {
-    return <Loading />;
+    return (
+      <div className="flex items-center gap-2 p-4">
+        <Spinner />
+      </div>
+    );
   }
 
   const onSubmit = async (data: ServerSchema) => {

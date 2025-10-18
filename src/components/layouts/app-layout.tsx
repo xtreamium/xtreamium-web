@@ -8,7 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ApiService, ProxyService } from "@/services";
 import useServerStore from "@/services/state/server.state";
 import { Toaster } from "sonner";
-import Loading from "@/components/loading";
+import { Spinner } from "@/components/ui/spinner";
 import { ProxyOutdated } from "@/components/widgets/proxy-outdated";
 
 interface AppLayoutProps {
@@ -77,14 +77,24 @@ export function AppLayout({ children }: AppLayoutProps) {
   }, [query.data]);
 
   if (query.isLoading) {
-    return <Loading>Loading query</Loading>;
+    return (
+      <div className="flex items-center gap-2 p-4">
+        <Spinner />
+        <span>Loading query</span>
+      </div>
+    );
   }
 
   if (!query.data) {
     // If we're not on an auth page, navigate to login
     if (!location.pathname.startsWith("/auth/")) {
       void navigate("/auth/login");
-      return <Loading>Redirecting to login...</Loading>;
+      return (
+        <div className="flex items-center gap-2 p-4">
+          <Spinner />
+          <span>Redirecting to login...</span>
+        </div>
+      );
     }
     // If we're already on an auth page, render it without layout
     return (
@@ -105,7 +115,10 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       );
     }
-    return <Loading>Redirecting to add server...</Loading>;
+    return <div className="flex items-center gap-2 p-4">
+      <Spinner />
+      <span>Redirecting to add server...</span>
+    </div>;
   }
 
   if (!selectedServer && query.data.servers) {

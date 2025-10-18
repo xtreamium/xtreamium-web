@@ -30,8 +30,12 @@ const _createConnection = (
   setConnectionState: Dispatch<SetStateAction<ConnectionState>>
 ): signalR.HubConnection => {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${import.meta.env.VITE_PROXY_URL}/hubs/proxyStatus`)
-    .configureLogging(signalR.LogLevel.Information)
+    .withUrl(`${import.meta.env.VITE_PROXY_URL}/hubs/proxyStatus`, {
+      skipNegotiation: false,
+      withCredentials: false,
+    })
+    .configureLogging(signalR.LogLevel.None)
+    .withAutomaticReconnect()
     .build();
 
   connection
@@ -39,10 +43,8 @@ const _createConnection = (
     .then(() => {
       setConnectionState(ConnectionState.Connected);
     })
-    .catch((err) => {
-      console.error("proxy-status.component", "CreatingConnection", err);
+    .catch(() => {
       setConnectionState(ConnectionState.Disconnected);
-      throw new Error("Failed to connect to the server");
     });
   connection.onclose(() => {
     setConnectionState(ConnectionState.Disconnected);

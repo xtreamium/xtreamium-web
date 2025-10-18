@@ -148,16 +148,18 @@ const ChannelPage = () => {
   if (channelQuery.isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Icons.loader className="mx-auto h-12 w-12 text-muted-foreground mb-4 animate-spin" />
-              <h3 className="text-lg font-semibold text-foreground">
-                Loading Channels
-              </h3>
-              <p className="text-muted-foreground mt-2">
-                Please wait while we fetch channel information...
-              </p>
+        <Card className="max-w-md w-full mx-4">
+          <CardContent className="pt-6 pb-6 px-6">
+            <div className="text-center space-y-4">
+              <Icons.loader className="mx-auto h-12 w-12 text-primary mb-4 animate-spin" />
+              <div>
+                <h3 className="text-lg font-semibold text-foreground">
+                  Loading Channels
+                </h3>
+                <p className="text-muted-foreground mt-2 text-sm px-4">
+                  Please wait while we fetch channel information...
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>

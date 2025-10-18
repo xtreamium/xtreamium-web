@@ -17,7 +17,7 @@ import { Icons } from "@/components/icons";
 import ChannelSearch from "@/components/widgets/channel-search";
 import { useState, useMemo, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import Loading from "@/components/loading";
+import { Spinner } from "@/components/ui/spinner";
 
 type AppSidebarProps = {
   user: User;
@@ -63,7 +63,12 @@ const AppSidebar: React.FC<AppSidebarProps> = ({ user }) => {
   }
 
   if (query.isLoading) {
-    return <Loading>Loading channels...</Loading>;
+    return (
+      <div className="flex items-center gap-2 p-4">
+        <Spinner />
+        <span>Loading channels...</span>
+      </div>
+    );
   }
 
   return (
