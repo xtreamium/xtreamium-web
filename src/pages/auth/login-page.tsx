@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import {
   Card,
@@ -32,6 +33,14 @@ const LoginPage: React.FC = () => {
     },
   });
   const auth = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (auth.isAuthenticated) {
+      navigate("/");
+    }
+  }, [auth.isAuthenticated, navigate]);
+
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setFormError(null);
     try {
