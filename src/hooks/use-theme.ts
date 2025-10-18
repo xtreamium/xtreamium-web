@@ -37,10 +37,25 @@ export const useTheme = () => {
 
   useEffect(() => {
     const root = document.documentElement;
-    const styles = themePresets[preset].styles[mode];
+    const currentStyles = themePresets[preset].styles[mode];
+    const otherModeStyles = themePresets[preset].styles[mode === 'light' ? 'dark' : 'light'];
     
-    Object.entries(styles).forEach(([key, value]) => {
-      root.style.setProperty(`--${key}`, value);
+    console.log('Setting theme:', preset, 'mode:', mode);
+    
+    // Apply all styles from current mode
+    Object.entries(currentStyles).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        root.style.setProperty(`--${key}`, value);
+      }
+    });
+    
+    // For font properties, fall back to the other mode if not defined in current mode
+    const fontKeys = ['font-sans', 'font-serif', 'font-mono'] as const;
+    fontKeys.forEach((key) => {
+      if (!currentStyles[key] && otherModeStyles[key]) {
+        console.log(`Falling back to ${mode === 'light' ? 'dark' : 'light'} mode for ${key}:`, otherModeStyles[key]);
+        root.style.setProperty(`--${key}`, otherModeStyles[key]!);
+      }
     });
     
     localStorage.setItem('theme-preset', preset);
