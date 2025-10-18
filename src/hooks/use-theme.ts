@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
+import { themePresets } from '@/constants/themes';
 
-type Theme = 'light' | 'dark';
+type Mode = 'light' | 'dark';
+type ThemePreset = keyof typeof themePresets;
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Check localStorage first, then system preference
-    const stored = localStorage.getItem('theme') as Theme | null;
+  const [mode, setMode] = useState<Mode>(() => {
+    const stored = localStorage.getItem('mode') as Mode | null;
     if (stored) {
       return stored;
     }
     
-    // Check system preference
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark';
     }
@@ -18,22 +18,50 @@ export const useTheme = () => {
     return 'light';
   });
 
+  const [preset, setPreset] = useState<ThemePreset>(() => {
+    const stored = localStorage.getItem('theme-preset') as ThemePreset | null;
+    if (stored && stored in themePresets) {
+      return stored;
+    }
+    return 'sunset-horizon';
+  });
+
   useEffect(() => {
     const root = document.documentElement;
     
-    // Remove both classes first
     root.classList.remove('light', 'dark');
+    root.classList.add(mode);
     
-    // Add the current theme class
-    root.classList.add(theme);
+    localStorage.setItem('mode', mode);
+  }, [mode]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const styles = themePresets[preset].styles[mode];
     
-    // Store in localStorage
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    Object.entries(styles).forEach(([key, value]) => {
+      root.style.setProperty(`--${key}`, value);
+    });
+    
+    localStorage.setItem('theme-preset', preset);
+  }, [preset, mode]);
 
   const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setMode(prev => prev === 'light' ? 'dark' : 'light');
   };
 
-  return { theme, toggleTheme };
+  const setThemePreset = (newPreset: ThemePreset) => {
+    if (newPreset in themePresets) {
+      setPreset(newPreset);
+    }
+  };
+
+  return { 
+    mode, 
+    setMode, 
+    preset, 
+    setThemePreset, 
+    toggleTheme,
+    theme: mode
+  };
 };

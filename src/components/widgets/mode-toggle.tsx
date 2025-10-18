@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
 import { useTheme } from "@/hooks/use-theme";
 
-export const ThemeToggle = () => {
+export const ModeToggle = () => {
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -11,11 +11,11 @@ export const ThemeToggle = () => {
       size="sm"
       onClick={toggleTheme}
       className="h-9 w-9 px-0"
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
     >
       <Icons.sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
       <Icons.moon className="absolute h-4 w-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-      <span className="sr-only">Toggle theme</span>
+      <span className="sr-only">Toggle mode</span>
     </Button>
   );
 };

@@ -5,7 +5,7 @@ import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
 import ProxyStatus from "@/components/widgets/proxy-status.component";
-import { ThemeToggle } from "@/components/widgets/theme-toggle";
+import { ThemePicker } from "@/components/widgets/theme-picker";
 import { useAuth } from "@/hooks/use-auth";
 type HeaderProps = { user: User };
 
@@ -46,7 +46,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
         <ServerSelectorComponent user={user} />
         {/* Right side - Profile dropdown */}
         <div className="flex items-center gap-3">
-          <ThemeToggle />
+          <ThemePicker />
           <ProxyStatus />
           <Button
             variant="outline"
