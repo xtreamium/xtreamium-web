@@ -10,6 +10,7 @@ import NotFoundPage from "@/pages/404";
 import ChannelPage from "@/pages/channel";
 import ProxySettingsPage from "@/pages/proxy-settings.page";
 import AddServerPage from "@/pages/add-server.page";
+import RecordingsPage from "@/pages/recordings.page";
 
 export const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ export const AppRoutes = () => {
       <Route path="/proxy/settings" element={<ProxySettingsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/channel/:channelId" element={<ChannelPage />} />
+      <Route path="/recordings" element={<RecordingsPage />} />
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );

@@ -27,14 +27,26 @@ interface RawEPGItem {
 
 const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [channelUrl, setChannelUrl] = useState<string>();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 30000);
 
+    const fetchChannelUrl = async () => {
+      try {
+        const url = await ApiService.getStreamUrl(server, streamId);
+        setChannelUrl(url);
+      } catch (error) {
+        console.error("Error fetching channel URL:", error);
+      }
+    };
+
+    void fetchChannelUrl();
+
     return () => clearInterval(interval);
-  }, []);
+  }, [server, streamId]);
 
   const epgQuery = useQuery({
     queryKey: [`epg_${channelId}`],
@@ -180,7 +192,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
               return (
                 <div
                   key={`time-${index}`}
-                  className="border-r border-primary-foreground/20 px-2 text-left flex-shrink-0 flex items-center"
+                  className="border-r border-primary-foreground/20 px-2 text-left shrink-0 flex items-center"
                   style={{ width: `${intervalWidth}px` }}
                 >
                   {formatTime(intervalStart)}
@@ -229,9 +241,10 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
               // Handle programmes that start before the visible timeline
               const leftOffset = Math.max(0, rawLeftOffset);
               const isClippedStart = rawLeftOffset < 0;
-              const width = Math.max(0, isClippedStart
-                ? rawWidth + rawLeftOffset
-                : rawWidth);
+              const width = Math.max(
+                0,
+                isClippedStart ? rawWidth + rawLeftOffset : rawWidth
+              );
 
               return (
                 <div
@@ -248,7 +261,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
                   }}
                 >
                   <EpgItem
-                    channelUrl={`${server.url}/live/${server.username}/${server.password}/${streamId}.m3u8`}
+                    channelUrl={channelUrl}
                     title={show.title}
                     description={show.description}
                     startTime={startTime}

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { logger } from "@/lib/logger";
 import { toast } from "sonner";
 import { ProxyService } from "@/services/proxy.service";
+import { ApiService } from "@/services";
 
 type EpgItemProps = {
   channelUrl: string;
@@ -26,12 +27,9 @@ const EpgItem: React.FC<EpgItemProps> = ({
   startTime,
   endTime,
 }) => {
-  const recordShow = async (
-    channelUrl: string,
-    startTime: number,
-    endTime: number
-  ) => {
+  const recordShow = async () => {
     const result = await ProxyService.recordShow(
+      title,
       channelUrl,
       startTime,
       endTime
@@ -84,7 +82,7 @@ const EpgItem: React.FC<EpgItemProps> = ({
                 size="sm"
                 variant="destructive"
                 className="h-8 px-3 text-sm gap-1.5 font-medium"
-                onClick={() => void recordShow(channelUrl, startTime, endTime)}
+                onClick={() => void recordShow()}
               >
                 <Icons.record className="w-3.5 h-3.5" />
                 Record

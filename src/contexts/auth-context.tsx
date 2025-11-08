@@ -36,7 +36,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const response = await apiService.register(email, password);
       if (response.status === StatusCodes.CREATED) {
-        await navigate("/");
+        void navigate("/");
         return true;
       }
       throw new Error(response.data);
@@ -52,21 +52,21 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        await navigate("/");
+        void navigate("/");
         location.reload();
         return;
       }
       throw new Error(response.data);
     } catch (err) {
       console.error(err);
-      throw err; // Re-throw the error so the UI can catch it
+      throw err;
     }
   };
   const logout = async () => {
     setUser(undefined);
     setToken("");
     localStorage.removeItem(TOKEN_KEY);
-    await navigate("/");
+    void navigate("/");
     location.reload();
   };
   const getUser = async (): Promise<User | undefined> => {

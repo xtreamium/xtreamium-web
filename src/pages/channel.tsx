@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ApiService } from "@/services";
@@ -10,13 +10,17 @@ import { logger } from "@/lib/logger";
 import type { Stream } from "@/models/stream";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
 import { ProxyService } from "@/services/proxy.service";
+import CopyButton from "@/components/widgets/copy-button";
 
 const ChannelPage = () => {
   const { selectedServer } = useServerStore();
   const navigate = useNavigate();
+  const [streamUrls, setStreamUrls] = useState<Record<number, string>>({});
+  const [searchTerm, setSearchTerm] = useState("");
   const userQuery = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -30,17 +34,57 @@ const ChannelPage = () => {
       if (!server) {
         throw new Error("No server selected");
       }
-      return ApiService.getChannels(server, params.channelId as string);
+      return ApiService.getChannels(server, params.channelId);
     },
     enabled: !!server,
   });
+
+  // Preload stream URLs when channels are available
+  useEffect(() => {
+    if (server && channelQuery.data) {
+      const loadStreamUrls = async () => {
+        const urls: Record<number, string> = {};
+        for (const stream of channelQuery.data) {
+          try {
+            const url = await ApiService.getStreamUrl(server, stream.stream_id);
+            if (url) {
+              urls[stream.stream_id] = url;
+            }
+          } catch (err) {
+            logger.error("channel.page", "preloadStreamUrls", String(err));
+          }
+        }
+        setStreamUrls(urls);
+      };
+      void loadStreamUrls();
+    }
+  }, [server, channelQuery.data]);
+
+  // Filter channels based on search term
+  const filteredChannels = useMemo(() => {
+    if (!channelQuery.data) return [];
+    if (!searchTerm.trim()) return channelQuery.data;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return channelQuery.data.filter((stream: Stream) =>
+      stream.name.toLowerCase().includes(lowerSearchTerm)
+    );
+  }, [channelQuery.data, searchTerm]);
 
   const copyStreamUrl = async (streamId: number) => {
     if (!server) {
       return;
     }
     try {
-      const url = await ApiService.getStreamUrl(server, streamId);
+      // Use cached URL if available, otherwise fetch it
+      let url = streamUrls[streamId];
+      if (!url) {
+        url = await ApiService.getStreamUrl(server, streamId);
+        if (url) {
+          setStreamUrls(prev => ({ ...prev, [streamId]: url }));
+        }
+      }
+
       logger.info("channel.page", "copyStreamUrl", url);
       if (url) {
         await navigator.clipboard.writeText(url).then(() => {
@@ -194,13 +238,52 @@ const ChannelPage = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-4 space-y-3">
+    <div className="container mx-auto px-4 py-4 space-y-4">
+      {/* Search Box */}
+      <div className="relative">
+        <Icons.search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input
+          type="text"
+          placeholder="Search channels..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="pl-9"
+        />
+        {searchTerm && (
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => setSearchTerm("")}
+            className="absolute right-1 top-1/2 transform -translate-y-1/2 h-7 w-7 p-0"
+            title="Clear search"
+          >
+            <Icons.delete className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+
+      {/* Channel List */}
       <div className="space-y-3">
-        {channelQuery.data.map((stream: Stream) => (
+        {filteredChannels.length === 0 && searchTerm ? (
+          <Card>
+            <CardContent className="pt-6 pb-6">
+              <div className="text-center">
+                <Icons.search className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold text-foreground">
+                  No channels found
+                </h3>
+                <p className="text-muted-foreground mt-2">
+                  No channels match your search "{searchTerm}"
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          filteredChannels.map((stream: Stream) => (
           <Card key={stream.stream_id} className="overflow-hidden">
             <CardHeader className="pb-2 pt-3">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted border">
                     <ImageWithFallback
                       className="w-full h-full object-cover"
@@ -250,16 +333,26 @@ const ChannelPage = () => {
                       Browser
                     </Button>
                   )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    title="Copy stream URL"
-                    onClick={() => void copyStreamUrl(stream.stream_id)}
-                    className="gap-1.5 h-8 px-2 text-xs"
-                  >
-                    <Icons.copy className="h-3.5 w-3.5" />
-                    Copy
-                  </Button>
+
+                  {streamUrls[stream.stream_id] ? (
+                    <CopyButton
+                      textToCopy={streamUrls[stream.stream_id]}
+                      showText={true}
+                      variant="outline"
+                      title="Copy stream URL"
+                    />
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      title="Copy stream URL"
+                      onClick={() => void copyStreamUrl(stream.stream_id)}
+                      className="gap-1.5 h-8 px-2 text-xs"
+                    >
+                      <Icons.copy className="h-3.5 w-3.5" />
+                      Copy
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -282,7 +375,8 @@ const ChannelPage = () => {
               </Suspense>
             </CardContent>
           </Card>
-        ))}
+          ))
+        )}
       </div>
     </div>
   );

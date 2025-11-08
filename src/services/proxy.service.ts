@@ -1,6 +1,8 @@
 import axios, { HttpStatusCode } from "axios";
 import { logger } from "@/lib/logger";
 import type { Settings } from "@/models/settings";
+import { title } from "process";
+import { Recording } from "@/models/recording";
 
 const client = axios.create({
   baseURL: import.meta.env.VITE_PROXY_URL,
@@ -15,18 +17,32 @@ class InternalProxyService {
     return response.status === HttpStatusCode.Ok;
   };
   recordShow = async (
+    title: string,
     channelUrl: string,
     startTime: number,
     endTime: number
   ): Promise<boolean> => {
-    const response = await client.post("/record", {
+    const response = await client.post("/recordings", {
+      title: title,
       url: channelUrl,
-      startTime: startTime,
-      endTime: endTime,
+      startTime: new Date(startTime).toISOString(),
+      endTime: new Date(endTime).toISOString(),
     });
-
     logger.debug("proxy.service", "recordShow", response.statusText);
     return response.status === HttpStatusCode.Accepted;
+  };
+
+  getRecordings = async (): Promise<Array<Recording>> => {
+    const response = await client.get("/recordings");
+    if (response.status === HttpStatusCode.Ok) {
+      return response.data as Array<Recording>;
+    }
+    throw new Error("Failed to fetch recordings");
+  };
+
+  deleteRecording = async (recordingId: number) => {
+    const response = await client.delete(`/recordings/${recordingId}`);
+    return response.status === HttpStatusCode.NoContent;
   };
 
   getSettings = async (): Promise<Settings> => {

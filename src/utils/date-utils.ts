@@ -51,10 +51,10 @@ export const getPrevious30MinuteBoundary = (timestamp: number): number => {
   const date = new Date(timestamp);
   const minutes = date.getMinutes();
   const roundedMinutes = minutes < 30 ? 0 : 30;
-  
+
   const boundary = new Date(date);
   boundary.setMinutes(roundedMinutes, 0, 0);
-  
+
   return boundary.getTime();
 };
 
@@ -87,4 +87,22 @@ export const generate30MinuteIntervals = (
   }
   
   return intervals;
+};
+
+export const formatTime = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false
+  });
+};
+
+export const formatDate = (dateString: string): string => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short'
+  });
 };

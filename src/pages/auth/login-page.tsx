@@ -36,10 +36,10 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (auth.isAuthenticated) {
+    if (auth.token) {
       navigate("/");
     }
-  }, [auth.isAuthenticated, navigate]);
+  }, [auth.token, navigate]);
 
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setFormError(null);
@@ -91,10 +91,7 @@ const LoginPage: React.FC = () => {
                 </div>
               </>
             )}
-            <form
-              onSubmit={handleSubmit(onSubmit)}
-              className="space-y-5"
-            >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email address
