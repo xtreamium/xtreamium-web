@@ -15,6 +15,8 @@ interface IEPGComponentProps {
   server: Server;
   channelId: string;
   streamId: number;
+  epgData?: RawEPGItem[]; // Pre-fetched EPG data from batch query
+  streamUrl?: string; // Pre-generated stream URL
 }
 
 interface RawEPGItem {
@@ -25,29 +27,24 @@ interface RawEPGItem {
   categories: string[];
 }
 
-const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
+const EPGComponent = ({
+  server,
+  channelId,
+  streamId,
+  epgData,
+  streamUrl
+}: IEPGComponentProps) => {
   const [currentTime, setCurrentTime] = useState(() => Date.now());
-  const [channelUrl, setChannelUrl] = useState<string>();
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
     }, 30000);
 
-    const fetchChannelUrl = async () => {
-      try {
-        const url = await ApiService.getStreamUrl(server, streamId);
-        setChannelUrl(url);
-      } catch (error) {
-        console.error("Error fetching channel URL:", error);
-      }
-    };
-
-    void fetchChannelUrl();
-
     return () => clearInterval(interval);
-  }, [server, streamId]);
+  }, []);
 
+  // Only fetch EPG if not provided via props
   const epgQuery = useQuery({
     queryKey: [`epg_${channelId}`],
     queryFn: () => {
@@ -56,8 +53,12 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
       }
       return ApiService.getEPGForChannel(server, channelId);
     },
-    enabled: !!server,
+    enabled: !!server && !epgData, // Only fetch if epgData is not provided
   });
+
+  // Use pre-fetched data if available, otherwise use query data
+  const effectiveEpgData = epgData || epgQuery.data;
+  const effectiveStreamUrl = streamUrl || ApiService.getStreamUrl(server, streamId);
 
   const parseDateTime = (dateTimeStr: string): number => {
     // Parse format: "20250915121000 +0100"
@@ -113,26 +114,28 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
     return currentTime >= startTime && currentTime <= endTime;
   };
 
-  if (epgQuery.isLoading) {
+  // Show loading state only if we're fetching and don't have pre-fetched data
+  if (!epgData && epgQuery.isLoading) {
     return <div className="p-4">Loading EPG data...</div>;
   }
 
-  if (epgQuery.error) {
+  // Show error state only if we're fetching and got an error
+  if (!epgData && epgQuery.error) {
     return <div className="p-4 text-red-500">Error loading EPG data</div>;
   }
 
-  if (!epgQuery.data || epgQuery.data.length === 0) {
+  if (!effectiveEpgData || effectiveEpgData.length === 0) {
     return <div className="p-4">No EPG data available</div>;
   }
 
-  const shows = getCurrentAndUpcomingShows(epgQuery.data);
+  const shows = getCurrentAndUpcomingShows(effectiveEpgData);
 
   if (shows.length === 0) {
     return (
       <div className="p-4">
         <div>No upcoming shows</div>
         <div className="text-xs mt-2 text-gray-500">
-          Total shows in data: {epgQuery.data.length}
+          Total shows in data: {effectiveEpgData.length}
         </div>
         <div className="text-xs text-gray-500">
           Current time: {new Date().toLocaleString()}
@@ -261,7 +264,7 @@ const EPGComponent = ({ server, channelId, streamId }: IEPGComponentProps) => {
                   }}
                 >
                   <EpgItem
-                    channelUrl={channelUrl}
+                    channelUrl={effectiveStreamUrl}
                     title={show.title}
                     description={show.description}
                     startTime={startTime}

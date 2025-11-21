@@ -105,25 +105,9 @@ class ApiService {
     return response.data as Stream[]; //.filter((r) => r.name === "BBC One FHD");
   };
 
-  public getStreamUrl = async (
-    server: Server,
-    streamId: number
-  ): Promise<string | undefined> => {
-    const options = this._getRequestOptions();
-    const res = await http.get(`epg/channel/url/${streamId}`, {
-      ...options,
-      headers: {
-        ...options.headers,
-        "x-xtream-server": server.url,
-        "x-xtream-username": server.username,
-        "x-xtream-password": server.password,
-      },
-    });
-    if (res.status !== 200) {
-      alert("Failed to get stream url");
-      return;
-    }
-    return res?.data.url;
+  public getStreamUrl = (server: Server, streamId: number): string => {
+    // Generate stream URL client-side instead of making an API call
+    return `${server.url}/live/${server.username}/${server.password}/${streamId}.ts`;
   };
 
   public async getEPGForChannel(
@@ -146,6 +130,35 @@ class ApiService {
     return response.data.map((d: unknown) =>
       Object.assign(new EPGListing(), d)
     );
+  }
+
+  public async getEPGForChannelsBatch(
+    server: Server,
+    channelIds: string[]
+  ): Promise<Record<string, EPGListing[]>> {
+    const options = this._getRequestOptions();
+    const response = await http.post(
+      `epg/listings/batch?server_id=${server.id}`,
+      { channel_ids: channelIds },
+      {
+        ...options,
+        headers: {
+          ...options.headers,
+          "x-xtream-server": server.url,
+          "x-xtream-username": server.username,
+          "x-xtream-password": server.password,
+        },
+      }
+    );
+
+    // Convert the response to use EPGListing objects
+    const result: Record<string, EPGListing[]> = {};
+    for (const [channelId, listings] of Object.entries(response.data)) {
+      result[channelId] = (listings as unknown[]).map((d: unknown) =>
+        Object.assign(new EPGListing(), d)
+      );
+    }
+    return result;
   }
 
   public deleteServer = async (serverId: number): Promise<boolean> => {

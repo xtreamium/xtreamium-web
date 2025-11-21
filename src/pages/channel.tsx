@@ -1,4 +1,4 @@
-import { Suspense, useState, useEffect, useMemo } from "react";
+import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { ApiService } from "@/services";
@@ -16,11 +16,15 @@ import EPGComponent from "@/components/epg/epg.component";
 import { ProxyService } from "@/services/proxy.service";
 import CopyButton from "@/components/widgets/copy-button";
 
+const CHANNELS_PER_PAGE = 50;
+
 const ChannelPage = () => {
   const { selectedServer } = useServerStore();
   const navigate = useNavigate();
   const [streamUrls, setStreamUrls] = useState<Record<number, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [visibleCount, setVisibleCount] = useState(CHANNELS_PER_PAGE);
+  const loadMoreRef = useRef<HTMLDivElement>(null);
   const userQuery = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -39,29 +43,39 @@ const ChannelPage = () => {
     enabled: !!server,
   });
 
-  // Preload stream URLs when channels are available
+  // Batch fetch EPG data only for visible channels (infinite scroll optimization)
+  const epgBatchQuery = useQuery({
+    queryKey: [`epg_batch_${params.channelId}_${visibleCount}_${searchTerm}`],
+    queryFn: () => {
+      if (!server || !visibleChannels.length) {
+        throw new Error("No server or channels available");
+      }
+      const channelIds = visibleChannels
+        .map((s) => s.epg_channel_id)
+        .filter((id) => id); // Filter out empty/null channel IDs
+      return ApiService.getEPGForChannelsBatch(server, channelIds);
+    },
+    enabled: !!server && visibleChannels.length > 0,
+  });
+
+  // Generate stream URLs only for visible channels (performance optimization)
   useEffect(() => {
-    if (server && channelQuery.data) {
-      const loadStreamUrls = async () => {
-        const urls: Record<number, string> = {};
-        for (const stream of channelQuery.data) {
-          try {
-            const url = await ApiService.getStreamUrl(server, stream.stream_id);
-            if (url) {
-              urls[stream.stream_id] = url;
-            }
-          } catch (err) {
-            logger.error("channel.page", "preloadStreamUrls", String(err));
+    if (server && visibleChannels.length > 0) {
+      setStreamUrls((prev) => {
+        const urls = { ...prev };
+        for (const stream of visibleChannels) {
+          // Only generate URL if not already cached
+          if (!urls[stream.stream_id]) {
+            urls[stream.stream_id] = ApiService.getStreamUrl(server, stream.stream_id);
           }
         }
-        setStreamUrls(urls);
-      };
-      void loadStreamUrls();
+        return urls;
+      });
     }
-  }, [server, channelQuery.data]);
+  }, [server, visibleChannels]);
 
   // Filter channels based on search term
-  const filteredChannels = useMemo(() => {
+  const allFilteredChannels = useMemo(() => {
     if (!channelQuery.data) return [];
     if (!searchTerm.trim()) return channelQuery.data;
 
@@ -71,35 +85,69 @@ const ChannelPage = () => {
     );
   }, [channelQuery.data, searchTerm]);
 
+  // Visible channels (for infinite scroll)
+  const visibleChannels = useMemo(() => {
+    return allFilteredChannels.slice(0, visibleCount);
+  }, [allFilteredChannels, visibleCount]);
+
+  const hasMore = visibleCount < allFilteredChannels.length;
+
+  // Reset visible count when search term or category changes
+  useEffect(() => {
+    setVisibleCount(CHANNELS_PER_PAGE);
+  }, [searchTerm, params.channelId]);
+
+  // Intersection observer for infinite scroll
+  const loadMore = useCallback(() => {
+    if (hasMore) {
+      setVisibleCount((prev) => prev + CHANNELS_PER_PAGE);
+    }
+  }, [hasMore]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const first = entries[0];
+        if (first.isIntersecting && hasMore) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [loadMore, hasMore]);
+
   const copyStreamUrl = async (streamId: number) => {
     if (!server) {
       return;
     }
     try {
-      // Use cached URL if available, otherwise fetch it
-      let url = streamUrls[streamId];
-      if (!url) {
-        url = await ApiService.getStreamUrl(server, streamId);
-        if (url) {
-          setStreamUrls(prev => ({ ...prev, [streamId]: url }));
-        }
-      }
+      // Get URL from cache (already generated) or generate it
+      const url = streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
 
       logger.info("channel.page", "copyStreamUrl", url);
-      if (url) {
-        await navigator.clipboard.writeText(url).then(() => {
-          toast.success(
-            <>
-              <div className="font-bold text-foreground">
-                🙌 URL copied to clipboard
-              </div>
-            </>,
-            {
-              position: "top-right",
-            }
-          );
-        });
-      }
+      await navigator.clipboard.writeText(url).then(() => {
+        toast.success(
+          <>
+            <div className="font-bold text-foreground">
+              🙌 URL copied to clipboard
+            </div>
+          </>,
+          {
+            position: "top-right",
+          }
+        );
+      });
     } catch (err) {
       logger.error("channel.page", "copyStreamUrl", String(err));
       toast.error(
@@ -121,7 +169,7 @@ const ChannelPage = () => {
     if (!server) {
       return;
     }
-    const url = await ApiService.getStreamUrl(server, streamId);
+    const url = streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
     if (url) {
       try {
         const response = await ProxyService.play(url);
@@ -264,7 +312,7 @@ const ChannelPage = () => {
 
       {/* Channel List */}
       <div className="space-y-3">
-        {filteredChannels.length === 0 && searchTerm ? (
+        {allFilteredChannels.length === 0 && searchTerm ? (
           <Card>
             <CardContent className="pt-6 pb-6">
               <div className="text-center">
@@ -279,7 +327,8 @@ const ChannelPage = () => {
             </CardContent>
           </Card>
         ) : (
-          filteredChannels.map((stream: Stream) => (
+          <>
+            {visibleChannels.map((stream: Stream) => (
           <Card key={stream.stream_id} className="overflow-hidden">
             <CardHeader className="pb-2 pt-3">
               <div className="flex items-center gap-3">
@@ -371,11 +420,40 @@ const ChannelPage = () => {
                   server={server}
                   channelId={stream.epg_channel_id}
                   streamId={stream.stream_id}
+                  epgData={epgBatchQuery.data?.[stream.epg_channel_id]}
+                  streamUrl={streamUrls[stream.stream_id]}
                 />
               </Suspense>
             </CardContent>
           </Card>
-          ))
+            ))}
+
+            {/* Infinite scroll trigger and loading indicator */}
+            {hasMore && (
+              <div
+                ref={loadMoreRef}
+                className="flex items-center justify-center py-8"
+              >
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 text-muted-foreground">
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+                    <span className="text-sm">
+                      Loading more channels... ({visibleCount} / {allFilteredChannels.length})
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* All channels loaded message */}
+            {!hasMore && visibleChannels.length > 0 && (
+              <div className="text-center py-6">
+                <p className="text-sm text-muted-foreground">
+                  All {allFilteredChannels.length} channels loaded
+                </p>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
