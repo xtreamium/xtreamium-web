@@ -2,6 +2,7 @@ import { Icons } from "@/components/icons";
 import ProxyInstallComponent from "@/components/widgets/proxy-install";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { env } from "@/env";
 
 function HomePage() {
   return (
@@ -40,7 +41,7 @@ function HomePage() {
               className="bg-muted text-muted-foreground p-4 rounded-md text-sm font-mono whitespace-pre-wrap border"
               dangerouslySetInnerHTML={{
                 __html:
-                  import.meta.env.VITE_DEFAULT_CLI_ARGS?.replace(
+                  env.VITE_DEFAULT_CLI_ARGS?.replace(
                     / /g,
                     "<br />"
                   ) ?? "",

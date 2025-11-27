@@ -3,6 +3,8 @@
  * and respects the environment (development vs production)
  */
 
+import { isDev } from "@/env";
+
 const LogLevel = {
   DEBUG: 0,
   INFO: 1,
@@ -13,7 +15,7 @@ const LogLevel = {
 type LogLevel = typeof LogLevel[keyof typeof LogLevel];
 
 class Logger {
-  private readonly isDevelopment = import.meta.env.DEV;
+  private readonly isDevelopment = isDev;
   private readonly currentLogLevel = this.isDevelopment ? LogLevel.DEBUG : LogLevel.WARN;
 
   private formatMessage(level: LogLevel, context: string | undefined, message: string, data?: unknown): string {

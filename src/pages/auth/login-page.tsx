@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 import { logger } from "@/lib/logger";
+import { env } from "@/env";
 
 type LoginFormData = {
   email: string;
@@ -51,7 +52,7 @@ const LoginPage: React.FC = () => {
     }
   };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-gradient-to-br from-background to-muted/20">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-linear-to-br from-background to-muted/20">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
@@ -67,7 +68,7 @@ const LoginPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pb-8">
-            {import.meta.env.VITE_ENABLE_SOCIAL_AUTH !== "false" && (
+            {env.VITE_ENABLE_SOCIAL_AUTH && (
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="w-full h-11">

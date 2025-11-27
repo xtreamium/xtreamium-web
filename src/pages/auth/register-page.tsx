@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 import { useNavigate } from "react-router-dom";
 import { logger } from "@/lib/logger";
+import { env } from "@/env";
 
 type RegisterFormData = {
   email: string;
@@ -38,7 +39,7 @@ const RegisterPage: React.FC = () => {
   const auth = useAuth();
   const onSubmit: SubmitHandler<RegisterFormData> = async (data) => {
     setFormError(null);
-    logger.debug("register-page", "API url", import.meta.env.VITE_API_URL);
+    logger.debug("register-page", "API url", env.VITE_API_URL);
     const result = await auth.register(data.email, data.password);
     if (result) {
       await navigate("/");
@@ -63,7 +64,7 @@ const RegisterPage: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6 pb-8">
-            {import.meta.env.VITE_ENABLE_SOCIAL_AUTH !== "false" && (
+            {env.VITE_ENABLE_SOCIAL_AUTH && (
               <>
                 <div className="grid grid-cols-2 gap-3">
                   <Button variant="outline" className="w-full h-11">

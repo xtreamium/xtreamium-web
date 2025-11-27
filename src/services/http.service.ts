@@ -1,5 +1,6 @@
 import { logger } from "@/lib/logger";
 import axios from "axios";
+import { env } from "@/env";
 
 const getServerFromStorage = () => {
   try {
@@ -10,7 +11,7 @@ const getServerFromStorage = () => {
 };
 
 const instance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: env.VITE_API_URL,
   headers: {
     "Content-type": "application/json",
   },
@@ -19,7 +20,7 @@ const instance = axios.create({
 logger.debug(
   "http.service",
   "baseURL configured as:",
-  import.meta.env.VITE_API_URL
+  env.VITE_API_URL
 );
 
 // Add request interceptor to set dynamic headers

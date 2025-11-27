@@ -8,6 +8,7 @@ import type { Category } from "@/models/category";
 import type { Stream } from "@/models/stream";
 import { EPGListing } from "@/models/epg-listing";
 import { logger } from "@/lib/logger";
+import { env } from "@/env";
 
 class ApiService {
   private _getRequestOptions = () => {
@@ -186,7 +187,7 @@ class ApiService {
   ): Promise<string> => {
     logger.info(
       "Adding server",
-      { url: import.meta.env.VITE_API_URL },
+      { url: env.VITE_API_URL },
       "api.service"
     );
     const options = this._getRequestOptions();

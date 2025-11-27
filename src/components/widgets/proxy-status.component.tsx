@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { logger } from "@/lib/logger";
 import { ProxyService } from "@/services/proxy.service";
 import { Button } from "@/components/ui/button";
+import { env } from "@/env";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,7 +32,7 @@ const _createConnection = (
   setConnectionState: Dispatch<SetStateAction<ConnectionState>>
 ): signalR.HubConnection => {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${import.meta.env.VITE_PROXY_URL}/hubs/proxyStatus`, {
+    .withUrl(`${env.VITE_PROXY_URL}/hubs/proxyStatus`, {
       skipNegotiation: false,
       withCredentials: false,
       transport: signalR.HttpTransportType.WebSockets | signalR.HttpTransportType.ServerSentEvents | signalR.HttpTransportType.LongPolling,

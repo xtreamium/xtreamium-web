@@ -7,6 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import useServerStore from "@/services/state/server.state";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { env } from "@/env";
 import type { Stream } from "@/models/stream";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -348,7 +349,7 @@ const ChannelPage = () => {
                   </h3>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  {import.meta.env.DEV && (
+                  {env.VITE_ENABLE_DEV_ICONS &&  (
                     <Button
                       size="sm"
                       variant="outline"
@@ -370,7 +371,7 @@ const ChannelPage = () => {
                     <Icons.airplay className="h-3.5 w-3.5" />
                     Play
                   </Button>
-                  {import.meta.env.DEV && (
+                  {env.VITE_ENABLE_DEV_ICONS && (
                     <Button
                       size="sm"
                       variant="secondary"

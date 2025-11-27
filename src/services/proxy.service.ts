@@ -5,15 +5,16 @@ import { title } from "process";
 import { Recording } from "@/models/recording";
 import { LogsResponse } from "@/models/log-entry";
 import { DirectoryListing } from "@/models/directory-listing";
+import { env } from "@/env";
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_PROXY_URL,
+  baseURL: env.VITE_PROXY_URL,
 });
 
 class InternalProxyService {
   play = async (channelUrl: string): Promise<boolean> => {
     const response = await client.post(
-      `${import.meta.env.VITE_PROXY_URL}/play/${encodeURIComponent(channelUrl)}`
+      `${env.VITE_PROXY_URL}/play/${encodeURIComponent(channelUrl)}`
     );
 
     return response.status === HttpStatusCode.Ok;
