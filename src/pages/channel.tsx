@@ -43,6 +43,22 @@ const ChannelPage = () => {
     enabled: !!server,
   });
 
+  // Filter channels based on search term
+  const allFilteredChannels = useMemo(() => {
+    if (!channelQuery.data) return [];
+    if (!searchTerm.trim()) return channelQuery.data;
+
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    return channelQuery.data.filter((stream: Stream) =>
+      stream.name.toLowerCase().includes(lowerSearchTerm)
+    );
+  }, [channelQuery.data, searchTerm]);
+
+  // Visible channels (for infinite scroll)
+  const visibleChannels = useMemo(() => {
+    return allFilteredChannels.slice(0, visibleCount);
+  }, [allFilteredChannels, visibleCount]);
+
   // Batch fetch EPG data only for visible channels (infinite scroll optimization)
   const epgBatchQuery = useQuery({
     queryKey: [`epg_batch_${params.channelId}_${visibleCount}_${searchTerm}`],
@@ -73,22 +89,6 @@ const ChannelPage = () => {
       });
     }
   }, [server, visibleChannels]);
-
-  // Filter channels based on search term
-  const allFilteredChannels = useMemo(() => {
-    if (!channelQuery.data) return [];
-    if (!searchTerm.trim()) return channelQuery.data;
-
-    const lowerSearchTerm = searchTerm.toLowerCase();
-    return channelQuery.data.filter((stream: Stream) =>
-      stream.name.toLowerCase().includes(lowerSearchTerm)
-    );
-  }, [channelQuery.data, searchTerm]);
-
-  // Visible channels (for infinite scroll)
-  const visibleChannels = useMemo(() => {
-    return allFilteredChannels.slice(0, visibleCount);
-  }, [allFilteredChannels, visibleCount]);
 
   const hasMore = visibleCount < allFilteredChannels.length;
 

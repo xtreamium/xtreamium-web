@@ -252,7 +252,7 @@ const EPGComponent = ({
               return (
                 <div
                   key={`show-${index}`}
-                  className={`absolute border-r border-border transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer overflow-hidden ${
+                  className={`absolute border-r border-border transition-colors duration-200 hover:bg-accent hover:text-accent-foreground cursor-pointer ${
                     isPlaying
                       ? "bg-accent text-accent-foreground"
                       : "bg-secondary/80 text-secondary-foreground"
@@ -261,6 +261,7 @@ const EPGComponent = ({
                     left: `${leftOffset}px`,
                     width: `${width}px`,
                     height: "48px",
+                    overflow: "visible",
                   }}
                 >
                   <EpgItem

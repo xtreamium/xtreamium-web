@@ -6,6 +6,19 @@ import { ProxyService } from "@/services/proxy.service";
 import { Recording } from "@/models/recording";
 import { formatTime, formatDate } from "@/utils/date-utils";
 import CopyButton from "@/components/widgets/copy-button";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { logger } from "@/lib/logger";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const RecordingsPage: React.FC = () => {
   const [recordings, setRecordings] = useState<Recording[]>([]);
@@ -14,7 +27,10 @@ const RecordingsPage: React.FC = () => {
   const [deletingRecordings, setDeletingRecordings] = useState<Set<number>>(
     new Set()
   );
-
+  const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(
+    null
+  );
+  const queryClient = useQueryClient();
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
@@ -47,9 +63,56 @@ const RecordingsPage: React.FC = () => {
     }
   };
 
-  const handlePlay = (_recording: Recording) => {
-    // TODO: Implement play functionality
-    // Will be provided later by user
+  const handlePlay = async (recording: Recording) => {
+    if (!recording.filePath) {
+      toast.error("Recording file path not available");
+      return;
+    }
+
+    try {
+      const fileUrl = `file://${recording.filePath}`;
+      const response = await ProxyService.play(fileUrl);
+      if (!response) {
+        toast(
+          <>
+            <div className="font-bold text-foreground">
+              🚫 Unable to play recording!
+            </div>
+            <div className="text-muted-foreground font-sm">
+              Cannot find media player installation.
+            </div>
+            <a
+              className="font-bold text-primary"
+              href="https://github.com/fergalmoran/xtreamium/#installmpv"
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              See here
+            </a>
+          </>,
+          {
+            position: "top-right",
+          }
+        );
+      }
+    } catch (e) {
+      logger.error("recordings.page", "handlePlay", String(e));
+      toast(
+        <div>
+          <div>🚫 Unable to play recording!</div>
+          <div>
+            <a
+              href="https://github.com/xtreamium/xtreamium-proxy/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline"
+            >
+              Make sure you've installed the local server.
+            </a>
+          </div>
+        </div>
+      );
+    }
   };
 
   const handleStop = (_recording: Recording) => {
@@ -57,27 +120,42 @@ const RecordingsPage: React.FC = () => {
     // Will be provided later by user
   };
 
-  const handleDelete = async (recording: Recording) => {
+  const handleOpenRecordingsFolder = async () => {
+    await ProxyService.openRecordingsFolder();
+  };
+
+  const handleDeleteClick = (recording: Recording) => {
+    setRecordingToDelete(recording);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!recordingToDelete) {
+      return;
+    }
+
     // Start fade-out animation
-    setDeletingRecordings((prev) => new Set(prev).add(recording.id));
+    setDeletingRecordings((prev) => new Set(prev).add(recordingToDelete.id));
+    setRecordingToDelete(null);
 
     try {
-      const result = await ProxyService.deleteRecording(recording.id);
+      const result = await ProxyService.deleteRecording(recordingToDelete.id);
       if (result) {
-        // Wait for fade animation to complete before removing from list
+        await queryClient.invalidateQueries({ queryKey: ["recordings"] });
         setTimeout(() => {
-          setRecordings((prev) => prev.filter((r) => r.id !== recording.id));
+          setRecordings((prev) =>
+            prev.filter((r) => r.id !== recordingToDelete.id)
+          );
           setDeletingRecordings((prev) => {
             const newSet = new Set(prev);
-            newSet.delete(recording.id);
+            newSet.delete(recordingToDelete.id);
             return newSet;
           });
-        }, 300); // Match the CSS transition duration
+        }, 300);
       } else {
         // If deletion fails, remove from deleting state
         setDeletingRecordings((prev) => {
           const newSet = new Set(prev);
-          newSet.delete(recording.id);
+          newSet.delete(recordingToDelete.id);
           return newSet;
         });
         setError("Failed to delete recording");
@@ -86,7 +164,7 @@ const RecordingsPage: React.FC = () => {
       // If deletion fails, remove from deleting state
       setDeletingRecordings((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(recording.id);
+        newSet.delete(recordingToDelete.id);
         return newSet;
       });
       setError("Failed to delete recording");
@@ -101,7 +179,7 @@ const RecordingsPage: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => handleDelete(recording)}
+            onClick={() => handleDeleteClick(recording)}
             className="gap-1"
           >
             <Icons.delete className="w-4 h-4" />
@@ -123,7 +201,7 @@ const RecordingsPage: React.FC = () => {
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => handleDelete(recording)}
+              onClick={() => handleDeleteClick(recording)}
               className="gap-1"
             >
               <Icons.delete className="w-4 h-4" />
@@ -137,7 +215,7 @@ const RecordingsPage: React.FC = () => {
             <Button
               variant="default"
               size="sm"
-              onClick={() => handlePlay(recording)}
+              onClick={() => void handlePlay(recording)}
               className="gap-1"
             >
               <Icons.play className="w-4 h-4" />
@@ -146,7 +224,7 @@ const RecordingsPage: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleDelete(recording)}
+              onClick={() => handleDeleteClick(recording)}
               className="gap-1"
             >
               <Icons.delete className="w-4 h-4" />
@@ -184,16 +262,28 @@ const RecordingsPage: React.FC = () => {
       <div className="container mx-auto p-6 space-y-8">
         {/* Header Section */}
         <div className="space-y-4">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-              <Icons.record className="w-8 h-8 text-primary" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
+                <Icons.record className="w-8 h-8 text-primary" />
+              </div>
+              <div>
+                <h1 className="text-4xl font-bold tracking-tight">
+                  Recordings
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Manage your scheduled and completed recordings
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-4xl font-bold tracking-tight">Recordings</h1>
-              <p className="text-lg text-muted-foreground">
-                Manage your scheduled and completed recordings
-              </p>
-            </div>
+            <Button
+              variant="outline"
+              onClick={() => void handleOpenRecordingsFolder()}
+              className="gap-2"
+            >
+              <Icons.folderOpen className="w-4 h-4" />
+              Open Folder
+            </Button>
           </div>
         </div>
 
@@ -345,6 +435,34 @@ const RecordingsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={recordingToDelete !== null}
+        onOpenChange={(open) => !open && setRecordingToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Recording</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{recordingToDelete?.title}"?
+              {recordingToDelete?.isRecorded &&
+                " This will permanently delete the recorded file from your system."}
+              {!recordingToDelete?.isRecorded &&
+                " This will cancel the scheduled recording."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => void handleConfirmDelete()}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

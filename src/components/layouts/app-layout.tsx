@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/navigation/app-sidebar";
@@ -18,6 +18,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
+  const hasRedirectedToLogin = useRef(false);
   const query = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -86,9 +87,12 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   if (!query.data) {
-    // If we're not on an auth page, navigate to login
+    // If we're not on an auth page, navigate to login (only once)
     if (!location.pathname.startsWith("/auth/")) {
-      void navigate("/auth/login");
+      if (!hasRedirectedToLogin.current) {
+        hasRedirectedToLogin.current = true;
+        void navigate("/auth/login", { replace: true });
+      }
       return (
         <div className="flex items-center gap-2 p-4">
           <Spinner />

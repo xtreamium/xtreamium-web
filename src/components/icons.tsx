@@ -1,5 +1,6 @@
 import {
   Bell,
+  Check,
   CirclePlus,
   CircleX,
   BellDot,
@@ -7,6 +8,7 @@ import {
   ChevronUp,
   Download,
   type LucideIcon,
+  FolderOpen,
   Info,
   Eye,
   Mail,
@@ -31,6 +33,7 @@ import {
   Menu,
   Sun,
   Moon,
+  Upload,
 } from "lucide-react";
 type IconProps = {
   className: string | undefined;
@@ -198,6 +201,7 @@ export const Icons = {
   avatar: PersonStanding,
   bell: Bell,
   cast: Cast,
+  check: Check,
   chevronUp: ChevronUp,
   chevronDown: ChevronDown,
   colorSwatch: SwatchBook,
@@ -205,6 +209,7 @@ export const Icons = {
   download: Download,
   copy: Copy,
   eye: Eye,
+  folderOpen: FolderOpen,
   github: GitHub,
   info: Info,
   key: Key,
@@ -223,6 +228,7 @@ export const Icons = {
   record: Disc,
   rocket: Rocket,
   sun: Sun,
+  upload: Upload,
   user: UserRound,
   winget: Winget,
   chocolatey: Chocolatey,

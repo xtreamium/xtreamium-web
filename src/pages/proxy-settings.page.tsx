@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Icons } from "@/components/icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ProxyService } from "@/services/proxy.service";
+import { FolderBrowserDialog } from "@/components/widgets/folder-browser-dialog";
 
 // Zod schema for form validation
 const proxySettingsSchema = z.object({
@@ -84,25 +85,8 @@ const ProxySettingsPage: React.FC = () => {
     }
   };
 
-  const handleRecordingsPathChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      const path = files[0].webkitRelativePath.split("/")[0];
-      setValue("recordingsPath", path);
-    }
-  };
-
-  const handleMediaPlayerPathChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = event.target.files;
-    if (files && files.length > 0) {
-      // @ts-ignore - File.path is available in Electron/desktop environments
-      setValue("mediaPlayerPath", files[0].path || files[0].name);
-    }
-  };
+  const [folderBrowserOpen, setFolderBrowserOpen] = useState(false);
+  const [fileBrowserOpen, setFileBrowserOpen] = useState(false);
 
   const handleTestConnection = () => {
     try {
@@ -181,7 +165,7 @@ const ProxySettingsPage: React.FC = () => {
                   General Settings
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-8">
+              <CardContent className="space-y-8 pb-8">
                 <FormField
                   control={form.control}
                   name="mediaPlayerPath"
@@ -199,26 +183,15 @@ const ProxySettingsPage: React.FC = () => {
                             className="flex-1 bg-muted/50 cursor-not-allowed"
                             {...field}
                           />
-                          <input
-                            type="file"
-                            className="hidden"
-                            id="media-player-path-input"
-                            onChange={handleMediaPlayerPathChange}
-                          />
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="px-4"
-                            asChild
+                            className="px-4 gap-2"
+                            onClick={() => setFileBrowserOpen(true)}
                           >
-                            <label
-                              htmlFor="media-player-path-input"
-                              className="cursor-pointer flex items-center gap-2"
-                            >
-                              <Icons.play className="h-4 w-4" />
-                              Browse
-                            </label>
+                            <Icons.folderOpen className="h-4 w-4" />
+                            Browse
                           </Button>
                         </div>
                       </FormControl>
@@ -299,30 +272,15 @@ const ProxySettingsPage: React.FC = () => {
                             className="flex-1 bg-muted/50 cursor-not-allowed"
                             {...field}
                           />
-                          <input
-                            type="file"
-                            className="hidden"
-                            id="recordings-path-input"
-                            {...({ webkitdirectory: "true" } as Record<
-                              string,
-                              unknown
-                            >)}
-                            onChange={handleRecordingsPathChange}
-                          />
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
-                            className="px-4"
-                            asChild
+                            className="px-4 gap-2"
+                            onClick={() => setFolderBrowserOpen(true)}
                           >
-                            <label
-                              htmlFor="recordings-path-input"
-                              className="cursor-pointer flex items-center gap-2"
-                            >
-                              <Icons.server className="h-4 w-4" />
-                              Browse
-                            </label>
+                            <Icons.folderOpen className="h-4 w-4" />
+                            Browse
                           </Button>
                         </div>
                       </FormControl>
@@ -388,6 +346,22 @@ const ProxySettingsPage: React.FC = () => {
           </AlertDescription>
         </Alert>
       </div>
+
+      <FolderBrowserDialog
+        open={folderBrowserOpen}
+        onOpenChange={setFolderBrowserOpen}
+        onSelect={(path) => setValue("recordingsPath", path)}
+        title="Select Recordings Folder"
+        mode="folder"
+      />
+
+      <FolderBrowserDialog
+        open={fileBrowserOpen}
+        onOpenChange={setFileBrowserOpen}
+        onSelect={(path) => setValue("mediaPlayerPath", path)}
+        title="Select Media Player"
+        mode="file"
+      />
     </div>
   );
 };
