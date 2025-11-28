@@ -10,12 +10,13 @@ import {
   THIRTY_MINUTES_MS,
 } from "@/utils/date-utils";
 import { useState, useEffect } from "react";
+import { EPGListing } from "@/models/epg-listing";
 
 interface IEPGComponentProps {
   server: Server;
   channelId: string;
   streamId: number;
-  epgData?: RawEPGItem[]; // Pre-fetched EPG data from batch query
+  epgData?: RawEPGItem[] | EPGListing[]; // Pre-fetched EPG data from batch query
   streamUrl?: string; // Pre-generated stream URL
 }
 
@@ -82,7 +83,7 @@ const EPGComponent = ({
     });
   };
 
-  const getCurrentAndUpcomingShows = (epgData: unknown[]) => {
+  const getCurrentAndUpcomingShows = (epgData: unknown[]): RawEPGItem[] => {
     // Check if the data contains raw JSON objects with start/stop strings
     const rawShows = epgData.filter((item: unknown): item is RawEPGItem => {
       return (
@@ -103,7 +104,50 @@ const EPGComponent = ({
       });
     }
 
-    // If not raw format, try EPGListing format (fallback)
+    // Check if the data contains EPGListing objects
+    const epgListings = epgData.filter((item: unknown): item is EPGListing => {
+      return item instanceof EPGListing || (
+        typeof item === "object" &&
+        item !== null &&
+        "getStartTime" in item &&
+        "getStopTime" in item &&
+        "getTitle" in item
+      );
+    });
+
+    if (epgListings.length > 0) {
+      // Convert EPGListing to RawEPGItem format
+      return epgListings
+        .filter((listing) => {
+          const endTime = listing.getStopTime();
+          return endTime > currentTime;
+        })
+        .map((listing) => {
+          const startTime = listing.getStartTime();
+          const stopTime = listing.getStopTime();
+
+          // Convert timestamps back to string format for consistency
+          const formatTimestamp = (timestamp: number): string => {
+            const date = new Date(timestamp);
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hour = String(date.getHours()).padStart(2, '0');
+            const minute = String(date.getMinutes()).padStart(2, '0');
+            const second = String(date.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}${hour}${minute}${second} +0000`;
+          };
+
+          return {
+            start: formatTimestamp(startTime),
+            stop: formatTimestamp(stopTime),
+            title: listing.getTitle(),
+            description: listing.getDescription(),
+            categories: []
+          };
+        });
+    }
+
     return [];
   };
 
