@@ -24,7 +24,9 @@ import { FolderBrowserDialog } from "@/components/widgets/folder-browser-dialog"
 // Zod schema for form validation
 const proxySettingsSchema = z.object({
   mediaPlayerPath: z.string().min(1, "Media player path is required"),
-  mediaPlayerArguments: z.string().min(0, "Media player arguments must be a valid string"),
+  mediaPlayerArguments: z
+    .string()
+    .min(0, "Media player arguments must be a valid string"),
   recordingsPath: z.string().min(1, "Recordings path is required"),
   port: z
     .number()
@@ -152,10 +154,7 @@ const ProxySettingsPage: React.FC = () => {
         </div>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-8"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <Card className="border-border/40 shadow-sm">
               <CardHeader className="pb-6">
                 <CardTitle className="flex items-center gap-3 text-xl">
@@ -196,7 +195,8 @@ const ProxySettingsPage: React.FC = () => {
                         </div>
                       </FormControl>
                       <FormDescription>
-                        Select the executable path for your media player (e.g., mpv, VLC, etc.).
+                        Select the executable path for your media player (e.g.,
+                        mpv, VLC, etc.).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -219,7 +219,8 @@ const ProxySettingsPage: React.FC = () => {
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter custom arguments to customize playback behavior. Use \ for line breaks.
+                        Enter custom arguments to customize playback behavior.
+                        Use \ for line breaks.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -340,9 +341,9 @@ const ProxySettingsPage: React.FC = () => {
             Need help?
           </AlertTitle>
           <AlertDescription className="text-blue-800 dark:text-blue-200">
-            Proxy settings help route your streaming traffic through a secure
-            connection. Contact your network administrator if you're unsure
-            about these settings.
+            A local proxy is required so that xtreamium can do things a browser
+            is not allowed to. Such as recording streams, transcoding video, and
+            using custom media players.
           </AlertDescription>
         </Alert>
       </div>
