@@ -16,6 +16,7 @@ import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
 import { ProxyService } from "@/services/proxy.service";
 import CopyButton from "@/components/widgets/copy-button";
+import { CustomRecordingModal } from "@/components/recording/custom-recording-modal";
 
 const CHANNELS_PER_PAGE = 50;
 
@@ -26,6 +27,8 @@ const ChannelPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [visibleCount, setVisibleCount] = useState(CHANNELS_PER_PAGE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [recordingModalOpen, setRecordingModalOpen] = useState(false);
+  const [selectedStreamForRecording, setSelectedStreamForRecording] = useState<Stream | null>(null);
   const userQuery = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -218,6 +221,68 @@ const ChannelPage = () => {
     }
   };
 
+  const openCustomRecordingModal = (stream: Stream) => {
+    setSelectedStreamForRecording(stream);
+    setRecordingModalOpen(true);
+  };
+
+  const handleCustomRecording = async (
+    startDate: Date,
+    startTime: string,
+    endDate: Date,
+    endTime: string
+  ) => {
+    if (!server || !selectedStreamForRecording) {
+      return;
+    }
+
+    try {
+      // Combine date and time into full DateTime strings
+      const [startHour, startMinute] = startTime.split(':');
+      const startDateTime = new Date(startDate);
+      startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
+
+      const [endHour, endMinute] = endTime.split(':');
+      const endDateTime = new Date(endDate);
+      endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
+
+      const url = streamUrls[selectedStreamForRecording.stream_id] ||
+        ApiService.getStreamUrl(server, selectedStreamForRecording.stream_id);
+
+      await ProxyService.recordShow(
+        selectedStreamForRecording.name,
+        url,
+        startDateTime.getTime(),
+        endDateTime.getTime()
+      );
+
+      toast.success(
+        <>
+          <div className="font-bold text-foreground">
+            Recording Scheduled
+          </div>
+          <div className="text-muted-foreground text-sm">
+            {selectedStreamForRecording.name} will be recorded from{' '}
+            {startDateTime.toLocaleString()} to {endDateTime.toLocaleString()}
+          </div>
+        </>,
+        {
+          position: "top-right",
+        }
+      );
+    } catch (err) {
+      logger.error("channel.page", "handleCustomRecording", String(err));
+      toast.error(
+        <>
+          <div className="font-bold text-foreground">Failed to schedule recording</div>
+        </>,
+        {
+          position: "top-right",
+        }
+      );
+    }
+  };
+
   if (!server) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -383,6 +448,16 @@ const ChannelPage = () => {
                       Browser
                     </Button>
                   )}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    title="Schedule custom recording"
+                    onClick={() => openCustomRecordingModal(stream)}
+                    className="gap-1.5 h-8 px-2 text-xs"
+                  >
+                    <Icons.calendar className="h-3.5 w-3.5" />
+                    Custom Recording
+                  </Button>
 
                   {streamUrls[stream.stream_id] ? (
                     <CopyButton
@@ -457,6 +532,14 @@ const ChannelPage = () => {
           </>
         )}
       </div>
+
+      {/* Custom Recording Modal */}
+      <CustomRecordingModal
+        open={recordingModalOpen}
+        onOpenChange={setRecordingModalOpen}
+        onConfirm={handleCustomRecording}
+        streamName={selectedStreamForRecording?.name}
+      />
     </div>
   );
 };
