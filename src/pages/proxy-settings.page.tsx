@@ -134,6 +134,7 @@ const ProxySettingsPage: React.FC = () => {
           <AlertDescription>
             Failed to load proxy settings. Please make sure the proxy is
             installed and running.
+            {error instanceof Error ? ` Details: ${error.message}` : null}
           </AlertDescription>
         </Alert>
       </div>

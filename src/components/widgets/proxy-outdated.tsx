@@ -47,14 +47,16 @@ export function ProxyOutdated({
               .
             </p>
             <p className="text-sm">
-              Please download the latest version from{" "}
+              Please update to the latest version using your package manager or
+              download it from{" "}
               <a
                 href="https://github.com/xtreamium/xtreamium-proxy/releases"
                 target="_blank"
                 className="font-semibold text-destructive underline hover:text-destructive/80 transition-colors"
               >
-                here
+                GitHub releases
               </a>
+              .
             </p>
           </div>
         </AlertDescription>
