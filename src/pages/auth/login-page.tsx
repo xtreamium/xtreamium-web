@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { type SubmitHandler, useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
+import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
 import {
   Card,
   CardContent,
@@ -51,35 +52,55 @@ const LoginPage: React.FC = () => {
       setFormError("Invalid email or password. Please try again.");
     }
   };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setFormError(null);
+    try {
+      if (credentialResponse.credential) {
+        await auth.googleLogin(credentialResponse.credential);
+      }
+    } catch (error) {
+      logger.error("Google login failed", error, "login-page");
+      setFormError("Google login failed. Please try again.");
+    }
+  };
+
+  const handleGoogleError = () => {
+    logger.error("Google login error", {}, "login-page");
+    setFormError("Google login failed. Please try again.");
+  };
+  const googleClientId = env.VITE_GOOGLE_CLIENT_ID || "";
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-linear-to-br from-background to-muted/20">
-      <div className="w-full max-w-sm space-y-8">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-muted-foreground">
-            Sign in to your account to continue
-          </p>
-        </div>
-        <Card className="border-border/50 shadow-lg">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-            <CardDescription className="text-center">
-              Choose your preferred sign in method
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6 pb-8">
-            {env.VITE_ENABLE_SOCIAL_AUTH && (
-              <>
-                <div className="grid grid-cols-2 gap-3">
-                  <Button variant="outline" className="w-full h-11">
-                    <Icons.mail className="mr-2 h-4 w-4" />
-                    Google
-                  </Button>
-                  <Button variant="outline" className="w-full h-11">
-                    <Icons.github className="mr-2 h-4 w-4" />
-                    GitHub
-                  </Button>
-                </div>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12 bg-linear-to-br from-background to-muted/20">
+        <div className="w-full max-w-sm space-y-8">
+          <div className="text-center space-y-2">
+            <h1 className="text-3xl font-bold tracking-tight">Welcome back</h1>
+            <p className="text-muted-foreground">
+              Sign in to your account to continue
+            </p>
+          </div>
+          <Card className="border-border/50 shadow-lg">
+            <CardHeader className="space-y-1 pb-6">
+              <CardTitle className="text-2xl text-center">Sign in</CardTitle>
+              <CardDescription className="text-center">
+                Choose your preferred sign in method
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 pb-8">
+              {env.VITE_ENABLE_SOCIAL_AUTH && googleClientId && (
+                <>
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={handleGoogleError}
+                      useOneTap
+                      theme="outline"
+                      size="large"
+                      width="100%"
+                    />
+                  </div>
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
@@ -156,8 +177,9 @@ const LoginPage: React.FC = () => {
             Sign up
           </Button>
         </p>
+        </div>
       </div>
-    </div>
+    </GoogleOAuthProvider>
   );
 };
 

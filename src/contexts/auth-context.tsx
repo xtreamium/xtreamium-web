@@ -10,6 +10,7 @@ type AuthContextProps = {
   token: string;
   register: (email: string, password: string) => Promise<boolean>;
   login: (email: string, password: string) => Promise<void>;
+  googleLogin: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   getUser: () => Promise<User | undefined>;
 };
@@ -18,6 +19,7 @@ const AuthContext = React.createContext<AuthContextProps>({
   token: "",
   register: async () => false,
   login: async () => {},
+  googleLogin: async () => {},
   logout: async () => {},
   getUser: async () => undefined,
 });
@@ -62,6 +64,23 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       throw err;
     }
   };
+
+  const googleLogin = async (idToken: string) => {
+    try {
+      const response = await apiService.googleLogin(idToken);
+      if (response.status === StatusCodes.OK) {
+        setToken(response.data.access_token);
+        localStorage.setItem(TOKEN_KEY, response.data.access_token);
+        void navigate("/");
+        location.reload();
+        return;
+      }
+      throw new Error(response.data);
+    } catch (err) {
+      console.error(err);
+      throw err;
+    }
+  };
   const logout = async () => {
     setUser(undefined);
     setToken("");
@@ -84,7 +103,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, register, login, logout, getUser }}
+      value={{ token, user, register, login, googleLogin, logout, getUser }}
     >
       {children}
     </AuthContext.Provider>

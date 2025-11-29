@@ -16,6 +16,7 @@ export const env = createEnv({
       .transform((val) => val === "true")
       .default(false),
     VITE_DEFAULT_CLI_ARGS: z.string().optional(),
+    VITE_GOOGLE_CLIENT_ID: z.string().optional(),
   },
 
   runtimeEnv: {
@@ -24,6 +25,7 @@ export const env = createEnv({
     VITE_ENABLE_SOCIAL_AUTH: import.meta.env.VITE_ENABLE_SOCIAL_AUTH,
     VITE_ENABLE_DEV_ICONS: import.meta.env.VITE_ENABLE_DEV_ICONS,
     VITE_DEFAULT_CLI_ARGS: import.meta.env.VITE_DEFAULT_CLI_ARGS,
+    VITE_GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
   },
 
   skipValidation: !!import.meta.env.SKIP_ENV_VALIDATION,

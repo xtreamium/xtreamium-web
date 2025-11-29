@@ -52,6 +52,32 @@ class ApiService {
     return response;
   };
 
+  public googleLogin = async (idToken: string): Promise<AxiosResponse> => {
+    const response = await http.post(
+      "auth/google/token",
+      { id_token: idToken },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
+  };
+
+  public googleLoginWithCode = async (code: string): Promise<AxiosResponse> => {
+    const response = await http.post(
+      "auth/google/code",
+      { code },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
+  };
+
   public getUser = async (token: string): Promise<User> => {
     const requestOptions = {
       method: "GET",
