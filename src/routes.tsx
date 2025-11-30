@@ -12,6 +12,7 @@ import ProxySettingsPage from "@/pages/proxy-settings.page";
 import AddServerPage from "@/pages/add-server.page";
 import RecordingsPage from "@/pages/recordings.page";
 import LogsPage from "@/pages/logs.page";
+import GitHubCallbackPage from "@/pages/auth/github-callback";
 
 export const AppRoutes = () => {
   return (
@@ -19,7 +20,7 @@ export const AppRoutes = () => {
       {/* Public routes */}
       <Route path="/auth/login" element={<LoginPage />} />
       <Route path="/auth/register" element={<RegisterPage />} />
-
+      <Route path="/auth/github/callback" element={<GitHubCallbackPage />} />
       {/* Protected routes */}
       <Route path="/" element={<HomePage />} />
       <Route path="/home" element={<HomePage />} />

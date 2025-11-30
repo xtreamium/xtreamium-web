@@ -69,7 +69,33 @@ const LoginPage: React.FC = () => {
     logger.error("Google login error", {}, "login-page");
     setFormError("Google login failed. Please try again.");
   };
+
+  const handleGoogleLogin = () => {
+    setFormError(null);
+    // Trigger Google One Tap or redirect to Google OAuth
+    const googleBtn = document.querySelector('iframe[src*="accounts.google.com"]');
+    if (googleBtn) {
+      // Click the Google login iframe if available
+      (googleBtn.parentElement?.querySelector('div[role="button"]') as HTMLElement)?.click();
+    }
+  };
+
+  const handleGitHubLogin = () => {
+    const githubClientId = env.VITE_GITHUB_CLIENT_ID;
+    if (!githubClientId) {
+      logger.error("GitHub client ID not configured", {}, "login-page");
+      setFormError("GitHub login is not configured.");
+      return;
+    }
+
+    const redirectUri = `${window.location.origin}/auth/github/callback`;
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${githubClientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
+
+    window.location.href = githubAuthUrl;
+  };
+
   const googleClientId = env.VITE_GOOGLE_CLIENT_ID || "";
+  const githubClientId = env.VITE_GITHUB_CLIENT_ID || "";
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
@@ -89,30 +115,54 @@ const LoginPage: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6 pb-8">
-              {env.VITE_ENABLE_SOCIAL_AUTH && googleClientId && (
+              {env.VITE_ENABLE_SOCIAL_AUTH && (googleClientId || githubClientId) && (
                 <>
-                  <div className="flex justify-center">
-                    <GoogleLogin
-                      onSuccess={handleGoogleSuccess}
-                      onError={handleGoogleError}
-                      useOneTap
-                      theme="outline"
-                      size="large"
-                      width="100%"
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    {googleClientId && (
+                      <Button
+                        variant="outline"
+                        className="w-full h-12 text-base font-normal"
+                        onClick={handleGoogleLogin}
+                        type="button"
+                      >
+                        <Icons.google className="mr-2 h-5 w-5" />
+                        Google
+                      </Button>
+                    )}
+                    {githubClientId && (
+                      <Button
+                        variant="outline"
+                        className="w-full h-12 text-base font-normal"
+                        onClick={handleGitHubLogin}
+                        type="button"
+                      >
+                        <Icons.github className="mr-2 h-5 w-5" />
+                        GitHub
+                      </Button>
+                    )}
                   </div>
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center">
-                    <span className="w-full border-t" />
+                  {/* Hidden Google Login component for OAuth functionality */}
+                  {googleClientId && (
+                    <div style={{ position: 'absolute', left: '-9999px' }}>
+                      <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        useOneTap
+                      />
+                    </div>
+                  )}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background text-muted-foreground px-2">
+                        Or continue with email
+                      </span>
+                    </div>
                   </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-background text-muted-foreground px-2">
-                      Or continue with email
-                    </span>
-                  </div>
-                </div>
-              </>
-            )}
+                </>
+              )}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">

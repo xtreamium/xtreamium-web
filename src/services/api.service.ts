@@ -78,6 +78,19 @@ class ApiService {
     return response;
   };
 
+  public githubLogin = async (code: string): Promise<AxiosResponse> => {
+    const response = await http.post(
+      "auth/github/code",
+      { code },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return response;
+  };
+
   public getUser = async (token: string): Promise<User> => {
     const requestOptions = {
       method: "GET",
