@@ -32,7 +32,7 @@ type AuthProviderProps = {
 
 const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const navigate = useNavigate();
-  const [user, setUser] = React.useState<User | undefined>(undefined);
+  const [user, setUser] = React.useState<User>(undefined);
   const [token, setToken] = React.useState(
     localStorage.getItem(TOKEN_KEY) || ""
   );

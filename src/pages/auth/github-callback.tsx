@@ -1,5 +1,6 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { logger } from "@/lib/logger";
 
@@ -7,48 +8,60 @@ const GitHubCallbackPage: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const auth = useAuth();
-  const [error, setError] = React.useState<string | null>(null);
+  const hasTriggered = useRef(false);
+
+  const { mutate: processGitHubCallback, error, isError } = useMutation({
+    mutationFn: async (code: string) => {
+      logger.info("GitHub callback received", { code: code.substring(0, 10) + "..." }, "github-callback");
+      await auth.githubLogin(code);
+    },
+    onError: (err: any) => {
+      logger.error("GitHub login failed", err, "github-callback");
+      setTimeout(() => navigate("/auth/login"), 3000);
+    },
+  });
 
   useEffect(() => {
-    const handleCallback = async () => {
-      const code = searchParams.get("code");
-      const error = searchParams.get("error");
+    // Prevent multiple executions
+    if (hasTriggered.current) {
+      return;
+    }
 
-      if (error) {
-        logger.error("GitHub OAuth error", { error }, "github-callback");
-        setError("GitHub authentication failed. Please try again.");
-        setTimeout(() => navigate("/auth/login"), 3000);
-        return;
-      }
+    const oauthError = searchParams.get("error");
+    const code = searchParams.get("code");
 
-      if (!code) {
-        logger.error("No code in GitHub callback", {}, "github-callback");
-        setError("Invalid callback from GitHub.");
-        setTimeout(() => navigate("/auth/login"), 3000);
-        return;
-      }
+    if (oauthError) {
+      logger.error("GitHub OAuth error", { error: oauthError }, "github-callback");
+      setTimeout(() => navigate("/auth/login"), 3000);
+      return;
+    }
 
-      try {
-        logger.info("GitHub callback received", { code: code.substring(0, 10) + "..." }, "github-callback");
-        await auth.githubLogin(code);
-        // Navigation is handled by githubLogin
-      } catch (err: any) {
-        logger.error("GitHub login failed", err, "github-callback");
-        const errorMessage = err?.response?.data?.detail || "GitHub login failed. Please try again.";
-        setError(errorMessage);
-        setTimeout(() => navigate("/auth/login"), 3000);
-      }
-    };
+    if (!code) {
+      logger.error("No code in GitHub callback", {}, "github-callback");
+      setTimeout(() => navigate("/auth/login"), 3000);
+      return;
+    }
 
-    handleCallback();
-  }, [searchParams, navigate, auth]);
+    // Mark as triggered and process the callback
+    hasTriggered.current = true;
+    processGitHubCallback(code);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const errorMessage = isError
+    ? (error as any)?.response?.data?.detail || "GitHub login failed. Please try again."
+    : searchParams.get("error")
+    ? "GitHub authentication failed. Please try again."
+    : !searchParams.get("code")
+    ? "Invalid callback from GitHub."
+    : null;
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="text-center space-y-4">
-        {error ? (
+        {errorMessage ? (
           <>
-            <div className="text-destructive text-lg font-semibold">{error}</div>
+            <div className="text-destructive text-lg font-semibold">{errorMessage}</div>
             <p className="text-muted-foreground">Redirecting to login...</p>
           </>
         ) : (
