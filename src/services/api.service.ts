@@ -245,6 +245,29 @@ class ApiService {
     return response.data["id"];
   };
 
+  public updateServer = async (
+    serverId: string,
+    name: string,
+    server: string,
+    username: string,
+    password: string,
+    epgUrl: string
+  ): Promise<boolean> => {
+    const options = this._getRequestOptions();
+    const response = await http.put(
+      `user/server/${serverId}`,
+      {
+        name: name,
+        url: server,
+        username: username,
+        password: password,
+        epg_url: epgUrl,
+      },
+      options
+    );
+    return response.status === StatusCodes.OK;
+  };
+
   public refreshEPG = async (serverId: string): Promise<boolean> => {
     const options = {
       ...this._getRequestOptions(),

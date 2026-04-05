@@ -1,5 +1,5 @@
 import type React from "react";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/navigation/app-sidebar";
@@ -9,6 +9,7 @@ import { ApiService, ProxyService } from "@/services";
 import useServerStore from "@/services/state/server.state";
 import { Toaster } from "sonner";
 import { Spinner } from "@/components/ui/spinner";
+import { TOKEN_KEY } from "@/constants/storage";
 import { ProxyOutdated } from "@/components/widgets/proxy-outdated";
 
 interface AppLayoutProps {
@@ -18,7 +19,6 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const hasRedirectedToLogin = useRef(false);
   const query = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -35,6 +35,17 @@ export function AppLayout({ children }: AppLayoutProps) {
   const isOnServerRoute =
     location.pathname.startsWith("/server/") ||
     location.pathname.startsWith("/auth/");
+
+  useEffect(() => {
+    if (
+      !query.isLoading &&
+      !query.data &&
+      !location.pathname.startsWith("/auth/")
+    ) {
+      localStorage.removeItem(TOKEN_KEY);
+      void navigate("/auth/login", { replace: true });
+    }
+  }, [query.isLoading, query.data, location.pathname, navigate]);
 
   useEffect(() => {
     if (
@@ -87,24 +98,18 @@ export function AppLayout({ children }: AppLayoutProps) {
   }
 
   if (!query.data) {
-    // If we're not on an auth page, navigate to login (only once)
-    if (!location.pathname.startsWith("/auth/")) {
-      if (!hasRedirectedToLogin.current) {
-        hasRedirectedToLogin.current = true;
-        void navigate("/auth/login", { replace: true });
-      }
+    if (location.pathname.startsWith("/auth/")) {
       return (
-        <div className="flex items-center gap-2 p-4">
-          <Spinner />
-          <span>Redirecting to login...</span>
+        <div className="min-h-screen bg-background flex flex-col w-full">
+          <Toaster position="top-center" closeButton={true} />
+          {children}
         </div>
       );
     }
-    // If we're already on an auth page, render it without layout
     return (
-      <div className="min-h-screen bg-background flex flex-col w-full">
-        <Toaster position="top-center" closeButton={true} />
-        {children}
+      <div className="flex items-center gap-2 p-4">
+        <Spinner />
+        <span>Redirecting to login...</span>
       </div>
     );
   }

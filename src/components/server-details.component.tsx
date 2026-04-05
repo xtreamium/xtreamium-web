@@ -37,7 +37,12 @@ const schema = z.object({
 
 type ServerSchema = z.infer<typeof schema>;
 
-const ServerDetails = () => {
+type ServerDetailsProps = {
+  serverId?: string;
+};
+
+const ServerDetails = ({ serverId }: ServerDetailsProps) => {
+  const isEditMode = !!serverId;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { setSelectedServer } = useServerStore();
@@ -50,6 +55,10 @@ const ServerDetails = () => {
     queryFn: ApiService.getCurrentUser,
   });
 
+  const existingServer = isEditMode
+    ? userQuery.data?.servers.find((s) => s.id === serverId)
+    : undefined;
+
   const form = useForm<ServerSchema>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -60,6 +69,18 @@ const ServerDetails = () => {
       epgUrl: "",
     },
   });
+
+  useEffect(() => {
+    if (existingServer) {
+      form.reset({
+        name: existingServer.name,
+        server: existingServer.url,
+        username: existingServer.username,
+        password: existingServer.password,
+        epgUrl: existingServer.epg_url,
+      });
+    }
+  }, [existingServer, form]);
 
   const watchedFields = form.watch(["server", "username", "password"]);
 
@@ -108,43 +129,78 @@ const ServerDetails = () => {
         return;
       }
 
-      const serverId = await ApiService.addServer(
-        data.name,
-        data.server,
-        data.username,
-        data.password,
-        data.epgUrl
-      );
+      if (isEditMode) {
+        const success = await ApiService.updateServer(
+          serverId,
+          data.name,
+          data.server,
+          data.username,
+          data.password,
+          data.epgUrl
+        );
 
-      if (serverId) {
-        setIsCheckingEpg(false);
-        setIsRefreshingEpg(true);
+        if (success) {
+          const epgUrlChanged = data.epgUrl !== existingServer?.epg_url;
 
-        try {
-          await ApiService.refreshEPG(serverId);
+          if (epgUrlChanged) {
+            setIsCheckingEpg(false);
+            setIsRefreshingEpg(true);
 
-          setSelectedServer(serverId);
+            try {
+              await ApiService.refreshEPG(serverId);
+            } catch (error) {
+              logger.debug("Error refreshing EPG", error, "server-details.component");
+              setEpgCheckError(
+                "Server updated but failed to refresh EPG data."
+              );
+            } finally {
+              setIsRefreshingEpg(false);
+            }
+          }
 
           await queryClient.invalidateQueries({ queryKey: ["user"] });
-
           await navigate("/");
-        } catch (error) {
-          logger.debug("Error seting EPG", error, "server-details.component");
+        } else {
           setEpgCheckError(
-            "Failed to refresh EPG data. The server has been added but EPG data may not be available yet."
+            "Failed to update server. Please check your details and try again."
           );
-        } finally {
-          setIsRefreshingEpg(false);
         }
       } else {
-        setEpgCheckError(
-          "Failed to add server. Please check your details and try again."
+        const newServerId = await ApiService.addServer(
+          data.name,
+          data.server,
+          data.username,
+          data.password,
+          data.epgUrl
         );
+
+        if (newServerId) {
+          setIsCheckingEpg(false);
+          setIsRefreshingEpg(true);
+
+          try {
+            await ApiService.refreshEPG(newServerId);
+            setSelectedServer(newServerId);
+            await queryClient.invalidateQueries({ queryKey: ["user"] });
+            await navigate("/");
+          } catch (error) {
+            logger.debug("Error seting EPG", error, "server-details.component");
+            setEpgCheckError(
+              "Failed to refresh EPG data. The server has been added but EPG data may not be available yet."
+            );
+          } finally {
+            setIsRefreshingEpg(false);
+          }
+        } else {
+          setEpgCheckError(
+            "Failed to add server. Please check your details and try again."
+          );
+        }
       }
     } catch (error) {
-      logger.debug("Error seting EPG", error, "server-details.component");
+      logger.debug("Error saving server", error, "server-details.component");
       setEpgCheckError(
-        "Failed to add server. Please check your details and try again."
+        `Failed to ${isEditMode ? "update" : "add"} server. Please check your details and try again.`
       );
     } finally {
       setIsCheckingEpg(false);
@@ -154,7 +210,7 @@ const ServerDetails = () => {
   return (
     <div className="w-full max-w-md mx-auto relative">
       <h1 className="mb-6 text-2xl font-semibold text-foreground">
-        XTream Codes Details
+        {isEditMode ? "Edit Server Details" : "XTream Codes Details"}
       </h1>
 
       {epgCheckError && (
@@ -302,7 +358,7 @@ const ServerDetails = () => {
             ) : (
               <>
                 <Icons.rocket className="mr-2 h-4 w-4" />
-                Let's go!
+                {isEditMode ? "Save Changes" : "Let's go!"}
               </>
             )}
           </Button>

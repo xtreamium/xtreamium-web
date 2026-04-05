@@ -56,8 +56,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(response.data.user);
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        void navigate("/");
-        location.reload();
+        window.location.href = "/";
         return;
       }
       throw new Error(response.data);
@@ -73,8 +72,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.status === StatusCodes.OK) {
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        void navigate("/");
-        location.reload();
+        window.location.href = "/";
         return;
       }
       throw new Error(response.data);
@@ -90,8 +88,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (response.status === StatusCodes.OK) {
         setToken(response.data.access_token);
         localStorage.setItem(TOKEN_KEY, response.data.access_token);
-        void navigate("/");
-        location.reload();
+        window.location.href = "/";
         return;
       }
       throw new Error(response.data);
@@ -105,8 +102,7 @@ const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     setUser(undefined);
     setToken("");
     localStorage.removeItem(TOKEN_KEY);
-    void navigate("/");
-    location.reload();
+    window.location.href = "/auth/login";
   };
   const getUser = async (): Promise<User | undefined> => {
     try {

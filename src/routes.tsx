@@ -26,6 +26,7 @@ export const AppRoutes = () => {
       <Route path="/home" element={<HomePage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route path="/server/add" element={<AddServerPage />} />
+      <Route path="/server/edit/:serverId" element={<AddServerPage />} />
       <Route path="/proxy/settings" element={<ProxySettingsPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/channel/:channelId" element={<ChannelPage />} />

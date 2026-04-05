@@ -13,7 +13,8 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { DropdownMenuTriggerFixed } from "@/components/dropdown-menu-trigger-fixed";
-import { ChevronDown, SparklesIcon } from "lucide-react";
+import { ChevronDown, PencilIcon, SparklesIcon } from "lucide-react";
+import { ApiService } from "@/services";
 
 type ServerSelectorComponentProps = {
   user: User;
@@ -23,6 +24,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
   user,
 }) => {
   const [open, setOpen] = React.useState(false);
+  const [refreshingId, setRefreshingId] = React.useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const { selectedServer, setSelectedServer } = useServerStore();
@@ -39,6 +41,17 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
     );
   }
 
+  async function _handleRefreshEpg(e: React.MouseEvent, id: string) {
+    e.stopPropagation();
+    setOpen(false);
+    setRefreshingId(id);
+    try {
+      await ApiService.refreshEPG(id);
+    } finally {
+      setRefreshingId(null);
+    }
+  }
+
   async function _handleClick(id: string) {
     setSelectedServer(id);
     if (document.activeElement instanceof HTMLElement) {
@@ -50,7 +63,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTriggerFixed asChild>
         <Button variant="outline" className="gap-2 px-2">
-          <Icons.server className="w-5 h-5" />
+          <Icons.server className={`w-5 h-5${refreshingId === selectedServer ? " animate-pulse" : ""}`} />
           <span className="truncate">{server?.name}</span>
           <ChevronDown />
         </Button>
@@ -62,9 +75,32 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
         {user.servers.map((s) => (
           <React.Fragment key={s.id}>
             <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => void _handleClick(s.id)}>
-                <SparklesIcon />
-                {s.name}
+              <DropdownMenuItem
+                onClick={() => void _handleClick(s.id)}
+                className="flex items-center justify-between"
+              >
+                <div className="flex items-center gap-2">
+                  <SparklesIcon className="h-4 w-4" />
+                  {s.name}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={(e) => void _handleRefreshEpg(e, s.id)}
+                    disabled={refreshingId === s.id}
+                    title="Refresh EPG"
+                  >
+                    <Icons.refresh className={`h-4 w-4 text-muted-foreground hover:text-foreground${refreshingId === s.id ? " animate-spin" : ""}`} />
+                  </button>
+                  <NavLink
+                    to={`/server/edit/${s.id}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpen(false);
+                    }}
+                  >
+                    <PencilIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                  </NavLink>
+                </div>
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />

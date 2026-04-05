@@ -16,6 +16,7 @@ import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/icons";
 import { logger } from "@/lib/logger";
 import { env } from "@/env";
+import { TOKEN_KEY } from "@/constants/storage";
 
 type LoginFormData = {
   email: string;
@@ -38,10 +39,10 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (auth.token) {
+    if (localStorage.getItem(TOKEN_KEY)) {
       navigate("/");
     }
-  }, [auth.token, navigate]);
+  }, [navigate]);
 
   const onSubmit: SubmitHandler<LoginFormData> = async (data) => {
     setFormError(null);
