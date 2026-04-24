@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
@@ -27,12 +28,19 @@ const schema = z.object({
     .string()
     .url({ message: "Invalid URL" })
     .min(1, { message: "Required" }),
-  username: z.string().min(1, { message: "Required" }),
-  password: z.string().min(4, { message: "Required" }),
+  noAuth: z.boolean(),
+  username: z.string().optional(),
+  password: z.string().optional(),
   epgUrl: z
     .string()
     .url({ message: "Invalid URL" })
     .min(1, { message: "Required" }),
+}).refine((data) => data.noAuth || (data.username && data.username.length > 0), {
+  message: "Required",
+  path: ["username"],
+}).refine((data) => data.noAuth || (data.password && data.password.length >= 4), {
+  message: "Required",
+  path: ["password"],
 });
 
 type ServerSchema = z.infer<typeof schema>;
@@ -64,6 +72,7 @@ const ServerDetails = ({ serverId }: ServerDetailsProps) => {
     defaultValues: {
       name: "",
       server: "",
+      noAuth: false,
       username: "",
       password: "",
       epgUrl: "",
@@ -72,9 +81,11 @@ const ServerDetails = ({ serverId }: ServerDetailsProps) => {
 
   useEffect(() => {
     if (existingServer) {
+      const noAuth = !existingServer.username && !existingServer.password;
       form.reset({
         name: existingServer.name,
         server: existingServer.url,
+        noAuth,
         username: existingServer.username,
         password: existingServer.password,
         epgUrl: existingServer.epg_url,
@@ -82,26 +93,23 @@ const ServerDetails = ({ serverId }: ServerDetailsProps) => {
     }
   }, [existingServer, form]);
 
-  const watchedFields = form.watch(["server", "username", "password"]);
+  const watchedFields = form.watch(["server", "username", "password", "noAuth"]);
 
   useEffect(() => {
-    const [server, username, password] = watchedFields;
+    const [server, username, password, noAuth] = watchedFields;
 
-    if (server && username && password) {
+    if (server) {
       try {
         const serverUrl = new URL(server);
-        const epgUrl = `${
-          serverUrl.origin
-        }/xmltv.php?username=${encodeURIComponent(
-          username
-        )}&password=${encodeURIComponent(password)}`;
-        form.setValue("epgUrl", epgUrl);
+        if (noAuth) {
+          form.setValue("epgUrl", `${serverUrl.origin}/xmltv.php`);
+        } else if (username && password) {
+          form.setValue("epgUrl", `${serverUrl.origin}/xmltv.php?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+        } else {
+          form.setValue("epgUrl", "");
+        }
       } catch (error) {
-        logger.debug(
-          "Error opening Server Details",
-          error,
-          "server-details.component"
-        );
+        logger.debug("Error opening Server Details", error, "server-details.component");
       }
     } else {
       form.setValue("epgUrl", "");
@@ -282,43 +290,63 @@ const ServerDetails = ({ serverId }: ServerDetailsProps) => {
 
           <FormField
             control={form.control}
-            name="username"
+            name="noAuth"
             render={({ field }) => (
-              <FormItem>
-          <FormLabel>Username</FormLabel>
-          <FormControl>
-            <Input
-              type="text"
-              placeholder="username"
-              autoComplete="off"
-              data-lpignore="true"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
+              <FormItem className="flex items-center gap-2">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <FormLabel className="mt-0! cursor-pointer">No authentication required</FormLabel>
               </FormItem>
             )}
           />
 
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-          <FormLabel>Password</FormLabel>
-          <FormControl>
-            <Input
-              type="password"
-              autoComplete="off"
-              data-lpignore="true"
-              placeholder="***************"
-              {...field}
-            />
-          </FormControl>
-          <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!form.watch("noAuth") && (
+            <>
+              <FormField
+                control={form.control}
+                name="username"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="username"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        placeholder="***************"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </>
+          )}
 
           <FormField
             control={form.control}

@@ -6,7 +6,7 @@ export const env = createEnv({
 
   client: {
     VITE_API_URL: z.string().url(),
-    VITE_PROXY_URL: z.string().url(),
+    VITE_PROXY_PORT: z.string().default("5000"),
     VITE_ENABLE_SOCIAL_AUTH: z
       .string()
       .transform((val) => val === "true")
@@ -22,7 +22,7 @@ export const env = createEnv({
 
   runtimeEnv: {
     VITE_API_URL: import.meta.env.VITE_API_URL,
-    VITE_PROXY_URL: import.meta.env.VITE_PROXY_URL,
+    VITE_PROXY_PORT: import.meta.env.VITE_PROXY_PORT,
     VITE_ENABLE_SOCIAL_AUTH: import.meta.env.VITE_ENABLE_SOCIAL_AUTH,
     VITE_ENABLE_DEV_ICONS: import.meta.env.VITE_ENABLE_DEV_ICONS,
     VITE_DEFAULT_CLI_ARGS: import.meta.env.VITE_DEFAULT_CLI_ARGS,

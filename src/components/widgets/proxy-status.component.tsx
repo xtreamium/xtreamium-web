@@ -5,9 +5,8 @@ import * as signalR from "@microsoft/signalr";
 import { clsx } from "clsx";
 import { Link } from "react-router-dom";
 import { logger } from "@/lib/logger";
-import { ProxyService } from "@/services/proxy.service";
+import { ProxyService, getProxyBaseUrl } from "@/services/proxy.service";
 import { Button } from "@/components/ui/button";
-import { env } from "@/env";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +31,7 @@ const _createConnection = (
   setConnectionState: Dispatch<SetStateAction<ConnectionState>>
 ): signalR.HubConnection => {
   const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${env.VITE_PROXY_URL}/hubs/proxyStatus`, {
+    .withUrl(`${getProxyBaseUrl()}/hubs/proxyStatus`, {
       skipNegotiation: false,
       withCredentials: false,
       transport:

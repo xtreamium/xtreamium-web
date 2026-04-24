@@ -10,7 +10,7 @@
 set -e
 
 # Default values
-DEFAULT_TAG="xtreamium-web:latest"
+DEFAULT_TAG="ghcr.io/xtreamium/xtreamium-web:latest"
 DEFAULT_RUN_MODE="production"
 
 # Parse arguments
@@ -40,6 +40,7 @@ docker build \
     --file "$DOCKERFILE_PATH" \
     --build-arg RUN_MODE="$RUN_MODE" \
     --tag "$TAG" \
+    --push \
     "$CONTEXT_DIR"
 
 echo ""

@@ -7,14 +7,25 @@ import { LogsResponse } from "@/models/log-entry";
 import { DirectoryListing } from "@/models/directory-listing";
 import { env } from "@/env";
 
-const client = axios.create({
-  baseURL: env.VITE_PROXY_URL,
+export const PROXY_PORT_STORAGE_KEY = "xtreamium_proxy_port";
+
+export function getProxyBaseUrl(): string {
+  const port = localStorage.getItem(PROXY_PORT_STORAGE_KEY) ?? env.VITE_PROXY_PORT;
+  return `http://localhost:${port}`;
+}
+
+const client = axios.create();
+
+// Set baseURL dynamically before each request so it always picks up the latest port
+client.interceptors.request.use((config) => {
+  config.baseURL = getProxyBaseUrl();
+  return config;
 });
 
 class InternalProxyService {
   play = async (channelUrl: string): Promise<boolean> => {
     const response = await client.post(
-      `${env.VITE_PROXY_URL}/play/${encodeURIComponent(channelUrl)}`
+      `${getProxyBaseUrl()}/play/${encodeURIComponent(channelUrl)}`
     );
 
     return response.status === HttpStatusCode.Ok;
