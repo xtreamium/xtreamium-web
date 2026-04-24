@@ -1,7 +1,6 @@
 import axios, { HttpStatusCode } from "axios";
 import { logger } from "@/lib/logger";
 import type { Settings } from "@/models/settings";
-import { title } from "process";
 import { Recording } from "@/models/recording";
 import { LogsResponse } from "@/models/log-entry";
 import { DirectoryListing } from "@/models/directory-listing";

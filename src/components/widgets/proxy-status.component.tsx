@@ -134,8 +134,8 @@ const _createConnection = (
 
 const ProxyStatus: React.FC = () => {
   const connectionRef = React.useRef<signalR.HubConnection | null>(null);
-  const reconnectTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-  const httpCheckTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = React.useRef<number | null>(null);
+  const httpCheckTimeoutRef = React.useRef<number | null>(null);
 
   const [connectionState, setConnectionState] = React.useState<ConnectionState>(
     ConnectionState.Checking
