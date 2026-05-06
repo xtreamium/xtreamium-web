@@ -1,5 +1,5 @@
 import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
 import { ApiService } from "@/services";
 import { Icons } from "@/components/icons";
@@ -34,6 +34,8 @@ const ChannelPage = () => {
     queryFn: ApiService.getCurrentUser,
   });
   const params = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusStreamId = searchParams.get("focus");
   const server = userQuery.data?.servers.find((s) => s.id === selectedServer);
 
   const channelQuery = useQuery({
@@ -100,6 +102,51 @@ const ChannelPage = () => {
   useEffect(() => {
     setVisibleCount(CHANNELS_PER_PAGE);
   }, [searchTerm, params.channelId]);
+
+  // If we landed here with ?focus=<stream_id>, ensure the channel is rendered
+  // and scroll its card into view, then drop the param. Jump instantly rather
+  // than smooth-scroll: cards above can grow as their EPG data settles, which
+  // disrupts a smooth scroll mid-flight.
+  useEffect(() => {
+    if (!focusStreamId || !allFilteredChannels.length) {
+      return;
+    }
+    const targetId = Number(focusStreamId);
+    const index = allFilteredChannels.findIndex(
+      (s) => s.stream_id === targetId
+    );
+    if (index === -1) {
+      return;
+    }
+    if (index >= visibleCount) {
+      setVisibleCount(
+        Math.ceil((index + 1) / CHANNELS_PER_PAGE) * CHANNELS_PER_PAGE
+      );
+      return;
+    }
+    let cancelled = false;
+    const tryScroll = () => {
+      if (cancelled) return;
+      const el = document.getElementById(`stream-${targetId}`);
+      if (!el) {
+        requestAnimationFrame(tryScroll);
+        return;
+      }
+      el.scrollIntoView({ behavior: "instant", block: "start" });
+      // Re-anchor once layout has likely settled (EPG batch query resolved).
+      const reanchor = window.setTimeout(() => {
+        if (cancelled) return;
+        const target = document.getElementById(`stream-${targetId}`);
+        target?.scrollIntoView({ behavior: "instant", block: "start" });
+      }, 600);
+      setSearchParams({}, { replace: true });
+      return () => window.clearTimeout(reanchor);
+    };
+    requestAnimationFrame(tryScroll);
+    return () => {
+      cancelled = true;
+    };
+  }, [focusStreamId, allFilteredChannels, visibleCount, setSearchParams]);
 
   // Intersection observer for infinite scroll
   const loadMore = useCallback(() => {
@@ -395,7 +442,11 @@ const ChannelPage = () => {
         ) : (
           <>
             {visibleChannels.map((stream: Stream) => (
-          <Card key={stream.stream_id} className="overflow-hidden">
+          <Card
+            key={stream.stream_id}
+            id={`stream-${stream.stream_id}`}
+            className="overflow-hidden"
+          >
             <CardHeader className="pb-2 pt-3">
               <div className="flex items-center gap-3">
                 <div className="shrink-0">

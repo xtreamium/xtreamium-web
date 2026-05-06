@@ -10,6 +10,20 @@ import { EPGListing } from "@/models/epg-listing";
 import { logger } from "@/lib/logger";
 import { env } from "@/env";
 
+export interface EPGSearchResult {
+  programme_id: string;
+  title: string;
+  description: string;
+  start: string;
+  stop: string;
+  is_live: boolean;
+  channel_xmltv_id: string;
+  channel_display_name: string;
+  channel_icon: string | null;
+  category_id: string | null;
+  stream_id: number | null;
+}
+
 class ApiService {
   private _getRequestOptions = () => {
     return {
@@ -200,6 +214,27 @@ class ApiService {
     }
     return result;
   }
+
+  public searchEPG = async (
+    server: Server,
+    q: string,
+    limit = 50
+  ): Promise<EPGSearchResult[]> => {
+    const options = this._getRequestOptions();
+    const response = await http.get(
+      `epg/search?server_id=${server.id}&q=${encodeURIComponent(q)}&limit=${limit}`,
+      {
+        ...options,
+        headers: {
+          ...options.headers,
+          "x-xtream-server": server.url,
+          "x-xtream-username": server.username,
+          "x-xtream-password": server.password,
+        },
+      }
+    );
+    return response.data as EPGSearchResult[];
+  };
 
   public deleteServer = async (serverId: number): Promise<boolean> => {
     const options = this._getRequestOptions();

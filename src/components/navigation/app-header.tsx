@@ -6,7 +6,9 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
 import ProxyStatus from "@/components/widgets/proxy-status.component";
 import { ThemePicker } from "@/components/widgets/theme-picker";
+import SearchModal from "@/components/navigation/search-modal";
 import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +19,7 @@ type HeaderProps = { user: User };
 
 const Header: React.FC<HeaderProps> = ({ user }) => {
   const { logout } = useAuth();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   return (
     <header className="w-full bg-card border-b border-border sticky top-0 z-50">
@@ -42,7 +45,11 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
             <SidebarTrigger />
 
             <div className="hidden md:flex items-center gap-2">
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setSearchOpen(true)}
+              >
                 <Icons.search className="h-4 w-4" />
               </Button>
               <Tooltip>
@@ -90,6 +97,7 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           </div>
         </div>
       </TooltipProvider>
+      <SearchModal open={searchOpen} onOpenChange={setSearchOpen} />
     </header>
   );
 };
