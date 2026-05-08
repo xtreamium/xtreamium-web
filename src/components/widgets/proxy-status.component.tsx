@@ -219,7 +219,7 @@ const ProxyStatus: React.FC = () => {
           clearTimeout(httpCheckTimeoutRef.current);
         }
 
-        httpCheckTimeoutRef.current = setTimeout(() => {
+        httpCheckTimeoutRef.current = window.setTimeout(() => {
           const performHttpCheck = async () => {
             const isAvailable = await checkProxyAvailabilityViaHTTP();
             if (
@@ -241,7 +241,7 @@ const ProxyStatus: React.FC = () => {
       };
 
       // Use very short intervals for manual reconnection to detect when proxy comes back online faster
-      reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectTimeoutRef.current = window.setTimeout(() => {
         logger.debug(
           "Manual reconnection attempt",
           undefined,

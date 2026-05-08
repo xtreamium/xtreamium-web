@@ -103,7 +103,6 @@ export const CustomRecordingModal: React.FC<CustomRecordingModalProps> = ({
                       mode="single"
                       selected={startDate}
                       onSelect={setStartDate}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
@@ -156,7 +155,6 @@ export const CustomRecordingModal: React.FC<CustomRecordingModalProps> = ({
                       mode="single"
                       selected={endDate}
                       onSelect={setEndDate}
-                      initialFocus
                     />
                   </PopoverContent>
                 </Popover>
