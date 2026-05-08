@@ -7,7 +7,7 @@ import Header from "@/components/navigation/app-header";
 import { useQuery } from "@tanstack/react-query";
 import { ApiService, ProxyService } from "@/services";
 import useServerStore from "@/services/state/server.state";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { TOKEN_KEY } from "@/constants/storage";
 import { ProxyOutdated } from "@/components/widgets/proxy-outdated";

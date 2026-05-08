@@ -65,19 +65,6 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
                   <p>Recordings</p>
                 </TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="ghost" size="sm" asChild>
-                    <Link to="/logs" className="flex items-center gap-2">
-                      <Icons.info className="h-4 w-4" />
-                      <span>Logs</span>
-                    </Link>
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Proxy Logs</p>
-                </TooltipContent>
-              </Tooltip>
             </div>
           </div>
           <ServerSelectorComponent user={user} />

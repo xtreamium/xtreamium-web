@@ -1,39 +1,24 @@
 import { useEffect, useState } from "react";
+import { useTheme as useNextTheme } from "next-themes";
 import { themePresets } from "@/constants/themes";
 
 type Mode = "light" | "dark";
 type ThemePreset = keyof typeof themePresets;
 
+const PRESET_STORAGE_KEY = "theme-preset";
+const DEFAULT_PRESET: ThemePreset = "sunset-horizon";
+
 export const useTheme = () => {
-  const [mode, setMode] = useState<Mode>(() => {
-    const stored = localStorage.getItem("mode") as Mode | null;
-    if (stored) {
-      return stored;
-    }
-
-    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      return "dark";
-    }
-
-    return "light";
-  });
+  const { setTheme, resolvedTheme } = useNextTheme();
+  const mode = (resolvedTheme === "dark" ? "dark" : "light") as Mode;
 
   const [preset, setPreset] = useState<ThemePreset>(() => {
-    const stored = localStorage.getItem("theme-preset");
+    const stored = localStorage.getItem(PRESET_STORAGE_KEY);
     if (stored && stored in themePresets) {
-      return stored;
+      return stored as ThemePreset;
     }
-    return "sunset-horizon";
+    return DEFAULT_PRESET;
   });
-
-  useEffect(() => {
-    const root = document.documentElement;
-
-    root.classList.remove("light", "dark");
-    root.classList.add(mode);
-
-    localStorage.setItem("mode", mode);
-  }, [mode]);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -41,14 +26,12 @@ export const useTheme = () => {
     const otherModeStyles =
       themePresets[preset].styles[mode === "light" ? "dark" : "light"];
 
-    // Apply all styles from current mode
     Object.entries(currentStyles).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         root.style.setProperty(`--${key}`, value);
       }
     });
 
-    // For font properties, fall back to the other mode if not defined in current mode
     const fontKeys = ["font-sans", "font-serif", "font-mono"] as const;
     fontKeys.forEach((key) => {
       if (!currentStyles[key] && otherModeStyles[key]) {
@@ -56,11 +39,15 @@ export const useTheme = () => {
       }
     });
 
-    localStorage.setItem("theme-preset", preset);
+    localStorage.setItem(PRESET_STORAGE_KEY, preset);
   }, [preset, mode]);
 
   const toggleTheme = () => {
-    setMode((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme(mode === "light" ? "dark" : "light");
+  };
+
+  const setMode = (next: Mode) => {
+    setTheme(next);
   };
 
   const setThemePreset = (newPreset: ThemePreset) => {

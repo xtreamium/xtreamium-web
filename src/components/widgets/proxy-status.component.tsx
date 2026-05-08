@@ -28,8 +28,14 @@ const ConnectionState = {
 } as const;
 
 const _createConnection = (
-  setConnectionState: Dispatch<SetStateAction<ConnectionState>>
+  setConnectionState: Dispatch<SetStateAction<ConnectionState>>,
+  isActive: () => boolean
 ): signalR.HubConnection => {
+  const guarded = (next: ConnectionState) => {
+    if (isActive()) {
+      setConnectionState(next);
+    }
+  };
   const connection = new signalR.HubConnectionBuilder()
     .withUrl(`${getProxyBaseUrl()}/hubs/proxyStatus`, {
       skipNegotiation: false,
@@ -78,7 +84,7 @@ const _createConnection = (
         undefined,
         "proxy-status.component"
       );
-      setConnectionState(ConnectionState.Connected);
+      guarded(ConnectionState.Connected);
     })
     .catch((error) => {
       logger.debug(
@@ -86,7 +92,7 @@ const _createConnection = (
         error,
         "proxy-status.component"
       );
-      setConnectionState(ConnectionState.Disconnected);
+      guarded(ConnectionState.Disconnected);
     });
 
   connection.onclose((error) => {
@@ -104,7 +110,7 @@ const _createConnection = (
       );
     }
     // Always trigger manual reconnection when connection closes
-    setConnectionState(ConnectionState.Disconnected);
+    guarded(ConnectionState.Disconnected);
   });
 
   connection.onreconnecting((error) => {
@@ -113,7 +119,7 @@ const _createConnection = (
       error,
       "proxy-status.component"
     );
-    setConnectionState(ConnectionState.Checking);
+    guarded(ConnectionState.Checking);
   });
 
   connection.onreconnected((connectionId) => {
@@ -122,7 +128,7 @@ const _createConnection = (
       { connectionId },
       "proxy-status.component"
     );
-    setConnectionState(ConnectionState.Connected);
+    guarded(ConnectionState.Connected);
   });
 
   connection.on("ServerMessage", (message) => {
@@ -136,6 +142,7 @@ const ProxyStatus: React.FC = () => {
   const connectionRef = React.useRef<signalR.HubConnection | null>(null);
   const reconnectTimeoutRef = React.useRef<number | null>(null);
   const httpCheckTimeoutRef = React.useRef<number | null>(null);
+  const activeTokenRef = React.useRef<symbol | null>(null);
 
   const [connectionState, setConnectionState] = React.useState<ConnectionState>(
     ConnectionState.Checking
@@ -183,8 +190,15 @@ const ProxyStatus: React.FC = () => {
         httpCheckTimeoutRef.current = null;
       }
 
-      // Create new connection
-      connectionRef.current = _createConnection(setConnectionState);
+      // Create new connection. Tag it with a token so its handlers can no-op
+      // if a newer connection has since taken over (prevents a stale onclose
+      // from a stopped connection clobbering the live one's state).
+      const token = Symbol("proxy-conn");
+      activeTokenRef.current = token;
+      connectionRef.current = _createConnection(
+        setConnectionState,
+        () => activeTokenRef.current === token
+      );
 
       // No need for health checks - SignalR's built-in connection management handles this
       logger.debug(
@@ -333,6 +347,12 @@ const ProxyStatus: React.FC = () => {
               <Link to="/proxy/settings" className="flex items-center gap-2">
                 <Icons.server className="w-4 h-4" />
                 Proxy Settings
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/logs" className="flex items-center gap-2">
+                <Icons.info className="w-4 h-4" />
+                Proxy Logs
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,5 +1,6 @@
 import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import axios from "axios";
 
 import { ApiService } from "@/services";
 import { Icons } from "@/components/icons";
@@ -249,21 +250,53 @@ const ChannelPage = () => {
         }
       } catch (e) {
         logger.error("channel.page", "playStream", String(e));
-        toast(
-          <div>
-            <div>🚫 Unable to play stream!</div>
+        const status =
+          axios.isAxiosError(e) && e.response ? e.response.status : null;
+        if (status) {
+          const detail =
+            (axios.isAxiosError(e) &&
+              (e.response?.data as { detail?: string } | undefined)?.detail) ||
+            e.message;
+          toast.error(
             <div>
-              <a
-                href="https://github.com/xtreamium/xtreamium-proxy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="underline"
-              >
-                Make sure you've installed the local server.
-              </a>
+              <div className="font-bold text-foreground">
+                🚫 Proxy returned {status}
+              </div>
+              <div className="text-muted-foreground text-sm">{detail}</div>
+              <div className="text-sm mt-1">
+                <a
+                  href="/logs"
+                  onClick={(ev) => {
+                    ev.preventDefault();
+                    void navigate("/logs");
+                  }}
+                  className="underline text-primary"
+                >
+                  Check proxy logs
+                </a>
+              </div>
+            </div>,
+            {
+              position: "top-center",
+            }
+          );
+        } else {
+          toast.error(
+            <div>
+              <div>🚫 Unable to play stream!</div>
+              <div>
+                <a
+                  href="https://github.com/xtreamium/xtreamium-proxy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline"
+                >
+                  Make sure you've installed the local server.
+                </a>
+              </div>
             </div>
-          </div>
-        );
+          );
+        }
       }
     }
   };
