@@ -75,7 +75,7 @@ const ChannelPage = () => {
       }
       const channelIds = visibleChannels
         .map((s) => s.epg_channel_id)
-        .filter((id) => id); // Filter out empty/null channel IDs
+        .filter((id) => id && id !== "null" && id.trim() !== "");
       return ApiService.getEPGForChannelsBatch(server, channelIds);
     },
     enabled: !!server && visibleChannels.length > 0,

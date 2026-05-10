@@ -45,6 +45,12 @@ const EPGComponent = ({
     return () => clearInterval(interval);
   }, []);
 
+  // A channel without a valid EPG id will never return data — skip the request
+  // entirely so we render "No EPG data available" instantly instead of waiting
+  // on a round-trip per channel.
+  const hasValidChannelId =
+    !!channelId && channelId !== "null" && channelId.trim() !== "";
+
   // Only fetch EPG if not provided via props
   const epgQuery = useQuery({
     queryKey: [`epg_${channelId}`],
@@ -54,7 +60,7 @@ const EPGComponent = ({
       }
       return ApiService.getEPGForChannel(server, channelId);
     },
-    enabled: !!server && !epgData, // Only fetch if epgData is not provided
+    enabled: !!server && !epgData && hasValidChannelId,
   });
 
   // Use pre-fetched data if available, otherwise use query data
