@@ -1,4 +1,11 @@
-import { Suspense, useState, useEffect, useMemo, useRef, useCallback } from "react";
+import {
+  Suspense,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import axios from "axios";
 
@@ -29,7 +36,8 @@ const ChannelPage = () => {
   const [visibleCount, setVisibleCount] = useState(CHANNELS_PER_PAGE);
   const loadMoreRef = useRef<HTMLDivElement>(null);
   const [recordingModalOpen, setRecordingModalOpen] = useState(false);
-  const [selectedStreamForRecording, setSelectedStreamForRecording] = useState<Stream | null>(null);
+  const [selectedStreamForRecording, setSelectedStreamForRecording] =
+    useState<Stream | null>(null);
   const userQuery = useQuery({
     queryKey: ["user"],
     queryFn: ApiService.getCurrentUser,
@@ -52,12 +60,16 @@ const ChannelPage = () => {
 
   // Filter channels based on search term
   const allFilteredChannels = useMemo(() => {
-    if (!channelQuery.data) return [];
-    if (!searchTerm.trim()) return channelQuery.data;
+    if (!channelQuery.data) {
+      return [];
+    }
+    if (!searchTerm.trim()) {
+      return channelQuery.data;
+    }
 
     const lowerSearchTerm = searchTerm.toLowerCase();
     return channelQuery.data.filter((stream: Stream) =>
-      stream.name.toLowerCase().includes(lowerSearchTerm)
+      stream.name.toLowerCase().includes(lowerSearchTerm),
     );
   }, [channelQuery.data, searchTerm]);
 
@@ -89,7 +101,10 @@ const ChannelPage = () => {
         for (const stream of visibleChannels) {
           // Only generate URL if not already cached
           if (!urls[stream.stream_id]) {
-            urls[stream.stream_id] = ApiService.getStreamUrl(server, stream.stream_id);
+            urls[stream.stream_id] = ApiService.getStreamUrl(
+              server,
+              stream.stream_id,
+            );
           }
         }
         return urls;
@@ -114,14 +129,14 @@ const ChannelPage = () => {
     }
     const targetId = Number(focusStreamId);
     const index = allFilteredChannels.findIndex(
-      (s) => s.stream_id === targetId
+      (s) => s.stream_id === targetId,
     );
     if (index === -1) {
       return;
     }
     if (index >= visibleCount) {
       setVisibleCount(
-        Math.ceil((index + 1) / CHANNELS_PER_PAGE) * CHANNELS_PER_PAGE
+        Math.ceil((index + 1) / CHANNELS_PER_PAGE) * CHANNELS_PER_PAGE,
       );
       return;
     }
@@ -164,7 +179,7 @@ const ChannelPage = () => {
           loadMore();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const currentRef = loadMoreRef.current;
@@ -185,7 +200,8 @@ const ChannelPage = () => {
     }
     try {
       // Get URL from cache (already generated) or generate it
-      const url = streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
+      const url =
+        streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
 
       logger.info("channel.page", "copyStreamUrl", url);
       await navigator.clipboard.writeText(url).then(() => {
@@ -197,7 +213,7 @@ const ChannelPage = () => {
           </>,
           {
             position: "top-right",
-          }
+          },
         );
       });
     } catch (err) {
@@ -208,7 +224,7 @@ const ChannelPage = () => {
         </>,
         {
           position: "top-right",
-        }
+        },
       );
     }
   };
@@ -221,7 +237,8 @@ const ChannelPage = () => {
     if (!server) {
       return;
     }
-    const url = streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
+    const url =
+      streamUrls[streamId] || ApiService.getStreamUrl(server, streamId);
     if (url) {
       try {
         const response = await ProxyService.play(url);
@@ -245,7 +262,7 @@ const ChannelPage = () => {
             </>,
             {
               position: "top-right",
-            }
+            },
           );
         }
       } catch (e) {
@@ -278,7 +295,7 @@ const ChannelPage = () => {
             </div>,
             {
               position: "top-center",
-            }
+            },
           );
         } else {
           toast.error(
@@ -294,7 +311,7 @@ const ChannelPage = () => {
                   Make sure you've installed the local server.
                 </a>
               </div>
-            </div>
+            </div>,
           );
         }
       }
@@ -310,7 +327,7 @@ const ChannelPage = () => {
     startDate: Date,
     startTime: string,
     endDate: Date,
-    endTime: string
+    endTime: string,
   ) => {
     if (!server || !selectedStreamForRecording) {
       return;
@@ -318,47 +335,48 @@ const ChannelPage = () => {
 
     try {
       // Combine date and time into full DateTime strings
-      const [startHour, startMinute] = startTime.split(':');
+      const [startHour, startMinute] = startTime.split(":");
       const startDateTime = new Date(startDate);
       startDateTime.setHours(parseInt(startHour), parseInt(startMinute), 0, 0);
 
-      const [endHour, endMinute] = endTime.split(':');
+      const [endHour, endMinute] = endTime.split(":");
       const endDateTime = new Date(endDate);
       endDateTime.setHours(parseInt(endHour), parseInt(endMinute), 0, 0);
 
-      const url = streamUrls[selectedStreamForRecording.stream_id] ||
+      const url =
+        streamUrls[selectedStreamForRecording.stream_id] ||
         ApiService.getStreamUrl(server, selectedStreamForRecording.stream_id);
 
       await ProxyService.recordShow(
         selectedStreamForRecording.name,
         url,
         startDateTime.getTime(),
-        endDateTime.getTime()
+        endDateTime.getTime(),
       );
 
       toast.success(
         <>
-          <div className="font-bold text-foreground">
-            Recording Scheduled
-          </div>
+          <div className="font-bold text-foreground">Recording Scheduled</div>
           <div className="text-muted-foreground text-sm">
-            {selectedStreamForRecording.name} will be recorded from{' '}
+            {selectedStreamForRecording.name} will be recorded from{" "}
             {startDateTime.toLocaleString()} to {endDateTime.toLocaleString()}
           </div>
         </>,
         {
           position: "top-right",
-        }
+        },
       );
     } catch (err) {
       logger.error("channel.page", "handleCustomRecording", String(err));
       toast.error(
         <>
-          <div className="font-bold text-foreground">Failed to schedule recording</div>
+          <div className="font-bold text-foreground">
+            Failed to schedule recording
+          </div>
         </>,
         {
           position: "top-right",
-        }
+        },
       );
     }
   };
@@ -475,117 +493,119 @@ const ChannelPage = () => {
         ) : (
           <>
             {visibleChannels.map((stream: Stream) => (
-          <Card
-            key={stream.stream_id}
-            id={`stream-${stream.stream_id}`}
-            className="overflow-hidden"
-          >
-            <CardHeader className="pb-2 pt-3">
-              <div className="flex items-center gap-3">
-                <div className="shrink-0">
-                  <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted border">
-                    <ImageWithFallback
-                      className="w-full h-full object-cover"
-                      src={stream.stream_icon}
-                      alt={`${stream.name} - ${stream.stream_icon} icon`}
-                      fallback="/images/unknown-stream.svg"
-                    />
-                  </div>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-foreground text-base truncate">
-                    {stream.name}
-                  </h3>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {env.VITE_ENABLE_DEV_ICONS &&  (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      title="Cast stream to device"
-                      onClick={() => void playStream(stream.stream_id)}
-                      className="gap-1.5 h-8 px-2 text-xs"
-                    >
-                      <Icons.cast className="h-3.5 w-3.5" />
-                      Cast
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="default"
-                    title="Play to xtreamium local proxy"
-                    onClick={() => void playStream(stream.stream_id)}
-                    className="gap-1.5 h-8 px-2 text-xs"
-                  >
-                    <Icons.airplay className="h-3.5 w-3.5" />
-                    Play
-                  </Button>
-                  {env.VITE_ENABLE_DEV_ICONS && (
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      title="Play stream in browser"
-                      onClick={() => void playStreamInternal(stream.stream_id)}
-                      className="gap-1.5 h-8 px-2 text-xs"
-                    >
-                      <Icons.play className="h-3.5 w-3.5" />
-                      Browser
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    title="Schedule custom recording"
-                    onClick={() => openCustomRecordingModal(stream)}
-                    className="gap-1.5 h-8 px-2 text-xs"
-                  >
-                    <Icons.calendar className="h-3.5 w-3.5" />
-                    Custom Recording
-                  </Button>
+              <Card
+                key={stream.stream_id}
+                id={`stream-${stream.stream_id}`}
+                className="overflow-hidden"
+              >
+                <CardHeader className="pb-2 pt-3">
+                  <div className="flex items-center gap-3">
+                    <div className="shrink-0">
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-muted border">
+                        <ImageWithFallback
+                          className="w-full h-full object-cover"
+                          src={stream.stream_icon}
+                          alt={`${stream.name} - ${stream.stream_icon} icon`}
+                          fallback="/images/unknown-stream.svg"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground text-base truncate">
+                        {stream.name}
+                      </h3>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {env.VITE_ENABLE_DEV_ICONS && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title="Cast stream to device"
+                          onClick={() => void playStream(stream.stream_id)}
+                          className="gap-1.5 h-8 px-2 text-xs"
+                        >
+                          <Icons.cast className="h-3.5 w-3.5" />
+                          Cast
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="default"
+                        title="Play to xtreamium local proxy"
+                        onClick={() => void playStream(stream.stream_id)}
+                        className="gap-1.5 h-8 px-2 text-xs"
+                      >
+                        <Icons.airplay className="h-3.5 w-3.5" />
+                        Play
+                      </Button>
+                      {env.VITE_ENABLE_DEV_ICONS && (
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          title="Play stream in browser"
+                          onClick={() =>
+                            void playStreamInternal(stream.stream_id)
+                          }
+                          className="gap-1.5 h-8 px-2 text-xs"
+                        >
+                          <Icons.play className="h-3.5 w-3.5" />
+                          Browser
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        title="Schedule custom recording"
+                        onClick={() => openCustomRecordingModal(stream)}
+                        className="gap-1.5 h-8 px-2 text-xs"
+                      >
+                        <Icons.calendar className="h-3.5 w-3.5" />
+                        Custom Recording
+                      </Button>
 
-                  {streamUrls[stream.stream_id] ? (
-                    <CopyButton
-                      textToCopy={streamUrls[stream.stream_id]}
-                      showText={true}
-                      variant="outline"
-                      title="Copy stream URL"
-                    />
-                  ) : (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      title="Copy stream URL"
-                      onClick={() => void copyStreamUrl(stream.stream_id)}
-                      className="gap-1.5 h-8 px-2 text-xs"
-                    >
-                      <Icons.copy className="h-3.5 w-3.5" />
-                      Copy
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0 pb-3">
-              <Suspense
-                fallback={
-                  <div className="py-4 text-center">
-                    <div className="inline-flex items-center gap-2 text-muted-foreground text-sm">
-                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
-                      Loading EPG...
+                      {streamUrls[stream.stream_id] ? (
+                        <CopyButton
+                          textToCopy={streamUrls[stream.stream_id]}
+                          showText={true}
+                          variant="outline"
+                          title="Copy stream URL"
+                        />
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title="Copy stream URL"
+                          onClick={() => void copyStreamUrl(stream.stream_id)}
+                          className="gap-1.5 h-8 px-2 text-xs"
+                        >
+                          <Icons.copy className="h-3.5 w-3.5" />
+                          Copy
+                        </Button>
+                      )}
                     </div>
                   </div>
-                }
-              >
-                <EPGComponent
-                  server={server}
-                  channelId={stream.epg_channel_id}
-                  streamId={stream.stream_id}
-                  epgData={epgBatchQuery.data?.[stream.epg_channel_id]}
-                  streamUrl={streamUrls[stream.stream_id]}
-                />
-              </Suspense>
-            </CardContent>
-          </Card>
+                </CardHeader>
+                <CardContent className="pt-0 pb-3">
+                  <Suspense
+                    fallback={
+                      <div className="py-4 text-center">
+                        <div className="inline-flex items-center gap-2 text-muted-foreground text-sm">
+                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-primary"></div>
+                          Loading EPG...
+                        </div>
+                      </div>
+                    }
+                  >
+                    <EPGComponent
+                      server={server}
+                      channelId={stream.epg_channel_id}
+                      streamId={stream.stream_id}
+                      epgData={epgBatchQuery.data?.[stream.epg_channel_id]}
+                      streamUrl={streamUrls[stream.stream_id]}
+                    />
+                  </Suspense>
+                </CardContent>
+              </Card>
             ))}
 
             {/* Infinite scroll trigger and loading indicator */}
@@ -598,7 +618,8 @@ const ChannelPage = () => {
                   <div className="inline-flex items-center gap-2 text-muted-foreground">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
                     <span className="text-sm">
-                      Loading more channels... ({visibleCount} / {allFilteredChannels.length})
+                      Loading more channels... ({visibleCount} /{" "}
+                      {allFilteredChannels.length})
                     </span>
                   </div>
                 </div>

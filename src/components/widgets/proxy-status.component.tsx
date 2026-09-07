@@ -1,12 +1,13 @@
 import React from "react";
-import type { Dispatch, SetStateAction } from "react";
 import { Icons } from "@/components/icons";
-import * as signalR from "@microsoft/signalr";
 import { clsx } from "clsx";
 import { Link } from "react-router-dom";
-import { logger } from "@/lib/logger";
-import { ProxyService, getProxyBaseUrl } from "@/services/proxy.service";
+import { useQuery } from "@tanstack/react-query";
+import { ProxyService } from "@/services/proxy.service";
+import { ApiService } from "@/services";
 import { Button } from "@/components/ui/button";
+import { ConnectionState } from "@/contexts/proxy-hub-context";
+import { useProxyHub } from "@/hooks/use-proxy-hub";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,279 +21,29 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-type ConnectionState = "checking" | "connected" | "disconnected";
-const ConnectionState = {
-  Checking: "checking" as const,
-  Connected: "connected" as const,
-  Disconnected: "disconnected" as const,
-} as const;
-
-const _createConnection = (
-  setConnectionState: Dispatch<SetStateAction<ConnectionState>>,
-  isActive: () => boolean
-): signalR.HubConnection => {
-  const guarded = (next: ConnectionState) => {
-    if (isActive()) {
-      setConnectionState(next);
-    }
-  };
-  const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`${getProxyBaseUrl()}/hubs/proxyStatus`, {
-      skipNegotiation: false,
-      withCredentials: false,
-      transport:
-        signalR.HttpTransportType.WebSockets |
-        signalR.HttpTransportType.ServerSentEvents |
-        signalR.HttpTransportType.LongPolling,
-    })
-    .configureLogging(signalR.LogLevel.None)
-    .withAutomaticReconnect({
-      nextRetryDelayInMilliseconds: (retryContext) => {
-        // Limit automatic reconnection attempts to avoid infinite loops
-        // After 3 attempts, let our manual reconnection take over for faster detection
-        if (retryContext.previousRetryCount >= 3) {
-          logger.debug(
-            "SignalR automatic reconnection limit reached, switching to manual",
-            retryContext,
-            "proxy-status.component"
-          );
-          return null; // Stop automatic reconnection
-        }
-
-        // Exponential backoff: 1s, 2s, 4s, 8s, then 10s max
-        const delay = Math.min(
-          1000 * Math.pow(2, retryContext.previousRetryCount),
-          10000
-        );
-        logger.debug(
-          `SignalR reconnecting in ${delay}ms (attempt ${
-            retryContext.previousRetryCount + 1
-          })`,
-          retryContext,
-          "proxy-status.component"
-        );
-        return delay;
-      },
-    })
-    .build();
-
-  connection
-    .start()
-    .then(() => {
-      logger.debug(
-        "Connection established successfully",
-        undefined,
-        "proxy-status.component"
-      );
-      guarded(ConnectionState.Connected);
-    })
-    .catch((error) => {
-      logger.debug(
-        "Failed to start connection",
-        error,
-        "proxy-status.component"
-      );
-      guarded(ConnectionState.Disconnected);
-    });
-
-  connection.onclose((error) => {
-    if (error) {
-      logger.debug(
-        "Connection closed with error",
-        error,
-        "proxy-status.component"
-      );
-    } else {
-      logger.debug(
-        "Connection closed gracefully",
-        undefined,
-        "proxy-status.component"
-      );
-    }
-    // Always trigger manual reconnection when connection closes
-    guarded(ConnectionState.Disconnected);
-  });
-
-  connection.onreconnecting((error) => {
-    logger.debug(
-      "Connection lost, attempting to reconnect",
-      error,
-      "proxy-status.component"
-    );
-    guarded(ConnectionState.Checking);
-  });
-
-  connection.onreconnected((connectionId) => {
-    logger.debug(
-      "Reconnected successfully",
-      { connectionId },
-      "proxy-status.component"
-    );
-    guarded(ConnectionState.Connected);
-  });
-
-  connection.on("ServerMessage", (message) => {
-    logger.debug("ServerMessage received", message, "proxy-status.component");
-  });
-
-  return connection;
-};
-
 const ProxyStatus: React.FC = () => {
-  const connectionRef = React.useRef<signalR.HubConnection | null>(null);
-  const reconnectTimeoutRef = React.useRef<number | null>(null);
-  const httpCheckTimeoutRef = React.useRef<number | null>(null);
-  const activeTokenRef = React.useRef<symbol | null>(null);
+  // The connection itself lives in ProxyHubProvider - it is shared with the recording
+  // watchers, and it outlives this widget.
+  const { connectionState } = useProxyHub();
 
-  const [connectionState, setConnectionState] = React.useState<ConnectionState>(
-    ConnectionState.Checking
-  );
+  const versionsQuery = useQuery({
+    queryKey: ["proxy-version-check"],
+    queryFn: async () => {
+      const [current, latest] = await Promise.all([
+        ProxyService.getVersion(),
+        ApiService.getLatestProxyVersion(),
+      ]);
+      return { current, latest };
+    },
+    enabled: connectionState === ConnectionState.Connected,
+    staleTime: 5 * 60 * 1000,
+    retry: false,
+  });
 
-  // HTTP-based fallback check for when SignalR isn't working
-  const checkProxyAvailabilityViaHTTP = async (): Promise<boolean> => {
-    try {
-      const version = await ProxyService.getVersion();
-      logger.debug(
-        "HTTP proxy check successful",
-        { version },
-        "proxy-status.component"
-      );
-      return version !== null;
-    } catch (error) {
-      logger.debug("HTTP proxy check failed", error, "proxy-status.component");
-      return false;
-    }
-  };
-
-  React.useEffect(() => {
-    const createAndStartConnection = async () => {
-      // Clean up existing connection
-      if (connectionRef.current) {
-        try {
-          await connectionRef.current.stop();
-        } catch (error) {
-          logger.debug(
-            "Error stopping existing connection",
-            error,
-            "proxy-status.component"
-          );
-        }
-        connectionRef.current = null;
-      }
-
-      // Clear any existing timeouts
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      if (httpCheckTimeoutRef.current) {
-        clearTimeout(httpCheckTimeoutRef.current);
-        httpCheckTimeoutRef.current = null;
-      }
-
-      // Create new connection. Tag it with a token so its handlers can no-op
-      // if a newer connection has since taken over (prevents a stale onclose
-      // from a stopped connection clobbering the live one's state).
-      const token = Symbol("proxy-conn");
-      activeTokenRef.current = token;
-      connectionRef.current = _createConnection(
-        setConnectionState,
-        () => activeTokenRef.current === token
-      );
-
-      // No need for health checks - SignalR's built-in connection management handles this
-      logger.debug(
-        "Connection setup complete",
-        undefined,
-        "proxy-status.component"
-      );
-    };
-
-    const scheduleReconnect = () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-
-      // Start HTTP-based checks as fallback
-      const startHttpFallbackCheck = () => {
-        if (httpCheckTimeoutRef.current) {
-          clearTimeout(httpCheckTimeoutRef.current);
-        }
-
-        httpCheckTimeoutRef.current = window.setTimeout(() => {
-          const performHttpCheck = async () => {
-            const isAvailable = await checkProxyAvailabilityViaHTTP();
-            if (
-              isAvailable &&
-              connectionState === ConnectionState.Disconnected
-            ) {
-              logger.debug(
-                "HTTP check detected proxy is back online, triggering SignalR reconnection",
-                undefined,
-                "proxy-status.component"
-              );
-              setConnectionState(ConnectionState.Checking);
-            } else if (connectionState === ConnectionState.Disconnected) {
-              startHttpFallbackCheck(); // Continue checking
-            }
-          };
-          void performHttpCheck();
-        }, 1000);
-      };
-
-      // Use very short intervals for manual reconnection to detect when proxy comes back online faster
-      reconnectTimeoutRef.current = window.setTimeout(() => {
-        logger.debug(
-          "Manual reconnection attempt",
-          undefined,
-          "proxy-status.component"
-        );
-        setConnectionState(ConnectionState.Checking);
-      }, 1000); // Reduced to 1 second for fastest detection
-
-      // Also start HTTP fallback checks
-      startHttpFallbackCheck();
-    };
-
-    if (connectionState === ConnectionState.Checking) {
-      void createAndStartConnection();
-    } else if (connectionState === ConnectionState.Disconnected) {
-      scheduleReconnect();
-    }
-
-    // Cleanup function
-    return () => {
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
-      if (httpCheckTimeoutRef.current) {
-        clearTimeout(httpCheckTimeoutRef.current);
-        httpCheckTimeoutRef.current = null;
-      }
-    };
-  }, [connectionState]);
-
-  // Cleanup on unmount
-  React.useEffect(() => {
-    return () => {
-      if (connectionRef.current) {
-        connectionRef.current.stop().catch((error) => {
-          logger.debug(
-            "Error stopping connection on cleanup",
-            error,
-            "proxy-status.component"
-          );
-        });
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-      if (httpCheckTimeoutRef.current) {
-        clearTimeout(httpCheckTimeoutRef.current);
-      }
-    };
-  }, []);
+  const isOutdated =
+    !!versionsQuery.data?.current &&
+    !!versionsQuery.data?.latest &&
+    versionsQuery.data.current !== versionsQuery.data.latest;
 
   const iconClass = React.useMemo(() => {
     return clsx(
@@ -331,13 +82,23 @@ const ProxyStatus: React.FC = () => {
                 className="gap-1 h-8"
                 title="Proxy Status"
               >
-                {connectionState === ConnectionState.Checking ? (
-                  <Icons.loader
-                    className={clsx(iconClass, "animate-spin text-orange-700")}
-                  />
-                ) : (
-                  <Icons.proxy className={iconClass} />
-                )}
+                <span className="relative inline-flex p-0.5">
+                  {connectionState === ConnectionState.Checking ? (
+                    <Icons.loader
+                      className={clsx(
+                        iconClass,
+                        "animate-spin text-orange-700"
+                      )}
+                    />
+                  ) : (
+                    <Icons.proxy className={iconClass} />
+                  )}
+                  {isOutdated && (
+                    <span className="absolute -top-1 -right-2 inline-flex h-3 w-3 items-center justify-center rounded-full bg-destructive/80 text-[8px] font-bold leading-none text-destructive-foreground ring-1 ring-background">
+                      !
+                    </span>
+                  )}
+                </span>
                 <Icons.chevronDown className="hidden w-4 h-4 fill-current opacity-60 sm:inline-block" />
               </Button>
             </DropdownMenuTrigger>
@@ -358,7 +119,25 @@ const ProxyStatus: React.FC = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         <TooltipContent side="bottom" className="text-sm">
-          {getTooltipText()}
+          {isOutdated ? (
+            <div className="space-y-1">
+              <p className="font-semibold">Proxy is outdated</p>
+              <p>
+                Current: {versionsQuery.data?.current} · Latest:{" "}
+                {versionsQuery.data?.latest}
+              </p>
+              <a
+                href="https://github.com/xtreamium/xtreamium-proxy/releases"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
+                Download from GitHub releases
+              </a>
+            </div>
+          ) : (
+            getTooltipText()
+          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

@@ -13,7 +13,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { DropdownMenuTriggerFixed } from "@/components/dropdown-menu-trigger-fixed";
-import { ChevronDown, PencilIcon, SparklesIcon } from "lucide-react";
 import { ApiService } from "@/services";
 
 type ServerSelectorComponentProps = {
@@ -65,7 +64,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
         <Button variant="outline" className="gap-2 px-2">
           <Icons.server className={`w-5 h-5${refreshingId === selectedServer ? " animate-pulse" : ""}`} />
           <span className="truncate">{server?.name}</span>
-          <ChevronDown />
+          <Icons.chevronDown />
         </Button>
       </DropdownMenuTriggerFixed>
       <DropdownMenuContent
@@ -80,7 +79,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
                 className="flex items-center justify-between"
               >
                 <div className="flex items-center gap-2">
-                  <SparklesIcon className="h-4 w-4" />
+                  <Icons.sparkles className="h-4 w-4" />
                   {s.name}
                 </div>
                 <div className="flex items-center gap-2">
@@ -98,7 +97,7 @@ const ServerSelectorComponent: React.FC<ServerSelectorComponentProps> = ({
                       setOpen(false);
                     }}
                   >
-                    <PencilIcon className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                    <Icons.pencil className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                   </NavLink>
                 </div>
               </DropdownMenuItem>

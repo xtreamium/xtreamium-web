@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Icons } from "@/components/icons";
 import ProxyStatus from "@/components/widgets/proxy-status.component";
+import NotificationStatus from "@/components/notifications/notification-status.component";
+import RecordingIndicator from "@/components/recording/recording-indicator.component";
 import { ThemePicker } from "@/components/widgets/theme-picker";
 import SearchModal from "@/components/navigation/search-modal";
 import { useAuth } from "@/hooks/use-auth";
@@ -70,6 +72,20 @@ const Header: React.FC<HeaderProps> = ({ user }) => {
           <ServerSelectorComponent user={user} />
           {/* Right side - Profile dropdown */}
           <div className="flex items-center gap-3">
+            <RecordingIndicator />
+            <NotificationStatus />
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link to="/settings">
+                    <Icons.settings className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Settings</p>
+              </TooltipContent>
+            </Tooltip>
             <ThemePicker />
             <ProxyStatus />
             <Button

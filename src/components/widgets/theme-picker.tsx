@@ -16,7 +16,6 @@ import { DropdownMenuTriggerFixed } from "@/components/dropdown-menu-trigger-fix
 import { Icons } from "@/components/icons";
 import { useTheme } from "@/hooks/use-theme";
 import { themePresets } from "@/constants/themes";
-import { CheckIcon, SearchIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const themes = Object.entries(themePresets).map(([value, preset]) => ({
@@ -128,7 +127,7 @@ export const ThemePicker = () => {
               className="h-7 w-7 px-0"
               aria-label="Previous theme"
             >
-              <ChevronLeftIcon className="h-4 w-4" />
+              <Icons.chevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm font-semibold">Appearance</span>
             <Button
@@ -138,7 +137,7 @@ export const ThemePicker = () => {
               className="h-7 w-7 px-0"
               aria-label="Next theme"
             >
-              <ChevronRightIcon className="h-4 w-4" />
+              <Icons.chevronRight className="h-4 w-4" />
             </Button>
           </div>
           <Button
@@ -157,7 +156,7 @@ export const ThemePicker = () => {
         
         <div className="p-2">
           <div className="relative">
-            <SearchIcon className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Icons.search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search themes..."
@@ -205,7 +204,7 @@ export const ThemePicker = () => {
                   </div>
                   <span className="text-sm">{t.name}</span>
                 </div>
-                {preset === t.value && <CheckIcon className="h-4 w-4 flex-shrink-0" />}
+                {preset === t.value && <Icons.check className="h-4 w-4 flex-shrink-0" />}
               </button>
             ))}
           </div>

@@ -1,16 +1,17 @@
 import type React from "react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/navigation/app-sidebar";
 import Header from "@/components/navigation/app-header";
 import { useQuery } from "@tanstack/react-query";
-import { ApiService, ProxyService } from "@/services";
+import { ApiService } from "@/services";
 import useServerStore from "@/services/state/server.state";
 import { Toaster } from "@/components/ui/sonner";
 import { Spinner } from "@/components/ui/spinner";
 import { TOKEN_KEY } from "@/constants/storage";
-import { ProxyOutdated } from "@/components/widgets/proxy-outdated";
+import RecordingNotificationsWatcher from "@/components/notifications/recording-notifications-watcher";
+import ProxyHubProvider from "@/contexts/proxy-hub-context";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -25,11 +26,6 @@ export function AppLayout({ children }: AppLayoutProps) {
     retry: false,
   });
   const { selectedServer, setSelectedServer } = useServerStore();
-  const [showProxyOutdated, setShowProxyOutdated] = useState(false);
-  const [proxyVersions, setProxyVersions] = useState<{
-    current: string;
-    latest: string;
-  } | null>(null);
 
   // Don't redirect if we're already on server management pages
   const isOnServerRoute =
@@ -56,37 +52,6 @@ export function AppLayout({ children }: AppLayoutProps) {
       void navigate("/server/add");
     }
   }, [query.data, navigate, isOnServerRoute]);
-
-  useEffect(() => {
-    if (!query.data) {
-      return;
-    }
-
-    const checkProxyVersion = async () => {
-      try {
-        const [currentVersion, latestVersion] = await Promise.all([
-          ProxyService.getVersion(),
-          ApiService.getLatestProxyVersion(),
-        ]);
-
-        if (
-          currentVersion &&
-          latestVersion &&
-          currentVersion !== latestVersion
-        ) {
-          setProxyVersions({
-            current: currentVersion,
-            latest: latestVersion,
-          });
-          setShowProxyOutdated(true);
-        }
-      } catch {
-        // Silently fail version check
-      }
-    };
-
-    void checkProxyVersion();
-  }, [query.data]);
 
   if (query.isLoading) {
     return (
@@ -134,25 +99,24 @@ export function AppLayout({ children }: AppLayoutProps) {
     setSelectedServer(query.data.servers[0].id.toString());
   }
 
+  // The hub provider wraps only this branch on purpose: it runs a 1s reconnect loop and a 1s
+  // HTTP fallback probe, which have no business running on the login page. This keeps the
+  // connection's lifetime exactly what it was when ProxyStatus owned it.
   return (
-    <SidebarProvider>
-      <Toaster position="top-center" closeButton={true} />
-      <div className="min-h-screen bg-background flex flex-col w-full">
-        <Header user={query.data} />
-        <div className="flex flex-1 overflow-hidden">
-          <AppSidebar user={query.data} />
-          <main className="flex-1 overflow-auto flex flex-col">
-            {showProxyOutdated && proxyVersions && (
-              <ProxyOutdated
-                currentVersion={proxyVersions.current}
-                latestVersion={proxyVersions.latest}
-                onDismiss={() => setShowProxyOutdated(false)}
-              />
-            )}
-            {children}
-          </main>
+    <ProxyHubProvider>
+      <SidebarProvider>
+        <Toaster position="top-center" closeButton={true} />
+        <RecordingNotificationsWatcher />
+        <div className="min-h-screen bg-background flex flex-col w-full">
+          <Header user={query.data} />
+          <div className="flex flex-1 overflow-hidden">
+            <AppSidebar user={query.data} />
+            <main className="flex-1 overflow-auto flex flex-col">
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-    </SidebarProvider>
+      </SidebarProvider>
+    </ProxyHubProvider>
   );
 }

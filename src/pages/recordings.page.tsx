@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Icons } from "@/components/icons";
@@ -7,6 +7,9 @@ import { Recording } from "@/models/recording";
 import { formatTime, formatDate } from "@/utils/date-utils";
 import CopyButton from "@/components/widgets/copy-button";
 import { useQueryClient } from "@tanstack/react-query";
+import { useRecordings } from "@/hooks/use-recordings";
+import RecordingProgress from "@/components/recording/recording-progress.component";
+import InProgressBadge from "@/components/recording/recording-status-badge.component";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import {
@@ -21,45 +24,47 @@ import {
 } from "@/components/ui/alert-dialog";
 
 const RecordingsPage: React.FC = () => {
-  const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deletingRecordings, setDeletingRecordings] = useState<Set<number>>(
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deletingRecordings, setDeletingRecordings] = useState<Set<string>>(
     new Set()
   );
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(
     null
   );
   const queryClient = useQueryClient();
-  useEffect(() => {
-    const fetchRecordings = async () => {
-      try {
-        setLoading(true);
-        const data = await ProxyService.getRecordings();
-        setRecordings(data);
-      } catch (_err) {
-        setError("Failed to fetch recordings");
-      } finally {
-        setLoading(false);
-      }
-    };
 
-    void fetchRecordings();
-  }, []);
+  // Shared with the app-wide watchers, so there is one poll interval rather than whichever
+  // observer happened to ask for the shortest. The proxy pushes changes as they happen; the
+  // poll behind this is only a reconciler.
+  const {
+    data: recordings = [],
+    isLoading: loading,
+    isError,
+    isProxyConnected,
+  } = useRecordings();
 
+  const error = isError ? "Failed to fetch recordings" : deleteError;
+
+  /**
+   * The proxy owns the status - it is the only thing that knows whether ffmpeg is running,
+   * finished, or fell over. The single clock check below is a fallback for a row the
+   * scheduler never fired at all, which leaves it "pending" forever.
+   */
   const getRecordingStatus = (recording: Recording) => {
-    const now = new Date();
-    const startTime = new Date(recording.startTime);
-    const endTime = new Date(recording.endTime);
-
-    if (now > endTime && !recording.isRecorded) {
-      return "failed";
-    } else if (now >= startTime && now <= endTime) {
-      return "in-progress";
-    } else if (now > endTime && recording.isRecorded) {
-      return "completed";
-    } else {
-      return "scheduled";
+    switch (recording.status) {
+      case "recording":
+        return "in-progress";
+      case "complete":
+        return "completed";
+      case "partial":
+        return "partial";
+      case "failed":
+        return "failed";
+      case "pending":
+      default:
+        return new Date() > new Date(recording.endTime)
+          ? "failed"
+          : "scheduled";
     }
   };
 
@@ -137,37 +142,28 @@ const RecordingsPage: React.FC = () => {
     setDeletingRecordings((prev) => new Set(prev).add(recordingToDelete.id));
     setRecordingToDelete(null);
 
-    try {
-      const result = await ProxyService.deleteRecording(recordingToDelete.id);
-      if (result) {
-        await queryClient.invalidateQueries({ queryKey: ["recordings"] });
-        setTimeout(() => {
-          setRecordings((prev) =>
-            prev.filter((r) => r.id !== recordingToDelete.id)
-          );
-          setDeletingRecordings((prev) => {
-            const newSet = new Set(prev);
-            newSet.delete(recordingToDelete.id);
-            return newSet;
-          });
-        }, 300);
-      } else {
-        // If deletion fails, remove from deleting state
-        setDeletingRecordings((prev) => {
-          const newSet = new Set(prev);
-          newSet.delete(recordingToDelete.id);
-          return newSet;
-        });
-        setError("Failed to delete recording");
-      }
-    } catch (_err) {
-      // If deletion fails, remove from deleting state
+    const clearDeletingState = () =>
       setDeletingRecordings((prev) => {
         const newSet = new Set(prev);
         newSet.delete(recordingToDelete.id);
         return newSet;
       });
-      setError("Failed to delete recording");
+
+    try {
+      const result = await ProxyService.deleteRecording(recordingToDelete.id);
+      if (result) {
+        // Let the fade-out finish before the refetch drops the card from the list
+        setTimeout(() => {
+          void queryClient.invalidateQueries({ queryKey: ["recordings"] });
+          clearDeletingState();
+        }, 300);
+      } else {
+        clearDeletingState();
+        setDeleteError("Failed to delete recording");
+      }
+    } catch (_err) {
+      clearDeletingState();
+      setDeleteError("Failed to delete recording");
     }
   };
 
@@ -210,11 +206,13 @@ const RecordingsPage: React.FC = () => {
           </div>
         );
       case "completed":
+      case "partial":
         return (
           <div className="flex gap-2">
             <Button
               variant="default"
               size="sm"
+              disabled={!recording.filePath}
               onClick={() => void handlePlay(recording)}
               className="gap-1"
             >
@@ -241,6 +239,20 @@ const RecordingsPage: React.FC = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <Icons.loader className="w-6 h-6 animate-spin" />
+      </div>
+    );
+  }
+
+  // Without this, a proxy that is simply not running reads as "you have no recordings" -
+  // the query never runs, so it never errors either.
+  if (!isProxyConnected && !deleteError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 gap-4">
+        <Icons.proxy className="w-12 h-12 text-muted-foreground" />
+        <p className="text-lg font-medium">Proxy is not connected</p>
+        <p className="text-sm text-muted-foreground">
+          Please make sure the proxy server is installed and running
+        </p>
       </div>
     );
   }
@@ -322,14 +334,7 @@ const RecordingsPage: React.FC = () => {
                     "bg-card border-destructive/20 hover:shadow-lg hover:shadow-destructive/5";
                   break;
                 case "in-progress":
-                  statusBadge = (
-                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      <span className="text-sm font-medium text-primary">
-                        Recording
-                      </span>
-                    </div>
-                  );
+                  statusBadge = <InProgressBadge recording={recording} />;
                   cardVariant =
                     "bg-card border-primary/20 hover:shadow-lg hover:shadow-primary/5";
                   break;
@@ -344,6 +349,18 @@ const RecordingsPage: React.FC = () => {
                   );
                   cardVariant =
                     "bg-card border-emerald-500/20 hover:shadow-lg hover:shadow-emerald-500/5";
+                  break;
+                case "partial":
+                  statusBadge = (
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20">
+                      <Icons.playCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                      <span className="text-sm font-medium text-amber-600 dark:text-amber-400">
+                        Partial
+                      </span>
+                    </div>
+                  );
+                  cardVariant =
+                    "bg-card border-amber-500/20 hover:shadow-lg hover:shadow-amber-500/5";
                   break;
                 case "scheduled":
                   statusBadge = (
@@ -407,6 +424,10 @@ const RecordingsPage: React.FC = () => {
                       {renderActionButtons(recording, status)}
                     </div>
                   </div>
+
+                  {status === "in-progress" && (
+                    <RecordingProgress recording={recording} className="mb-4" />
+                  )}
 
                   {/* File Path Section */}
                   {recording.filePath && (

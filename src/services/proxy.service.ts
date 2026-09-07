@@ -53,7 +53,7 @@ class InternalProxyService {
     throw new Error("Failed to fetch recordings");
   };
 
-  deleteRecording = async (recordingId: number): Promise<boolean> => {
+  deleteRecording = async (recordingId: string): Promise<boolean> => {
     const response = await client.delete(`/recordings/${recordingId}`);
     return (
       response.status === HttpStatusCode.NoContent ||
