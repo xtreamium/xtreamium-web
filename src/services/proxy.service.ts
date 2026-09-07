@@ -1,7 +1,7 @@
 import axios, { HttpStatusCode } from "axios";
 import { logger } from "@/lib/logger";
 import type { Settings } from "@/models/settings";
-import { Recording } from "@/models/recording";
+import { Recording, RecordingUpdate } from "@/models/recording";
 import { LogsResponse } from "@/models/log-entry";
 import { DirectoryListing } from "@/models/directory-listing";
 import { env } from "@/env";
@@ -51,6 +51,18 @@ class InternalProxyService {
       return response.data as Array<Recording>;
     }
     throw new Error("Failed to fetch recordings");
+  };
+
+  /**
+   * Reschedules a recording that has not started. Throws on 409 when the capture began between
+   * the edit dialog opening and this landing - callers should surface that rather than retry.
+   */
+  updateRecording = async (
+    recordingId: string,
+    update: RecordingUpdate
+  ): Promise<Recording> => {
+    const response = await client.put(`/recordings/${recordingId}`, update);
+    return response.data as Recording;
   };
 
   deleteRecording = async (recordingId: string): Promise<boolean> => {

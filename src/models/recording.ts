@@ -21,3 +21,13 @@ export interface Recording {
   filePath: string | null;
   status: RecordingStatus;
 }
+
+/**
+ * The editable part of a recording. Only recordings still "pending" accept these - the proxy
+ * re-checks and returns 409 if the capture has begun in the meantime.
+ */
+export interface RecordingUpdate {
+  title: string;
+  startTime: string;
+  endTime: string;
+}

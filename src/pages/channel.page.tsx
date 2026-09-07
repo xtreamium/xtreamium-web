@@ -24,7 +24,10 @@ import ImageWithFallback from "@/components/widgets/image-with-fallback";
 import EPGComponent from "@/components/epg/epg.component";
 import { ProxyService } from "@/services/proxy.service";
 import CopyButton from "@/components/widgets/copy-button";
-import { CustomRecordingModal } from "@/components/recording/custom-recording-modal";
+import {
+  CustomRecordingModal,
+  type RecordingScheduleValues,
+} from "@/components/recording/custom-recording-modal";
 
 const CHANNELS_PER_PAGE = 50;
 
@@ -323,12 +326,12 @@ const ChannelPage = () => {
     setRecordingModalOpen(true);
   };
 
-  const handleCustomRecording = async (
-    startDate: Date,
-    startTime: string,
-    endDate: Date,
-    endTime: string,
-  ) => {
+  const handleCustomRecording = async ({
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+  }: RecordingScheduleValues) => {
     if (!server || !selectedStreamForRecording) {
       return;
     }

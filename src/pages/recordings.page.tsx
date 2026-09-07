@@ -10,6 +10,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useRecordings } from "@/hooks/use-recordings";
 import RecordingProgress from "@/components/recording/recording-progress.component";
 import InProgressBadge from "@/components/recording/recording-status-badge.component";
+import {
+  CustomRecordingModal,
+  type RecordingScheduleValues,
+} from "@/components/recording/custom-recording-modal";
+import axios from "axios";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import {
@@ -31,6 +36,8 @@ const RecordingsPage: React.FC = () => {
   const [recordingToDelete, setRecordingToDelete] = useState<Recording | null>(
     null
   );
+  const [recordingToEdit, setRecordingToEdit] = useState<Recording | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const queryClient = useQueryClient();
 
   // Shared with the app-wide watchers, so there is one poll interval rather than whichever
@@ -120,6 +127,63 @@ const RecordingsPage: React.FC = () => {
     }
   };
 
+  const handleSaveEdit = async ({
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    title,
+  }: RecordingScheduleValues) => {
+    if (!recordingToEdit) {
+      return;
+    }
+
+    const combine = (date: Date, time: string) => {
+      const [hours, minutes] = time.split(":");
+      const combined = new Date(date);
+      combined.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      return combined;
+    };
+
+    const start = combine(startDate, startTime);
+    const end = combine(endDate, endTime);
+
+    if (end <= start) {
+      toast.error("The end time has to be after the start time.");
+      return;
+    }
+
+    setIsSavingEdit(true);
+    try {
+      await ProxyService.updateRecording(recordingToEdit.id, {
+        title: title.trim(),
+        startTime: start.toISOString(),
+        endTime: end.toISOString(),
+      });
+      setRecordingToEdit(null);
+      void queryClient.invalidateQueries({ queryKey: ["recordings"] });
+      toast.success("Recording updated.");
+    } catch (err) {
+      // 409 means it started while the dialog was open - a refetch is the honest response,
+      // since the card the user was editing no longer describes something they can change.
+      if (axios.isAxiosError(err) && err.response?.status === 409) {
+        setRecordingToEdit(null);
+        void queryClient.invalidateQueries({ queryKey: ["recordings"] });
+        toast.error("That recording has already started, so it can't be edited.");
+      } else {
+        const validation = axios.isAxiosError(err) && err.response?.status === 400;
+        toast.error(
+          validation
+            ? "Those times aren't valid - check the duration and that it ends in the future."
+            : "Failed to update the recording."
+        );
+        logger.error("recordings.page", "handleSaveEdit", String(err));
+      }
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const handleStop = (_recording: Recording) => {
     // TODO: Implement stop functionality
     // Will be provided later by user
@@ -172,15 +236,28 @@ const RecordingsPage: React.FC = () => {
       case "failed":
       case "scheduled":
         return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleDeleteClick(recording)}
-            className="gap-1"
-          >
-            <Icons.delete className="w-4 h-4" />
-            Delete
-          </Button>
+          <div className="flex gap-2">
+            {status === "scheduled" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setRecordingToEdit(recording)}
+                className="gap-1"
+              >
+                <Icons.pencil className="w-4 h-4" />
+                Edit
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleDeleteClick(recording)}
+              className="gap-1"
+            >
+              <Icons.delete className="w-4 h-4" />
+              Delete
+            </Button>
+          </div>
         );
       case "in-progress":
         return (
@@ -456,6 +533,24 @@ const RecordingsPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <CustomRecordingModal
+        // Remounts per recording, so the dialog always opens on the right row's values.
+        key={recordingToEdit?.id ?? "no-recording"}
+        open={recordingToEdit !== null}
+        onOpenChange={(open) => !open && setRecordingToEdit(null)}
+        onConfirm={(values) => void handleSaveEdit(values)}
+        isSubmitting={isSavingEdit}
+        initialValues={
+          recordingToEdit
+            ? {
+                start: new Date(recordingToEdit.startTime),
+                end: new Date(recordingToEdit.endTime),
+                title: recordingToEdit.title,
+              }
+            : undefined
+        }
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog
